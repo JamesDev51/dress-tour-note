@@ -47,12 +47,12 @@ for title, category in sections.items():
         raise SystemExit(f'missing section call: {title}')
     editor = editor.replace(old, f"singleSection('{category}','{title}'")
 
-old_detail = 'icon={<TinyIcon type={o.id}/>}}'
+old_detail = 'icon={<TinyIcon type={o.id}/>}'
 if old_detail not in editor:
     raise SystemExit('detail icon target missing')
 editor = editor.replace(
     old_detail,
-    'icon={<OptionArtwork category="detail" id={o.id}/>}}',
+    'icon={<OptionArtwork category="detail" id={o.id}/>}',
 )
 editor_path.write_text(editor, encoding='utf-8')
 
