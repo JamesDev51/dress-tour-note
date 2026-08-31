@@ -3,7 +3,7 @@ import type { LocalAsset, TourSnapshot } from '../../types/domain';
 import type { ImportPreview, ImportStrategy } from '../../types/portable';
 import { db } from '../../db/database';
 import { importSnapshot } from '../../db/repositories';
-import { sha256Hex } from '../image/processFace';
+import { sha256Hex, toArrayBuffer } from '../image/processFace';
 import { parsePortablePayload, PORTABLE_FILE_NAME } from './portable';
 
 function bytesToString(bytes:Uint8Array){return new TextDecoder().decode(bytes)}
@@ -17,6 +17,6 @@ export async function inspectPortablePdf(file:File):Promise<ImportPreview>{
   return{payload,hasConflict:!!(await db.tours.get(payload.sourceTourId)),faceIncluded:payload.includeFace&&assetBytes.size>0,faceWarning,shopCount:payload.shops.length,dressCount:payload.dresses.length,favoriteCount:payload.dresses.filter(d=>d.isFavorite).length,assetBytes};
 }
 
-export async function importPortablePdf(file:File,strategy:ImportStrategy){const preview=await inspectPortablePdf(file);const p=preview.payload;const now=new Date().toISOString();let faceAssetId=p.tour.faceAssetId;const assets:LocalAsset[]=[];for(const ref of p.assets){const bytes=preview.assetBytes.get(ref.id);if(!bytes){if(faceAssetId===ref.id)faceAssetId=undefined;continue}assets.push({id:ref.id,tourId:p.tour.id,kind:'face',mimeType:ref.mimeType,blob:new Blob([bytes],{type:ref.mimeType}),width:ref.width,height:ref.height,byteLength:ref.byteLength,sha256:ref.sha256,createdAt:now});}
+export async function importPortablePdf(file:File,strategy:ImportStrategy){const preview=await inspectPortablePdf(file);const p=preview.payload;const now=new Date().toISOString();let faceAssetId=p.tour.faceAssetId;const assets:LocalAsset[]=[];for(const ref of p.assets){const bytes=preview.assetBytes.get(ref.id);if(!bytes){if(faceAssetId===ref.id)faceAssetId=undefined;continue}assets.push({id:ref.id,tourId:p.tour.id,kind:'face',mimeType:ref.mimeType,blob:new Blob([toArrayBuffer(bytes)],{type:ref.mimeType}),width:ref.width,height:ref.height,byteLength:ref.byteLength,sha256:ref.sha256,createdAt:now});}
   const snapshot:TourSnapshot={tour:{...p.tour,faceAssetId,lastOpenedAt:now,updatedAt:now},shops:p.shops.map(s=>({...s})),dresses:p.dresses.map(d=>faceAssetId?{...d}:{...d,faceTransform:undefined}),assets};return importSnapshot(snapshot,strategy);
 }
