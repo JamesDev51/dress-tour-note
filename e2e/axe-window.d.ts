@@ -1,8 +1,17 @@
-import type * as axe from 'axe-core';
-
 declare global {
   interface Window {
-    axe: typeof axe;
+    axe: {
+      run(
+        root: Document,
+        options: unknown,
+      ): Promise<{
+        violations: Array<{
+          impact: string | null;
+          id: string;
+          help: string;
+        }>;
+      }>;
+    };
   }
 }
 
