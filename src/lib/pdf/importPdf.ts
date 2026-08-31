@@ -61,27 +61,82 @@ function readEmbeddedFileBytes(fileSpec: PDFDict) {
   throw new Error("PDF 첨부파일의 내용을 읽을 수 없어요.");
 }
 
-function extractAttachments(pdf: PDFDocument): PdfAttachmentEntry[] {
-  const namesKey = PDFName.of("Names");
-  const embeddedFilesKey = PDFName.of("EmbeddedFiles");
-  if (!pdf.catalog.has(namesKey)) return [];
-
-  const names = pdf.catalog.lookup(namesKey, PDFDict);
-  if (!names.has(embeddedFilesKey)) return [];
-  const embeddedFiles = names.lookup(embeddedFilesKey, PDFDict);
-  const entries: PdfAttachmentEntry[] = [];
-
-  for (const nameArray of collectNameArrays(embeddedFiles)) {
-    for (let index = 0; index + 1 < nameArray.size(); index += 2) {
-      const nameObject = nameArray.lookup(index) as PDFHexString | PDFString;
-      const fileSpec = nameArray.lookup(index + 1, PDFDict);
-      const filename = nameObject.decodeText();
-      entries.push([
-        filename,
-        { filename, content: readEmbeddedFileBytes(fileSpec) },
-      ]);
+function decodeFileSpecName(fileSpec: PDFDict) {
+  for (const key of ["UF", "F"]) {
+    const value = fileSpec.get(PDFName.of(key));
+    if (value instanceof PDFHexString || value instanceof PDFString) {
+      return value.decodeText();
     }
   }
+  return undefined;
+}
+
+function pushAttachment(
+  entries: PdfAttachmentEntry[],
+  seen: Set<string>,
+  fileSpec: PDFDict,
+  hintedName?: string,
+) {
+  const filename = hintedName || decodeFileSpecName(fileSpec);
+  if (!filename || seen.has(filename)) return;
+  entries.push([
+    filename,
+    { filename, content: readEmbeddedFileBytes(fileSpec) },
+  ]);
+  seen.add(filename);
+}
+
+function extractAttachments(pdf: PDFDocument): PdfAttachmentEntry[] {
+  const entries: PdfAttachmentEntry[] = [];
+  const seen = new Set<string>();
+  const namesKey = PDFName.of("Names");
+  const embeddedFilesKey = PDFName.of("EmbeddedFiles");
+
+  // Standard embedded-file name tree. This is the primary location written by pdf-lib.
+  if (pdf.catalog.has(namesKey)) {
+    const names = pdf.catalog.lookup(namesKey, PDFDict);
+    if (names.has(embeddedFilesKey)) {
+      const embeddedFiles = names.lookup(embeddedFilesKey, PDFDict);
+      for (const nameArray of collectNameArrays(embeddedFiles)) {
+        for (let index = 0; index + 1 < nameArray.size(); index += 2) {
+          try {
+            const nameObject = nameArray.lookup(index);
+            const hintedName =
+              nameObject instanceof PDFHexString || nameObject instanceof PDFString
+                ? nameObject.decodeText()
+                : undefined;
+            pushAttachment(
+              entries,
+              seen,
+              nameArray.lookup(index + 1, PDFDict),
+              hintedName,
+            );
+          } catch {
+            // A malformed name-tree entry must not prevent the catalog AF fallback below.
+          }
+        }
+      }
+    }
+  }
+
+  // PDF 2.0 associated-files array. pdf-lib writes the same FileSpec refs here as well.
+  // Reading both locations makes import resilient to readers that normalize or remove Names.
+  const associatedFilesKey = PDFName.of("AF");
+  if (pdf.catalog.has(associatedFilesKey)) {
+    const associatedFiles = pdf.catalog.lookup(associatedFilesKey, PDFArray);
+    for (let index = 0; index < associatedFiles.size(); index += 1) {
+      try {
+        pushAttachment(
+          entries,
+          seen,
+          associatedFiles.lookup(index, PDFDict),
+        );
+      } catch {
+        // Keep any valid attachments already collected from the other catalog location.
+      }
+    }
+  }
+
   return entries;
 }
 
