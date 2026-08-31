@@ -26,7 +26,9 @@ async function createBaseTour(
   await page.getByPlaceholder("드레스샵 이름").fill("테스트 브라이덜");
   await expect(add).toBeEnabled();
   await add.click();
-  await page.getByRole("button", { name: /테스트 브라이덜/ }).click();
+  await page
+    .getByRole("button", { name: "테스트 브라이덜 열기", exact: true })
+    .click();
   await page.getByRole("button", { name: "드레스 추가", exact: true }).click();
   if (favoriteFirst) await page.getByLabel("후보").click();
   if (face) {
@@ -77,6 +79,20 @@ test("mobile layouts do not horizontally overflow from 320px to 430px", async ({
   }
 });
 
+test("generated option artwork sprite loads and renders in the editor", async ({
+  page,
+}) => {
+  await createBaseTour(page);
+  const response = await page.request.get("/assets/options.svg");
+  expect(response.ok()).toBe(true);
+  const sprite = await response.text();
+  expect((sprite.match(/<symbol id=/g) ?? []).length).toBe(58);
+  await expect(page.locator('[data-option-art="top-unknown"]')).toBeVisible();
+  await expect(
+    page.locator('[data-option-art="top-offShoulder"]'),
+  ).toBeVisible();
+});
+
 test("candidate filter never blocks choosing two dresses for comparison", async ({
   page,
 }) => {
@@ -106,8 +122,7 @@ test("last face position survives immediate navigation away", async ({
   await slider.dispatchEvent("pointerup");
   await page.getByLabel("뒤로").click();
   await page
-    .getByRole("button", { name: /Dress 01 편집/ })
-    .first()
+    .getByRole("button", { name: "Dress 01 상세 편집", exact: true })
     .click();
   await expect(page.getByLabel("좌우")).toHaveValue("0.73");
   await expectNoHorizontalOverflow(page);
@@ -131,13 +146,11 @@ test("invalid import error stays visible instead of disappearing as a toast", as
   page,
 }) => {
   await page.goto("/import");
-  await page
-    .locator('input[type="file"]')
-    .setInputFiles({
-      name: "not-a-pdf.pdf",
-      mimeType: "application/pdf",
-      buffer: Buffer.from("hello"),
-    });
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "not-a-pdf.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("hello"),
+  });
   const alert = page.getByRole("alert");
   await expect(alert).toContainText("PDF 파일이 아니에요.");
   await page.waitForTimeout(2500);

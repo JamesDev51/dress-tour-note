@@ -24,7 +24,9 @@ async function createTour(
   await page.getByRole("button", { name: /샵 추가/ }).click();
   await page.getByPlaceholder("드레스샵 이름").fill("E2E 브라이덜");
   await page.getByRole("button", { name: "추가하기", exact: true }).click();
-  await page.getByRole("button", { name: /E2E 브라이덜/ }).click();
+  await page
+    .getByRole("button", { name: "E2E 브라이덜 열기", exact: true })
+    .click();
   await page.getByRole("button", { name: "드레스 추가", exact: true }).click();
   await page.getByRole("button", { name: /오프숄더/ }).click();
   await page.getByRole("button", { name: /하트형/ }).click();
@@ -133,7 +135,10 @@ test("mobile core flow autosaves, reloads and compares two dresses", async ({
   );
   await editorToReview(page);
   await page.getByRole("button", { name: "2벌 비교", exact: true }).click();
-  await page.getByRole("button", { name: /Dress 01/ }).click();
+  await page
+    .getByRole("button", { name: /Dress 01/ })
+    .first()
+    .click();
   await page.getByRole("button", { name: /Dress 02/ }).click();
   await page.getByRole("button", { name: /선택한 2벌 비교하기/ }).click();
   await expect(page.getByText("두 벌을")).toBeVisible();
@@ -169,8 +174,13 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
     .click();
   await expect(page).toHaveURL(/\/tour\/[^/]+$/);
   expect(page.url()).not.toContain(tourId);
-  await page.getByRole("button", { name: /E2E 브라이덜/ }).click();
-  await page.getByRole("button", { name: /Dress 01/ }).click();
+  await page
+    .getByRole("button", { name: "E2E 브라이덜 열기", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: /Dress 01/ })
+    .first()
+    .click();
   await expect(page.locator(".dress-preview image")).toHaveCount(1);
   await expect(page.getByPlaceholder(/허리가 제일 얇아/)).toHaveValue(
     "E2E 메모: 허리 라인이 가장 좋았음",
@@ -242,8 +252,11 @@ test("first loaded app works offline and makes no external network requests", as
       page.evaluate(() => Boolean(navigator.serviceWorker.controller)),
     )
     .toBe(true);
+  await page.evaluate(async () => {
+    await Promise.all([fetch("/"), fetch("/assets/options.svg")]);
+  });
   await context.setOffline(true);
-  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.goto("/?offline-test=1", { waitUntil: "domcontentloaded" });
   await expect(page.getByText("그림 대신")).toBeVisible();
   expect(external).toEqual([]);
 });

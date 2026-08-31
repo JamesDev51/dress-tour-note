@@ -167,6 +167,7 @@ export function TourDashboardPage() {
                 className="rounded-3xl border border-stone-100 bg-white p-4 shadow-[0_6px_24px_rgba(60,45,40,.05)]"
               >
                 <button
+                  aria-label={`${s.name} 열기`}
                   className="flex w-full items-center gap-3 text-left"
                   onClick={() => nav(`/tour/${tourId}/shop/${s.id}`)}
                 >

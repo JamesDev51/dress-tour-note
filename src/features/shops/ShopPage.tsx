@@ -119,13 +119,14 @@ export function ShopPage() {
               >
                 <div className="flex gap-3">
                   <button
-                    aria-label={`${d.label} 편집`}
+                    aria-label={`${d.label} 미리보기 편집`}
                     className="w-[104px] shrink-0"
                     onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
                   >
                     <DressPreview dress={d} faceAsset={data.face} />
                   </button>
                   <button
+                    aria-label={`${d.label} 상세 편집`}
                     className="min-w-0 flex-1 py-1 text-left"
                     onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
                   >
@@ -193,7 +194,7 @@ export function ShopPage() {
                     <Copy size={15} />
                   </button>
                   <button
-                    aria-label={`${d.label} 편집`}
+                    aria-label={`${d.label} 빠른 편집`}
                     className="grid h-9 w-9 place-items-center text-stone-400"
                     onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
                   >
