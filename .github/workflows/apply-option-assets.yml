@@ -29,6 +29,22 @@ jobs:
       - name: Generate SVG option sprite
         run: node scripts/generate-option-assets.mjs
 
+      - name: Repair one-time patch matcher
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.asset-patch/apply.py')
+          lines = path.read_text(encoding='utf-8').splitlines()
+          for index, line in enumerate(lines):
+              if line.startswith('editor, removed = re.subn('):
+                  lines[index] = 'editor, removed = re.subn(r"\\nfunction TinyIcon.*?\\n\\nexport function", "\\n\\nexport function", editor, count=1, flags=re.S)'
+                  break
+          else:
+              raise SystemExit('TinyIcon matcher line not found')
+          path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+
       - name: Integrate artwork into the application
         run: python .asset-patch/apply.py
 
