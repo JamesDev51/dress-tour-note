@@ -256,7 +256,7 @@ test("first loaded app works offline and makes no external network requests", as
     await Promise.all([fetch("/"), fetch("/assets/options.svg")]);
   });
   await context.setOffline(true);
-  await page.goto("/?offline-test=1", { waitUntil: "domcontentloaded" });
+  await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.getByText("그림 대신")).toBeVisible();
   expect(external).toEqual([]);
 });
