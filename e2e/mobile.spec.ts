@@ -43,9 +43,23 @@ async function createTour(page:Page,{twoDresses=false,face=false}:{twoDresses?:b
   return tourId;
 }
 
+async function editorToReview(page:Page){
+  await page.getByLabel('뒤로').click();
+  await page.getByLabel('투어로 돌아가기').click();
+  await page.getByLabel('결과 보기').click();
+  await expect(page.getByText('E2E 드레스투어',{exact:true})).toBeVisible();
+}
+
+async function reviewToExport(page:Page){
+  await page.getByRole('link',{name:'PDF 만들기',exact:true}).click();
+  await expect(page.getByText('저장할 PDF를',{exact:false})).toBeVisible({timeout:15_000});
+}
+
 async function expectImportPreview(page:Page,title:string){
   await expect.poll(async()=>{
     if(await page.getByText(title,{exact:true}).count())return 'preview';
+    const alert=await page.getByRole('alert').textContent().catch(()=>null);
+    if(alert)return `alert: ${alert}`;
     const status=await page.getByRole('status').textContent().catch(()=>null);
     if(status)return `status: ${status}`;
     if(await page.getByText('복원 데이터를 확인하는 중...',{exact:true}).count())return 'loading';
@@ -59,12 +73,11 @@ test.beforeEach(async({page})=>{
 });
 
 test('mobile core flow autosaves, reloads and compares two dresses',async({page})=>{
-  const tourId=await createTour(page,{twoDresses:true});
+  await createTour(page,{twoDresses:true});
   await page.reload();
   await expect(page.getByPlaceholder(/허리가 제일 얇아/)).toHaveValue('E2E 두 번째 드레스');
-  await page.goto(`/tour/${tourId}/review`);
-  await expect(page.getByText('E2E 드레스투어',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:/2벌 비교/}).click();
+  await editorToReview(page);
+  await page.getByRole('button',{name:'2벌 비교',exact:true}).click();
   await page.getByRole('button',{name:/Dress 01/}).click();
   await page.getByRole('button',{name:/Dress 02/}).click();
   await page.getByRole('button',{name:/선택한 2벌 비교하기/}).click();
@@ -76,8 +89,8 @@ test('mobile core flow autosaves, reloads and compares two dresses',async({page}
 
 test('portable PDF downloads, imports as a copy, and restores face data',async({page})=>{
   const tourId=await createTour(page,{face:true});
-  await page.goto(`/tour/${tourId}/export`);
-  await expect(page.getByText('저장할 PDF를',{exact:false})).toBeVisible({timeout:20_000});
+  await editorToReview(page);
+  await reviewToExport(page);
   await page.getByRole('button',{name:'복원 가능한 PDF 만들기',exact:true}).click();
   await expect(page.getByText('PDF가 준비됐어요.')).toBeVisible({timeout:40_000});
   const downloadPromise=page.waitForEvent('download');
@@ -85,7 +98,8 @@ test('portable PDF downloads, imports as a copy, and restores face data',async({
   const download=await downloadPromise;
   const path=await download.path();
   expect(path).toBeTruthy();
-  await page.goto('/import');
+  await page.goto('/');
+  await page.getByRole('link',{name:'PDF 불러오기',exact:true}).click();
   await page.locator('input[type="file"]').setInputFiles(path!);
   await expectImportPreview(page,'E2E 드레스투어');
   await expect(page.getByText('이 기기에 같은 투어가 있어요')).toBeVisible();
@@ -99,8 +113,9 @@ test('portable PDF downloads, imports as a copy, and restores face data',async({
 });
 
 test('view-only PDF cannot be restored',async({page})=>{
-  const tourId=await createTour(page);
-  await page.goto(`/tour/${tourId}/export`);
+  await createTour(page);
+  await editorToReview(page);
+  await reviewToExport(page);
   await page.getByRole('button',{name:/보기 전용 PDF/}).first().click();
   await page.getByRole('button',{name:'보기 전용 PDF 만들기',exact:true}).click();
   await expect(page.getByText('PDF가 준비됐어요.')).toBeVisible({timeout:40_000});
@@ -108,9 +123,19 @@ test('view-only PDF cannot be restored',async({page})=>{
   await page.getByRole('button',{name:'저장',exact:true}).click();
   const download=await downloadPromise;
   const path=await download.path();
-  await page.goto('/import');
+  await page.goto('/');
+  await page.getByRole('link',{name:'PDF 불러오기',exact:true}).click();
   await page.locator('input[type="file"]').setInputFiles(path!);
-  await expect(page.getByRole('status')).toContainText('복원 가능한 그드레스 PDF가 아니에요.');
+  await expect(page.getByRole('alert')).toContainText('복원 가능한 그드레스 PDF가 아니에요.');
+});
+
+test('direct editor URL survives a full reload',async({page})=>{
+  await createTour(page);
+  const url=page.url();
+  await page.goto(url,{waitUntil:'domcontentloaded'});
+  await expect(page.getByPlaceholder(/허리가 제일 얇아/)).toHaveValue('E2E 메모: 허리 라인이 가장 좋았음');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.getByRole('button',{name:/오프숄더/})).toHaveAttribute('aria-pressed','true');
 });
 
 test('first loaded app works offline and makes no external network requests',async({page,context})=>{
