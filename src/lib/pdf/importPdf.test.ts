@@ -89,9 +89,9 @@ async function makePortablePdf(source: TourSnapshot, includeFace: boolean) {
 describe('inspectPortablePdf', () => {
   it('reads the manifest and tour attachment written by pdf-lib', async () => {
     const result = await inspectPortablePdf(await makePortablePdf(snapshot(), false));
-    expect(result.tour.title).toBe('PDF 왕복 테스트');
-    expect(result.dresses[0].memo).toBe('왕복 보존 메모');
-    expect(result.assets).toHaveLength(0);
+    expect(result.payload.tour.title).toBe('PDF 왕복 테스트');
+    expect(result.payload.dresses[0].memo).toBe('왕복 보존 메모');
+    expect(result.assetBytes.size).toBe(0);
   });
 
   it('round-trips the optional local face attachment', async () => {
@@ -114,10 +114,12 @@ describe('inspectPortablePdf', () => {
     });
 
     const result = await inspectPortablePdf(await makePortablePdf(source, true));
-    expect(result.assets).toHaveLength(1);
-    expect(result.tour.faceAssetId).toBe('face-roundtrip');
-    expect(result.dresses[0].faceTransform?.scale).toBe(1.3);
-    expect(await result.assets[0].blob.text()).toBe('test-face-bytes');
+    expect(result.assetBytes.size).toBe(1);
+    expect(result.payload.tour.faceAssetId).toBe('face-roundtrip');
+    expect(result.payload.dresses[0].faceTransform?.scale).toBe(1.3);
+    expect(new TextDecoder().decode(result.assetBytes.get('face-roundtrip'))).toBe(
+      'test-face-bytes',
+    );
   });
 
   it('rejects a normal PDF without the recovery manifest', async () => {
