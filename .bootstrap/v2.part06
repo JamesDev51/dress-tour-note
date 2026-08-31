@@ -1,0 +1,300 @@
+cat > src/pages-dress.tsx <<'EOF_PAGES_DRESS'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAppState } from './app-state';
+import { AppShell, Button, EmptyState, Modal, Segmented, StarRating, TextArea, TextField } from './components';
+import { databaseUsage } from './db';
+import {
+  backOptions,
+  cloneTour,
+  detailOptions,
+  fabricOptions,
+  gloveOptions,
+  necklineOptions,
+  normalizeDesign,
+  nowIso,
+  optionLabels,
+  quickTagOptions,
+  shoulderOptions,
+  skirtOptions,
+  trainOptions,
+  veilOptions,
+  waistOptions,
+  type Detail,
+  type DressDesign,
+  type DressNote,
+  type DressView,
+  type GudressBackup,
+  type QuickTag,
+  type TourDocument,
+} from './domain';
+import { DressPreview, OptionThumbnail, type PreviewCategory } from './dress';
+import { importTourPdf, type PdfProgress } from './pdf';
+import { MissingRecord } from './pages-home';
+
+function OptionSection({ title, description, children, defaultOpen = false }: { title: string; description?: string; children: ReactNode; defaultOpen?: boolean }) {
+  return <details className="option-section" open={defaultOpen}>
+    <summary><div><strong>{title}</strong>{description && <span>{description}</span>}</div><span className="summary-plus">＋</span></summary>
+    <div className="option-section-body">{children}</div>
+  </details>;
+}
+
+function OptionPicker<T extends string>({ category, options, value, labels, onChange }: {
+  category: PreviewCategory;
+  options: readonly T[];
+  value: T;
+  labels: Record<T, string>;
+  onChange: (value: T) => void;
+}) {
+  return <div className="option-grid">{options.map((option) => <button type="button" key={option} className={`option-card ${value === option ? 'selected' : ''}`} aria-pressed={value === option} onClick={() => onChange(option)}>
+    <OptionThumbnail category={category} value={option}/>
+    <span>{labels[option]}</span>
+    {value === option && <b aria-hidden="true">✓</b>}
+  </button>)}</div>;
+}
+
+function ToggleOption({ selected, label, onClick, visual }: { selected: boolean; label: string; onClick: () => void; visual?: ReactNode }) {
+  return <button type="button" className={`toggle-option ${selected ? 'selected' : ''}`} aria-pressed={selected} onClick={onClick}>{visual}<span>{label}</span>{selected && <b>✓</b>}</button>;
+}
+
+function KoreanStyleSummary({ dress }: { dress: DressNote }) {
+  const d = dress.design;
+  return <p className="editor-summary">{optionLabels.shoulder[d.shoulder]} · {optionLabels.neckline[d.neckline]} · {optionLabels.skirt[d.skirt]} · {optionLabels.fabric[d.fabric]}</p>;
+}
+
+export function DressEditorPage() {
+  const { tourId, dressId } = useParams();
+  const { getTour, updateTour } = useAppState();
+  const tour = getTour(tourId);
+  const dress = tour?.dresses.find((item) => item.id === dressId);
+  const shop = tour?.shops.find((item) => item.id === dress?.shopId);
+  const [correction, setCorrection] = useState<string>();
+  const [previewExpanded, setPreviewExpanded] = useState(false);
+  if (!tour || !dress || !shop || !tourId || !dressId) return <MissingRecord />;
+
+  const mutateDress = (updater: (target: DressNote) => void) => {
+    updateTour(tourId, (draft) => {
+      const target = draft.dresses.find((item) => item.id === dressId);
+      if (!target) return;
+      updater(target);
+      target.updatedAt = nowIso();
+    });
+  };
+
+  const updateDesign = <K extends keyof DressDesign>(key: K, value: DressDesign[K]) => {
+    const next = structuredClone(dress.design);
+    next[key] = value;
+    const normalized = normalizeDesign(next);
+    mutateDress((target) => { target.design = normalized.design; });
+    if (normalized.corrected) {
+      setCorrection(normalized.message || '함께 사용할 수 있는 조합으로 자동 보정했어요.');
+      window.setTimeout(() => setCorrection(undefined), 3400);
+    }
+  };
+
+  const toggleDetail = (detail: Detail) => {
+    const selected = dress.design.details.includes(detail);
+    updateDesign('details', selected ? dress.design.details.filter((item) => item !== detail) : [...dress.design.details, detail]);
+  };
+
+  const toggleQuickTag = (tag: QuickTag) => {
+    mutateDress((target) => {
+      target.quickTags = target.quickTags.includes(tag) ? target.quickTags.filter((item) => item !== tag) : [...target.quickTags, tag];
+    });
+  };
+
+  const face = tour.face;
+  return <AppShell title={`${dress.name} 편집`} eyebrow={shop.name} back bottom={<button className={`favorite-cta ${dress.favorite ? 'active' : ''}`} onClick={() => mutateDress((target) => { target.favorite = !target.favorite; })}>{dress.favorite ? '♥ 후보 해제' : '♡ 후보로 저장'}</button>}>
+    {correction && <div className="toast" role="status">{correction}</div>}
+    <section className={`editor-preview-card ${previewExpanded ? 'expanded' : ''}`}>
+      <div className="preview-toolbar">
+        <Segmented<DressView> ariaLabel="드레스 앞뒤 선택" value={dress.view} options={[{ value: 'front', label: '앞모습' }, { value: 'back', label: '뒷모습' }]} onChange={(view) => mutateDress((target) => { target.view = view; })}/>
+        <button className="preview-expand" aria-label={previewExpanded ? '미리보기 축소' : '미리보기 확대'} onClick={() => setPreviewExpanded((value) => !value)}>{previewExpanded ? '축소' : '확대'}</button>
+      </div>
+      <DressPreview design={dress.design} view={dress.view} face={tour.face}/>
+      <div className="preview-caption"><div><span>LIVE PREVIEW</span><strong>{dress.name}</strong><KoreanStyleSummary dress={dress}/></div>{dress.favorite && <span className="heart-mark">♥</span>}</div>
+    </section>
+
+    <section className="editor-name-card">
+      <TextField label="기억할 이름" value={dress.name} maxLength={40} onChange={(event) => mutateDress((target) => { target.name = event.target.value; })} placeholder="예: 첫 번째 실크 드레스" />
+    </section>
+
+    <section className="editor-options">
+      <div className="section-heading"><div><span>DRESS SHAPE</span><h2>드레스 모양</h2></div></div>
+      <OptionSection title="어깨와 소매" description={optionLabels.shoulder[dress.design.shoulder]} defaultOpen>
+        <OptionPicker category="shoulder" options={shoulderOptions} value={dress.design.shoulder} labels={optionLabels.shoulder} onChange={(value) => updateDesign('shoulder', value)}/>
+      </OptionSection>
+      <OptionSection title="가슴선" description={optionLabels.neckline[dress.design.neckline]}>
+        <OptionPicker category="neckline" options={necklineOptions} value={dress.design.neckline} labels={optionLabels.neckline} onChange={(value) => updateDesign('neckline', value)}/>
+      </OptionSection>
+      <OptionSection title="허리선" description={optionLabels.waist[dress.design.waist]}>
+        <OptionPicker category="waist" options={waistOptions} value={dress.design.waist} labels={optionLabels.waist} onChange={(value) => updateDesign('waist', value)}/>
+      </OptionSection>
+      <OptionSection title="치마 모양" description={optionLabels.skirt[dress.design.skirt]}>
+        <OptionPicker category="skirt" options={skirtOptions} value={dress.design.skirt} labels={optionLabels.skirt} onChange={(value) => updateDesign('skirt', value)}/>
+      </OptionSection>
+      <OptionSection title="뒤로 끌리는 길이" description={optionLabels.train[dress.design.train]}>
+        <OptionPicker category="train" options={trainOptions} value={dress.design.train} labels={optionLabels.train} onChange={(value) => updateDesign('train', value)}/>
+      </OptionSection>
+    </section>
+
+    <section className="editor-options">
+      <div className="section-heading"><div><span>FABRIC & DETAILS</span><h2>소재와 장식</h2></div></div>
+      <OptionSection title="주된 소재" description={optionLabels.fabric[dress.design.fabric]} defaultOpen>
+        <OptionPicker category="fabric" options={fabricOptions} value={dress.design.fabric} labels={optionLabels.fabric} onChange={(value) => updateDesign('fabric', value)}/>
+      </OptionSection>
+      <OptionSection title="눈에 띈 디테일" description={dress.design.details.length ? `${dress.design.details.length}개 선택` : '복수 선택 가능'}>
+        <div className="toggle-grid">{detailOptions.map((detail) => <ToggleOption key={detail} label={optionLabels.details[detail]} selected={dress.design.details.includes(detail)} onClick={() => toggleDetail(detail)} visual={<span className={`detail-swatch detail-${detail}`}/>}/>)}</div>
+      </OptionSection>
+      <OptionSection title="뒷모습" description={optionLabels.back[dress.design.back]}>
+        <OptionPicker category="back" options={backOptions} value={dress.design.back} labels={optionLabels.back} onChange={(value) => updateDesign('back', value)}/>
+      </OptionSection>
+    </section>
+
+    <section className="editor-options">
+      <div className="section-heading"><div><span>ACCESSORIES</span><h2>함께 착용한 것</h2></div></div>
+      <OptionSection title="베일" description={optionLabels.veil[dress.design.veil]}>
+        <OptionPicker category="veil" options={veilOptions} value={dress.design.veil} labels={optionLabels.veil} onChange={(value) => updateDesign('veil', value)}/>
+      </OptionSection>
+      <OptionSection title="장갑" description={optionLabels.gloves[dress.design.gloves]}>
+        <OptionPicker category="gloves" options={gloveOptions} value={dress.design.gloves} labels={optionLabels.gloves} onChange={(value) => updateDesign('gloves', value)}/>
+      </OptionSection>
+      <OptionSection title="볼레로" description={dress.design.bolero ? '착용함' : '착용 안 함'}>
+        <div className="toggle-grid"><ToggleOption selected={!dress.design.bolero} label="없음" onClick={() => updateDesign('bolero', false)}/><ToggleOption selected={dress.design.bolero} label="있음" onClick={() => updateDesign('bolero', true)} visual={<span className="bolero-visual">◇</span>}/></div>
+      </OptionSection>
+    </section>
+
+    {face && <section className="face-adjust-card">
+      <div className="section-heading"><div><span>FACE POSITION</span><h2>얼굴 위치 맞추기</h2></div></div>
+      <p>이 값은 이 투어에 있는 모든 드레스에 공통으로 적용돼요.</p>
+      <label className="range-field"><span>크기 <b>{face.scale.toFixed(1)}×</b></span><input type="range" min="0.5" max="2.5" step="0.1" value={face.scale} onChange={(event) => updateTour(tourId, (draft) => { if (draft.face) draft.face.scale = Number(event.target.value); })}/></label>
+      <label className="range-field"><span>좌우 <b>{face.x}</b></span><input type="range" min="-60" max="60" value={face.x} onChange={(event) => updateTour(tourId, (draft) => { if (draft.face) draft.face.x = Number(event.target.value); })}/></label>
+      <label className="range-field"><span>위아래 <b>{face.y}</b></span><input type="range" min="-60" max="60" value={face.y} onChange={(event) => updateTour(tourId, (draft) => { if (draft.face) draft.face.y = Number(event.target.value); })}/></label>
+      <label className="range-field"><span>회전 <b>{face.rotation}°</b></span><input type="range" min="-25" max="25" value={face.rotation} onChange={(event) => updateTour(tourId, (draft) => { if (draft.face) draft.face.rotation = Number(event.target.value); })}/></label>
+      <Button variant="ghost" onClick={() => updateTour(tourId, (draft) => { if (draft.face) Object.assign(draft.face, { x: 0, y: 0, scale: 1, rotation: 0 }); })}>위치 초기화</Button>
+    </section>}
+
+    <section className="memo-card">
+      <div className="section-heading"><div><span>QUICK MEMO</span><h2>입어봤을 때</h2></div></div>
+      <div className="chip-wrap">{quickTagOptions.map((tag) => <button type="button" key={tag} className={dress.quickTags.includes(tag) ? 'selected' : ''} aria-pressed={dress.quickTags.includes(tag)} onClick={() => toggleQuickTag(tag)}>{tag}</button>)}</div>
+      <TextArea label="특이사항" value={dress.memo} rows={5} maxLength={700} onChange={(event) => mutateDress((target) => { target.memo = event.target.value; })} placeholder="허리가 얇아 보였음, 어깨가 예뻐 보였음, 생각보다 무거웠음…" hint={`${dress.memo.length}/700`} />
+    </section>
+
+    <section className="score-card">
+      <div className="section-heading"><div><span>SCORE</span><h2>기억이 생생할 때 평가</h2></div></div>
+      <StarRating label={tour.brideName ? `${tour.brideName} 만족도` : '신부 만족도'} value={dress.score.bride} onChange={(value) => mutateDress((target) => { target.score.bride = value; })}/>
+      <StarRating label={tour.partnerName ? `${tour.partnerName} 만족도` : '동행인 만족도'} value={dress.score.partner} onChange={(value) => mutateDress((target) => { target.score.partner = value; })}/>
+      <StarRating label="착용감" value={dress.score.comfort} onChange={(value) => mutateDress((target) => { target.score.comfort = value; })}/>
+      <StarRating label="사진 기대감" value={dress.score.photo} onChange={(value) => mutateDress((target) => { target.score.photo = value; })}/>
+    </section>
+  </AppShell>;
+}
+
+export function ImportPage() {
+  const navigate = useNavigate();
+  const { tours, addTour, replaceTour } = useAppState();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [backup, setBackup] = useState<GudressBackup>();
+  const [sourceName, setSourceName] = useState('');
+  const [progress, setProgress] = useState<PdfProgress>();
+  const [error, setError] = useState<string>();
+  const [replaceId, setReplaceId] = useState('');
+  const [replaceModal, setReplaceModal] = useState(false);
+
+  const pickFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError(undefined); setBackup(undefined); setSourceName(file.name);
+    try { setBackup(await importTourPdf(file, setProgress)); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : 'PDF를 불러오지 못했어요.'); }
+    finally { setProgress(undefined); event.target.value = ''; }
+  };
+
+  const addAsCopy = async () => {
+    if (!backup) return;
+    const copy = cloneTour(backup.tour);
+    copy.title = backup.tour.title;
+    await addTour(copy);
+    navigate(`/tour/${copy.id}`, { replace: true });
+  };
+
+  const overwrite = async () => {
+    if (!backup || !replaceId) return;
+    const existing = tours.find((tour) => tour.id === replaceId);
+    if (!existing) return;
+    const imported: TourDocument = structuredClone(backup.tour);
+    imported.id = existing.id;
+    imported.createdAt = existing.createdAt;
+    imported.updatedAt = nowIso();
+    await replaceTour(imported);
+    setReplaceModal(false);
+    navigate(`/tour/${imported.id}`, { replace: true });
+  };
+
+  return <AppShell title="PDF 기록 불러오기" eyebrow="IMPORT" back>
+    <input ref={inputRef} type="file" accept="application/pdf,.pdf" hidden onChange={(event) => void pickFile(event)}/>
+    <section className="import-hero"><span className="import-icon">⇩</span><h1>다른 기기에서<br/>기록을 이어가요</h1><p>그드레스에서 내보낸 원본 PDF를 선택하면 샵, 드레스, 메모, 얼굴 사진까지 그대로 복원돼요.</p><Button full onClick={() => inputRef.current?.click()}>PDF 선택하기</Button><small>일반 PDF나 화면을 스캔해서 읽지 않아요. 그드레스 원본 데이터가 포함된 PDF만 지원해요.</small></section>
+    {progress && <div className="progress-card"><span className="loader"/><div><strong>{progress.message}</strong><progress value={progress.current} max={progress.total}/></div></div>}
+    {error && <div className="import-error" role="alert"><strong>불러오지 못했어요</strong><p>{error}</p><Button variant="secondary" onClick={() => inputRef.current?.click()}>다른 PDF 선택</Button></div>}
+    {backup && <section className="import-result">
+      <div className="success-mark">✓</div><span className="section-kicker">FOUND</span><h2>{backup.tour.title}</h2><p className="source-file">{sourceName}</p>
+      <div className="import-stats"><div><strong>{backup.tour.shops.length}</strong><span>드레스샵</span></div><div><strong>{backup.tour.dresses.length}</strong><span>드레스</span></div><div><strong>{backup.tour.dresses.filter((dress) => dress.favorite).length}</strong><span>후보</span></div></div>
+      <dl><div><dt>투어 날짜</dt><dd>{backup.tour.tourDate || '미입력'}</dd></div><div><dt>신부</dt><dd>{backup.tour.brideName || '미입력'}</dd></div><div><dt>내보낸 시각</dt><dd>{new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(backup.exportedAt))}</dd></div></dl>
+      <Button full onClick={() => void addAsCopy()}>새 기록으로 불러오기</Button>
+      {tours.length > 0 && <Button full variant="secondary" onClick={() => { setReplaceId(tours[0].id); setReplaceModal(true); }}>기존 기록 덮어쓰기</Button>}
+    </section>}
+    <aside className="notice-card"><strong>원본 PDF를 보관해 주세요</strong><p>PDF는 보기용 결과물이면서 복원용 백업 파일이에요. 메신저나 클라우드에 저장해두면 브라우저 데이터가 지워져도 다시 불러올 수 있어요.</p></aside>
+    <Modal open={replaceModal} title="기존 기록을 덮어쓸까요?" onClose={() => setReplaceModal(false)}>
+      <div className="form-stack compact"><label className="field"><span>덮어쓸 기록</span><select value={replaceId} onChange={(event) => setReplaceId(event.target.value)}>{tours.map((tour) => <option key={tour.id} value={tour.id}>{tour.title}</option>)}</select><small>선택한 기기의 기존 기록은 PDF 내용으로 교체돼요.</small></label><div className="modal-actions"><Button variant="secondary" onClick={() => setReplaceModal(false)}>취소</Button><Button variant="danger" onClick={() => void overwrite()} disabled={!replaceId}>덮어쓰기</Button></div></div>
+    </Modal>
+  </AppShell>;
+}
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+};
+
+function formatBytes(value?: number) {
+  if (value === undefined) return '확인 불가';
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 ** 2) return `${Math.round(value / 1024)} KB`;
+  return `${(value / 1024 ** 2).toFixed(1)} MB`;
+}
+
+export function SettingsPage() {
+  const { tours, clearAll } = useAppState();
+  const [usage, setUsage] = useState<{ usage?: number; quota?: number }>();
+  const [clearModal, setClearModal] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent>();
+  useEffect(() => {
+    void databaseUsage().then((estimate) => setUsage(estimate ? { usage: estimate.usage, quota: estimate.quota } : {}));
+    const handler = (event: Event) => { event.preventDefault(); setInstallPrompt(event as BeforeInstallPromptEvent); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+  const dressCount = tours.reduce((sum, tour) => sum + tour.dresses.length, 0);
+  return <AppShell title="설정과 데이터" eyebrow="LOCAL ONLY" back>
+    <section className="settings-privacy"><span>🔒</span><h1>내 기록은<br/>내 기기 안에만</h1><p>계정도 서버도 없습니다. 드레스 정보와 얼굴 사진은 브라우저 IndexedDB에만 저장되고, PDF로 내보낼 때만 선택한 파일 안에 포함돼요.</p></section>
+    <section className="settings-list">
+      <article><div><span className="settings-icon">◉</span><div><strong>현재 기기 기록</strong><p>투어 {tours.length}개 · 드레스 {dressCount}벌</p></div></div><span>{formatBytes(usage?.usage)}</span></article>
+      <article><div><span className="settings-icon">□</span><div><strong>브라우저 저장 한도</strong><p>브라우저와 기기 상황에 따라 달라져요.</p></div></div><span>{formatBytes(usage?.quota)}</span></article>
+      <article><div><span className="settings-icon">⇧</span><div><strong>기기 간 이동</strong><p>투어 화면에서 PDF로 내보낸 뒤 다른 기기에서 불러오세요.</p></div></div><button onClick={() => location.assign('/import')}>불러오기</button></article>
+      {installPrompt && <article><div><span className="settings-icon">＋</span><div><strong>홈 화면에 추가</strong><p>앱처럼 빠르게 열고 오프라인에서도 기록할 수 있어요.</p></div></div><button onClick={() => void installPrompt.prompt().then(() => installPrompt.userChoice).then(() => setInstallPrompt(undefined))}>추가</button></article>}
+    </section>
+    <section className="settings-help"><h2>데이터가 사라질 수 있는 경우</h2><ul><li>브라우저 데이터나 사이트 저장공간을 직접 삭제했을 때</li><li>시크릿 모드에서 사용했을 때</li><li>브라우저 또는 기기를 초기화했을 때</li></ul><p>중요한 투어는 끝나자마자 PDF로 보관하는 것을 권장해요.</p></section>
+    <section className="danger-zone"><span>DANGER ZONE</span><h2>이 기기의 모든 기록 삭제</h2><p>IndexedDB에 저장된 투어와 얼굴 사진을 모두 지웁니다. 내보낸 PDF는 삭제되지 않아요.</p><Button variant="danger" onClick={() => setClearModal(true)} disabled={!tours.length}>전체 기록 삭제</Button></section>
+    <footer className="app-footer"><strong>그드레스 1.0</strong><span>서버 없음 · 로그인 없음 · 모바일 전용</span></footer>
+    <Modal open={clearModal} title="정말 모두 삭제할까요?" onClose={() => setClearModal(false)}><p className="modal-copy">현재 기기에 저장된 투어 {tours.length}개와 드레스 {dressCount}벌이 삭제돼요. 이 작업은 되돌릴 수 없어요.</p><div className="modal-actions"><Button variant="secondary" onClick={() => setClearModal(false)}>취소</Button><Button variant="danger" onClick={() => void clearAll().then(() => setClearModal(false))}>모두 삭제</Button></div></Modal>
+  </AppShell>;
+}
+
+export function NotFoundPage() {
+  const navigate = useNavigate();
+  return <AppShell><EmptyState icon="404" title="이 페이지는 없어요" description="주소가 바뀌었거나 삭제된 기록일 수 있어요." action={<Button onClick={() => navigate('/')}>홈으로 돌아가기</Button>}/></AppShell>;
+}
+EOF_PAGES_DRESS
+cat > src/pages.ts <<'EOF_PAGES'
+export { HomePage, MissingRecord, NewTourPage, ShopPage, TourPage } from './pages-home';
+export { DressEditorPage, ImportPage, NotFoundPage, SettingsPage } from './pages-dress';
+EOF_PAGES
