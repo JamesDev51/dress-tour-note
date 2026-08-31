@@ -1,54 +1,49 @@
-# Dress Tour Note
+# 그드레스 (dress-tour-note)
 
-사진 촬영이 제한되는 드레스투어에서 드레스의 특징을 시각적으로 조합해 기록하고, 투어 종료 후 PDF로 저장·복원하는 브라우저 기반 웹앱입니다.
+사진 촬영이 어려운 드레스투어에서 그림 대신 드레스 형태를 선택해 기록하고, **복원 가능한 PDF 한 파일**로 다른 기기에 옮길 수 있는 모바일 전용 웹앱입니다.
 
-## Product principles
+## 원칙
+- React + TypeScript + Vite, Vercel 정적 호스팅
+- 서버/API/로그인/분석 SDK 없음
+- Dexie/IndexedDB 자동 저장
+- SVG 기반 드레스 조합 (AI 이미지 생성 없음)
+- 얼굴 사진은 브라우저 Canvas에서 재인코딩 후 로컬 저장
+- PDF 내부 `gudress-data-v1.json` + 선택적 얼굴 첨부로 기기 간 복원
+- 첫 정상 로드 후 PWA 오프라인 사용
 
-- 서버 없음
-- 로그인 없음
-- 사용자 데이터는 브라우저 내부에만 저장
-- IndexedDB 기반 자동 저장
-- PDF 내보내기 및 PDF 기반 복원
-- 모바일 우선 UI
-
-## Stack
-
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- React Router
-- Zustand
-- Dexie / IndexedDB
-- pdf-lib
-- PDF.js
-
-## Local development
-
+## 실행
 ```bash
 npm install
 npm run dev
-```
-
-## Checks
-
-```bash
 npm run typecheck
+npm test
 npm run build
-npm run format:check
 ```
 
-## Architecture direction
+## 주요 라우트
+- `/` 홈 / 최근 기록
+- `/tour/new` 투어 생성
+- `/tour/:tourId` 투어 대시보드
+- `/tour/:tourId/shop/:shopId` 샵 상세
+- `/tour/:tourId/dress/:dressId` 드레스 편집
+- `/tour/:tourId/review` 결과 검토
+- `/tour/:tourId/export` 복원 PDF 내보내기
+- `/import` 복원 PDF 불러오기
+- `/privacy` 로컬 저장/삭제 안내
 
-기능 코드는 `src/features` 아래에 도메인 단위로 분리합니다.
+## 저장 모델
+IndexedDB schema v1: `tours`, `shops`, `dresses`, `assets`, `meta`. 사용자 영속 데이터의 진실 원천은 Dexie입니다. Zustand는 저장 상태/토스트/PWA 업데이트 같은 UI 상태에만 사용합니다.
 
-- `tour`: 드레스투어/샵/드레스 기록
-- `dress-editor`: 디자인 옵션 편집 UI
-- `dress-composer`: SVG 드레스 합성
-- `face-editor`: 로컬 얼굴 이미지 배치
-- `pdf`: PDF 생성·복원
-- `db`: IndexedDB 영속성
+## PDF schema v1
+- 첨부 JSON: `gudress-data-v1.json`
+- format: `gudress-portable-tour`
+- schemaVersion: `1`
+- 얼굴 포함 시: `gudress-asset-{id}.webp|jpg`
+- 얼굴 제외 옵션은 페이지뿐 아니라 JSON의 asset ref, dress.faceTransform, PDF 첨부 바이트까지 제거합니다.
+- 일반 PDF/OCR 복원은 하지 않습니다.
 
-## Privacy
+## 드레스 옵션 추가
+`src/types/domain.ts` union → `src/lib/dress/options.ts` 라벨/호환성 → `src/lib/renderer/dressSvg.ts` 렌더링 → portable schema 테스트 순서로 함께 수정합니다.
 
-입력한 드레스 정보와 사진은 별도 서버로 전송하지 않는 것을 제품 원칙으로 합니다.
+## 배포
+Vercel Framework Preset은 Vite, Build Command는 `npm run build`, Output Directory는 `dist`, 환경변수는 없습니다. `vercel.json`이 SPA rewrite와 보안 헤더를 적용합니다.
