@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Apply generated image assets to the app
-        run: python .asset-patch/apply.py
+        run: mkdir -p docs && python .asset-patch/apply.py
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
