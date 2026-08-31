@@ -1,4 +1,4 @@
-import type { Dress, DressColor, DressDetail, Fabric, Neckline, QuickTag, Silhouette, TopStyle, Train, Waistline } from '../../types/domain';
+import type { BackStyle, Dress, DressColor, DressDetail, Fabric, Neckline, QuickTag, Silhouette, TopStyle, Train, Waistline } from '../../types/domain';
 
 export type Option<T extends string> = { id: T; label: string; technical?: string };
 
@@ -36,6 +36,11 @@ export const waistlineOptions: Option<Waistline>[] = [
   { id:'unknown', label:'기억 안 남' }, { id:'natural', label:'자연 허리선', technical:'Natural' }, { id:'basque', label:'V자 허리선', technical:'Basque' },
   { id:'drop', label:'낮은 허리선', technical:'Drop waist' }, { id:'empire', label:'높은 허리선', technical:'Empire' }
 ];
+export const backStyleOptions: Option<BackStyle>[] = [
+  { id:'unknown', label:'기억 안 남' }, { id:'openBack', label:'등이 크게 파임', technical:'Open back' }, { id:'vBack', label:'뒤가 V자로 파임', technical:'V-back' },
+  { id:'buttonBack', label:'등 중앙 버튼', technical:'Button back' }, { id:'corsetBack', label:'코르셋 끈', technical:'Corset back' },
+  { id:'illusionBack', label:'시스루 뒤태', technical:'Illusion back' }, { id:'bowBack', label:'등 리본 포인트', technical:'Bow back' }
+];
 export const detailOptions: Option<DressDetail>[] = [
   ['corset','코르셋'],['draping','드레이핑'],['waistBow','허리 리본'],['backBow','등 리본'],['pearl','진주'],['sequin','스팽글'],['floral','꽃 장식'],['slit','슬릿'],['sheer','시스루'],['detachableSleeve','탈착 소매'],['overskirt','오버스커트'],['buttons','버튼']
 ].map(([id,label]) => ({ id: id as DressDetail, label }));
@@ -55,8 +60,8 @@ export function normalizeUpper(topStyle: TopStyle, neckline: Neckline): { neckli
   if (isNecklineCompatible(topStyle, neckline)) return { neckline, changed:false };
   return { neckline:fallback[topStyle], changed:true };
 }
+export function optionLabel<T extends string>(options: Option<T>[], id:T | undefined) { return options.find(o=>o.id===id)?.label ?? '기억 안 남'; }
 export function summarizeDress(dress: Dress) {
-  const find = <T extends string>(options: Option<T>[], id:T) => options.find(o=>o.id===id)?.label ?? id;
-  return [find(topStyleOptions,dress.topStyle),find(necklineOptions,dress.neckline),find(silhouetteOptions,dress.silhouette),find(fabricOptions,dress.fabric),find(trainOptions,dress.train)].filter(x=>x!=='기억 안 남');
+  return [optionLabel(topStyleOptions,dress.topStyle),optionLabel(necklineOptions,dress.neckline),optionLabel(silhouetteOptions,dress.silhouette),optionLabel(fabricOptions,dress.fabric),optionLabel(trainOptions,dress.train)].filter(x=>x!=='기억 안 남');
 }
 export const colorHex: Record<DressColor,string> = { unknown:'#f7f5f3', pureWhite:'#ffffff', ivory:'#fffaf0', champagne:'#f4e6d1' };

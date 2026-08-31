@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DRESS_COLORS, DRESS_DETAILS, FABRICS, NECKLINES, QUICK_TAGS, SILHOUETTES, TOP_STYLES, TRAINS, WAISTLINES } from '../../types/domain';
+import { BACK_STYLES, DRESS_COLORS, DRESS_DETAILS, FABRICS, NECKLINES, QUICK_TAGS, SILHOUETTES, TOP_STYLES, TRAINS, WAISTLINES } from '../../types/domain';
 
 const iso = z.string().min(10);
 export const faceTransformSchema = z.object({ x:z.number().min(-1).max(1), y:z.number().min(-1).max(1), scale:z.number().min(0.5).max(3), rotation:z.number().min(-15).max(15) });
@@ -11,7 +11,7 @@ export const shopSchema = z.object({
 });
 export const dressSchema = z.object({
   id:z.string().min(1), tourId:z.string().min(1), shopId:z.string().min(1), order:z.number().int().nonnegative(), label:z.string().min(1).max(50),
-  topStyle:z.enum(TOP_STYLES), neckline:z.enum(NECKLINES), silhouette:z.enum(SILHOUETTES), waistline:z.enum(WAISTLINES), fabric:z.enum(FABRICS), color:z.enum(DRESS_COLORS), train:z.enum(TRAINS),
+  topStyle:z.enum(TOP_STYLES), neckline:z.enum(NECKLINES), silhouette:z.enum(SILHOUETTES), waistline:z.enum(WAISTLINES), backStyle:z.enum(BACK_STYLES).optional(), fabric:z.enum(FABRICS), color:z.enum(DRESS_COLORS), train:z.enum(TRAINS),
   details:z.array(z.enum(DRESS_DETAILS)).max(4), quickTags:z.array(z.enum(QUICK_TAGS)), rating:z.union([z.literal(1),z.literal(2),z.literal(3),z.literal(4),z.literal(5)]).optional(), memo:z.string().max(1000), isFavorite:z.boolean(), faceTransform:faceTransformSchema.optional(), createdAt:iso, updatedAt:iso
 });
 export const portableAssetRefSchema = z.object({ id:z.string(), kind:z.literal('face'), fileName:z.string().min(1), mimeType:z.enum(['image/webp','image/jpeg']), byteLength:z.number().int().nonnegative(), width:z.number().positive(), height:z.number().positive(), sha256:z.string().regex(/^[a-f0-9]{64}$/) });

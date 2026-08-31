@@ -37,9 +37,11 @@ export interface ImportPreview {
 }
 
 export type ImportStrategy = 'copy' | 'overwrite';
+export type PdfExportMode = 'portable' | 'viewOnly';
 
 export interface ExportOptions {
   includeFace: boolean;
+  mode: PdfExportMode;
 }
 
 export type ExportProgress = { step: 'prepare' | 'render' | 'assemble' | 'attach' | 'done'; percent: number; label: string };
