@@ -1,0 +1,326 @@
+#!/usr/bin/env bash
+set -euo pipefail
+find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+mkdir -p .github/workflows public src/tests e2e docs
+cat > package.json <<'EOF_PACKAGE'
+{
+  "name": "dress-tour-note",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "lint": "tsc -b --pretty false",
+    "typecheck": "tsc -b --pretty false",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run typecheck && npm run test:run && npm run build"
+  },
+  "dependencies": {
+    "dexie": "^4.0.11",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.149",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.2",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3",
+    "vitest": "^3.2.4"
+  }
+}
+EOF_PACKAGE
+cat > .gitignore <<'EOF_GITIGNORE'
+node_modules
+dist
+coverage
+playwright-report
+test-results
+.DS_Store
+*.local
+EOF_GITIGNORE
+cat > .prettierignore <<'EOF_PRETTIERIGNORE'
+node_modules
+dist
+coverage
+playwright-report
+test-results
+package-lock.json
+EOF_PRETTIERIGNORE
+cat > .prettierrc.json <<'EOF_PRETTIER'
+{
+  "singleQuote": true,
+  "semi": true,
+  "trailingComma": "all",
+  "printWidth": 100
+}
+EOF_PRETTIER
+cat > index.html <<'EOF_HTML'
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fbf7f5" />
+    <meta name="description" content="사진 없이도 드레스 형태를 기록하고 PDF로 다시 불러오는 모바일 드레스투어 노트" />
+    <link rel="icon" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>그드레스 · 드레스투어 노트</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+EOF_HTML
+cat > tsconfig.json <<'EOF_TSCONFIG'
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
+}
+EOF_TSCONFIG
+cat > tsconfig.app.json <<'EOF_TSCONFIG_APP'
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["vite/client", "vitest/globals"]
+  },
+  "include": ["src"]
+}
+EOF_TSCONFIG_APP
+cat > tsconfig.node.json <<'EOF_TSCONFIG_NODE'
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true
+  },
+  "include": ["vite.config.ts", "playwright.config.ts"]
+}
+EOF_TSCONFIG_NODE
+cat > vite.config.ts <<'EOF_VITE'
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  plugins: [react()],
+  build: { target: 'es2022', sourcemap: true },
+  test: { environment: 'jsdom', setupFiles: './src/tests/setup.ts' },
+});
+EOF_VITE
+cat > playwright.config.ts <<'EOF_PLAYWRIGHT'
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: false,
+  retries: 1,
+  reporter: [['list'], ['html', { open: 'never' }]],
+  use: { baseURL: 'http://127.0.0.1:4173', trace: 'retain-on-failure' },
+  webServer: {
+    command: 'npm run build && npm run preview -- --port 4173',
+    url: 'http://127.0.0.1:4173',
+    reuseExistingServer: !process.env.CI,
+  },
+  projects: [{ name: 'mobile-chrome', use: { ...devices['Pixel 7'] } }],
+});
+EOF_PLAYWRIGHT
+cat > vercel.json <<'EOF_VERCEL'
+{
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    },
+    { "source": "/sw.js", "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }] }
+  ]
+}
+EOF_VERCEL
+cat > public/manifest.webmanifest <<'EOF_MANIFEST'
+{
+  "name": "그드레스 · 드레스투어 노트",
+  "short_name": "그드레스",
+  "description": "사진 없이도 드레스의 특징을 기록하고 PDF로 옮기는 로컬 전용 노트",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf7f5",
+  "theme_color": "#fbf7f5",
+  "lang": "ko-KR",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
+EOF_MANIFEST
+cat > public/icon.svg <<'EOF_ICON'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#fbf7f5"/><path d="M201 96c18 23 40 35 55 35s37-12 55-35l46 62-48 50 72 208H131l72-208-48-50 46-62Z" fill="#fff" stroke="#352d2b" stroke-width="18" stroke-linejoin="round"/><path d="M203 208h106M174 321h164" stroke="#d49a9f" stroke-width="15" stroke-linecap="round"/></svg>
+EOF_ICON
+cat > public/robots.txt <<'EOF_ROBOTS'
+User-agent: *
+Allow: /
+EOF_ROBOTS
+cat > public/sw.js <<'EOF_SW'
+const CACHE = 'gudress-v1';
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', (event) => {
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  const request = event.request;
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).then((response) => {
+      const clone = response.clone();
+      caches.open(CACHE).then((cache) => cache.put('/index.html', clone));
+      return response;
+    }).catch(() => caches.match('/index.html')));
+    return;
+  }
+  event.respondWith(caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+    if (response.ok && new URL(request.url).origin === self.location.origin) {
+      const clone = response.clone();
+      caches.open(CACHE).then((cache) => cache.put(request, clone));
+    }
+    return response;
+  })));
+});
+EOF_SW
+cat > src/vite-env.d.ts <<'EOF_ENV'
+/// <reference types="vite/client" />
+EOF_ENV
+cat > src/pwa.ts <<'EOF_PWA'
+export function registerPwa(onUpdate?: () => void) {
+  if (!('serviceWorker' in navigator) || import.meta.env.DEV) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((registration) => {
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        worker?.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) onUpdate?.();
+        });
+      });
+    }).catch(() => undefined);
+  });
+}
+EOF_PWA
+cat > src/main.tsx <<'EOF_MAIN'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import './styles.css';
+import { registerPwa } from './pwa';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <BrowserRouter><App /></BrowserRouter>
+  </StrictMode>,
+);
+registerPwa(() => window.dispatchEvent(new Event('gudress:update')));
+EOF_MAIN
+cat > src/tests/setup.ts <<'EOF_TEST_SETUP'
+import '@testing-library/jest-dom/vitest';
+EOF_TEST_SETUP
+cat > .github/workflows/ci.yml <<'EOF_CI'
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --no-audit --no-fund
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run test:run
+      - run: npm run build
+  e2e:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+EOF_CI
+cat > e2e/mobile.spec.ts <<'EOF_E2E'
+import { expect, test } from '@playwright/test';
+
+test('mobile user can create a tour, shop and dress', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: /사진 대신/ })).toBeVisible();
+  await page.getByRole('button', { name: /새 드레스투어/ }).click();
+  await page.getByLabel('투어 이름').fill('12월 드레스투어');
+  await page.getByRole('button', { name: '투어 시작하기' }).click();
+  await page.getByRole('button', { name: /드레스샵 추가/ }).click();
+  await page.getByLabel('드레스샵 이름').fill('아뜰리에 로리에');
+  await page.getByRole('button', { name: '샵 저장' }).click();
+  await page.getByRole('button', { name: /첫 드레스 추가/ }).click();
+  await expect(page.getByText('드레스 1 편집')).toBeVisible();
+  await page.getByRole('button', { name: /후보로 저장/ }).click();
+  await expect(page.getByRole('button', { name: /후보 해제/ })).toBeVisible();
+});
+EOF_E2E
