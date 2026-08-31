@@ -9,7 +9,7 @@ import { parsePortablePayload, PORTABLE_FILE_NAME } from './portable';
 function bytesToString(bytes:Uint8Array){return new TextDecoder().decode(bytes)}
 export async function inspectPortablePdf(file:File):Promise<ImportPreview>{
   if(file.size>30*1024*1024)throw new Error('PDF는 30MB 이하만 불러올 수 있어요.');const head=new Uint8Array(await file.slice(0,5).arrayBuffer());if(bytesToString(head)!=='%PDF-')throw new Error('PDF 파일이 아니에요.');
-  const pdfjs=await import('pdfjs-dist/legacy/build/pdf.mjs');pdfjs.GlobalWorkerOptions.workerSrc=workerUrl;let doc;try{doc=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise}catch{throw new Error('파일을 읽을 수 없어요. 원본 PDF를 다시 선택해 주세요.');}
+  const pdfjs=await import('pdfjs-dist/legacy/build/pdf.mjs');pdfjs.GlobalWorkerOptions.workerSrc=workerUrl;let doc;try{doc=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer()),enableScripting:false,isEvalSupported:false}).promise}catch{throw new Error('파일을 읽을 수 없어요. 원본 PDF를 다시 선택해 주세요.');}
   const attachments=await doc.getAttachments();if(!attachments)throw new Error('복원 가능한 그드레스 PDF가 아니에요.');const entries=Object.entries(attachments) as [string,{filename?:string;content:Uint8Array}][];const dataEntry=entries.find(([key,val])=>key===PORTABLE_FILE_NAME||val.filename===PORTABLE_FILE_NAME);if(!dataEntry)throw new Error('복원 가능한 그드레스 PDF가 아니에요.');
   let raw:unknown;try{raw=JSON.parse(bytesToString(dataEntry[1].content))}catch{throw new Error('PDF의 복원 데이터가 손상됐어요.');}
   let payload;try{payload=parsePortablePayload(raw)}catch{throw new Error('지원하지 않거나 손상된 그드레스 PDF예요.');}
