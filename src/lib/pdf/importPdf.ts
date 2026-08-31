@@ -1,4 +1,14 @@
-import workerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url';
+import {
+  decodePDFRawStream,
+  PDFArray,
+  PDFDict,
+  PDFDocument,
+  PDFHexString,
+  PDFName,
+  PDFRawStream,
+  PDFStream,
+  PDFString,
+} from 'pdf-lib';
 import type { LocalAsset, TourSnapshot } from '../../types/domain';
 import type { ImportPreview, ImportStrategy, PortableTourV1 } from '../../types/portable';
 import { db } from '../../db/database';
@@ -15,26 +25,55 @@ import {
 } from './portable';
 
 type PdfAttachment = { filename?: string; content: Uint8Array };
-type PdfAttachmentMetadata = { filename?: string; content?: Uint8Array };
 type PdfAttachmentEntry = [string, PdfAttachment];
 
 function bytesToString(bytes: Uint8Array) {
   return new TextDecoder().decode(bytes);
 }
 
-async function normalizeAttachments(
-  documentProxy: unknown,
-  attachments: Map<string, PdfAttachmentMetadata> | Record<string, PdfAttachmentMetadata>,
-): Promise<PdfAttachmentEntry[]> {
-  const rawEntries = attachments instanceof Map ? [...attachments.entries()] : Object.entries(attachments);
-  const contentReader = documentProxy as {
-    getAttachmentContent: (id: string) => Promise<Uint8Array>;
-  };
+function collectNameArrays(node: PDFDict): PDFArray[] {
+  const result: PDFArray[] = [];
+  const namesKey = PDFName.of('Names');
+  const kidsKey = PDFName.of('Kids');
+
+  if (node.has(namesKey)) result.push(node.lookup(namesKey, PDFArray));
+  if (node.has(kidsKey)) {
+    const kids = node.lookup(kidsKey, PDFArray);
+    for (let index = 0; index < kids.size(); index += 1) {
+      result.push(...collectNameArrays(kids.lookup(index, PDFDict)));
+    }
+  }
+  return result;
+}
+
+function readEmbeddedFileBytes(fileSpec: PDFDict) {
+  const ef = fileSpec.lookup(PDFName.of('EF'), PDFDict);
+  for (const key of ['UF', 'F', 'Unix', 'Mac', 'DOS']) {
+    const name = PDFName.of(key);
+    if (!ef.has(name)) continue;
+    const stream = ef.lookup(name, PDFStream) as PDFRawStream;
+    return decodePDFRawStream(stream).decode();
+  }
+  throw new Error('PDF 첨부파일의 내용을 읽을 수 없어요.');
+}
+
+function extractAttachments(pdf: PDFDocument): PdfAttachmentEntry[] {
+  const namesKey = PDFName.of('Names');
+  const embeddedFilesKey = PDFName.of('EmbeddedFiles');
+  if (!pdf.catalog.has(namesKey)) return [];
+
+  const names = pdf.catalog.lookup(namesKey, PDFDict);
+  if (!names.has(embeddedFilesKey)) return [];
+  const embeddedFiles = names.lookup(embeddedFilesKey, PDFDict);
   const entries: PdfAttachmentEntry[] = [];
 
-  for (const [key, value] of rawEntries) {
-    const content = value.content ?? (await contentReader.getAttachmentContent(key));
-    entries.push([key, { filename: value.filename, content }]);
+  for (const nameArray of collectNameArrays(embeddedFiles)) {
+    for (let index = 0; index + 1 < nameArray.size(); index += 2) {
+      const nameObject = nameArray.lookup(index) as PDFHexString | PDFString;
+      const fileSpec = nameArray.lookup(index + 1, PDFDict);
+      const filename = nameObject.decodeText();
+      entries.push([filename, { filename, content: readEmbeddedFileBytes(fileSpec) }]);
+    }
   }
   return entries;
 }
@@ -87,108 +126,93 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
   const head = new Uint8Array(await file.slice(0, 5).arrayBuffer());
   if (bytesToString(head) !== '%PDF-') throw new Error('PDF 파일이 아니에요.');
 
-  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
-  let documentProxy;
+  let pdf: PDFDocument;
   try {
-    documentProxy = await loadingTask.promise;
+    pdf = await PDFDocument.load(await file.arrayBuffer());
   } catch {
-    await loadingTask.destroy();
     throw new Error('파일을 읽을 수 없어요. 원본 PDF를 다시 선택해 주세요.');
   }
 
-  try {
-    const attachments = await documentProxy.getAttachments();
-    if (!attachments || attachments.size === 0) {
-      throw new Error('복원 가능한 그드레스 PDF가 아니에요.');
-    }
-    const entries = await normalizeAttachments(
-      documentProxy,
-      attachments as unknown as Map<string, PdfAttachmentMetadata> | Record<string, PdfAttachmentMetadata>,
-    );
+  const entries = extractAttachments(pdf);
+  if (!entries.length) throw new Error('복원 가능한 그드레스 PDF가 아니에요.');
 
-    let payload: PortableTourV1;
-    let integrityVerified = false;
-    let legacyFormat = false;
-    let assetBytes = new Map<string, Uint8Array>();
-    let faceWarning: string | undefined;
+  let payload: PortableTourV1;
+  let integrityVerified = false;
+  let legacyFormat = false;
+  let assetBytes = new Map<string, Uint8Array>();
+  let faceWarning: string | undefined;
 
-    const manifestEntry = findAttachment(entries, PORTABLE_MANIFEST_FILE_NAME);
-    if (manifestEntry) {
-      let manifest;
-      try {
-        manifest = parsePortableManifest(
-          parseJsonAttachment(manifestEntry, 'PDF의 복원 매니페스트가 손상됐어요.'),
-        );
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message === 'PDF의 복원 매니페스트가 손상됐어요.'
-        ) {
-          throw error;
-        }
-        throw new Error('지원하지 않거나 손상된 그드레스 PDF예요.');
-      }
-
-      const tourEntry = findAttachment(entries, manifest.tourAttachment);
-      if (!tourEntry) throw new Error('PDF의 투어 데이터 파일이 없어요.');
-      payload = await verifyPortableTourBytes(manifest, tourEntry[1].content);
-
-      const assets = await collectAssetBytes(
-        payload,
-        entries,
-        manifest.faceAttachment
-          ? (bytes) => verifyPortableFaceBytes(manifest, bytes)
-          : undefined,
+  const manifestEntry = findAttachment(entries, PORTABLE_MANIFEST_FILE_NAME);
+  if (manifestEntry) {
+    let manifest;
+    try {
+      manifest = parsePortableManifest(
+        parseJsonAttachment(manifestEntry, 'PDF의 복원 매니페스트가 손상됐어요.'),
       );
-      assetBytes = assets.assetBytes;
-      faceWarning = assets.faceWarning;
-      integrityVerified = !faceWarning;
-    } else {
-      const legacyEntry =
-        findAttachment(entries, LEGACY_PORTABLE_FILE_NAME) ??
-        findAttachment(entries, PORTABLE_TOUR_FILE_NAME);
-      if (!legacyEntry) throw new Error('복원 가능한 그드레스 PDF가 아니에요.');
-
-      let raw: unknown;
-      try {
-        raw = parseJsonAttachment(legacyEntry, 'PDF의 복원 데이터가 손상됐어요.');
-        payload = parsePortablePayload(raw);
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message === 'PDF의 복원 데이터가 손상됐어요.'
-        ) {
-          throw error;
-        }
-        throw new Error('지원하지 않거나 손상된 그드레스 PDF예요.');
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'PDF의 복원 매니페스트가 손상됐어요.'
+      ) {
+        throw error;
       }
-      const assets = await collectAssetBytes(payload, entries);
-      assetBytes = assets.assetBytes;
-      faceWarning = assets.faceWarning;
-      legacyFormat = true;
+      throw new Error('지원하지 않거나 손상된 그드레스 PDF예요.');
     }
 
-    return {
+    const tourEntry = findAttachment(entries, manifest.tourAttachment);
+    if (!tourEntry) throw new Error('PDF의 투어 데이터 파일이 없어요.');
+    payload = await verifyPortableTourBytes(manifest, tourEntry[1].content);
+
+    const assets = await collectAssetBytes(
       payload,
-      hasConflict: Boolean(await db.tours.get(payload.sourceTourId)),
-      faceIncluded: payload.includeFace && assetBytes.size > 0,
-      faceWarning,
-      shopCount: payload.shops.length,
-      dressCount: payload.dresses.length,
-      favoriteCount: payload.dresses.filter((dress) => dress.isFavorite).length,
-      assetBytes,
-      integrityVerified,
-      legacyFormat,
-    };
-  } finally {
-    await loadingTask.destroy();
+      entries,
+      manifest.faceAttachment
+        ? (bytes) => verifyPortableFaceBytes(manifest, bytes)
+        : undefined,
+    );
+    assetBytes = assets.assetBytes;
+    faceWarning = assets.faceWarning;
+    integrityVerified = !faceWarning;
+  } else {
+    const legacyEntry =
+      findAttachment(entries, LEGACY_PORTABLE_FILE_NAME) ??
+      findAttachment(entries, PORTABLE_TOUR_FILE_NAME);
+    if (!legacyEntry) throw new Error('복원 가능한 그드레스 PDF가 아니에요.');
+
+    let raw: unknown;
+    try {
+      raw = parseJsonAttachment(legacyEntry, 'PDF의 복원 데이터가 손상됐어요.');
+      payload = parsePortablePayload(raw);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'PDF의 복원 데이터가 손상됐어요.'
+      ) {
+        throw error;
+      }
+      throw new Error('지원하지 않거나 손상된 그드레스 PDF예요.');
+    }
+    const assets = await collectAssetBytes(payload, entries);
+    assetBytes = assets.assetBytes;
+    faceWarning = assets.faceWarning;
+    legacyFormat = true;
   }
+
+  return {
+    payload,
+    hasConflict: Boolean(await db.tours.get(payload.sourceTourId)),
+    faceIncluded: payload.includeFace && assetBytes.size > 0,
+    faceWarning,
+    shopCount: payload.shops.length,
+    dressCount: payload.dresses.length,
+    favoriteCount: payload.dresses.filter((dress) => dress.isFavorite).length,
+    assetBytes,
+    integrityVerified,
+    legacyFormat,
+  };
 }
 
-export async function importPortablePdf(file: File, strategy: ImportStrategy) {
-  const preview = await inspectPortablePdf(file);
+export async function importPortablePreview(preview: ImportPreview, strategy: ImportStrategy) {
   const payload = preview.payload;
   const now = new Date().toISOString();
   let faceAssetId = payload.tour.faceAssetId;
@@ -223,4 +247,8 @@ export async function importPortablePdf(file: File, strategy: ImportStrategy) {
     assets,
   };
   return importSnapshot(snapshot, strategy);
+}
+
+export async function importPortablePdf(file: File, strategy: ImportStrategy) {
+  return importPortablePreview(await inspectPortablePdf(file), strategy);
 }
