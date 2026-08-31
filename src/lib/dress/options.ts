@@ -62,6 +62,6 @@ export function normalizeUpper(topStyle: TopStyle, neckline: Neckline): { neckli
 }
 export function optionLabel<T extends string>(options: Option<T>[], id:T | undefined) { return options.find(o=>o.id===id)?.label ?? '기억 안 남'; }
 export function summarizeDress(dress: Dress) {
-  return [optionLabel(topStyleOptions,dress.topStyle),optionLabel(necklineOptions,dress.neckline),optionLabel(silhouetteOptions,dress.silhouette),optionLabel(fabricOptions,dress.fabric),optionLabel(trainOptions,dress.train)].filter(x=>x!=='기억 안 남');
+  return [optionLabel(topStyleOptions,dress.topStyle),optionLabel(necklineOptions,dress.neckline),optionLabel(silhouetteOptions,dress.silhouette),optionLabel(fabricOptions,dress.fabric),optionLabel(colorOptions,dress.color),optionLabel(trainOptions,dress.train)].filter(x=>x!=='기억 안 남');
 }
 export const colorHex: Record<DressColor,string> = { unknown:'#f7f5f3', pureWhite:'#ffffff', ivory:'#fffaf0', champagne:'#f4e6d1' };
