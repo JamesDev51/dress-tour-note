@@ -1,36 +1,36 @@
-import type { SVGProps } from 'react';
+import type { SVGProps } from "react";
 
 export type OptionArtworkCategory =
-  | 'top'
-  | 'neckline'
-  | 'silhouette'
-  | 'fabric'
-  | 'color'
-  | 'train'
-  | 'waistline'
-  | 'back'
-  | 'detail';
+  | "top"
+  | "neckline"
+  | "silhouette"
+  | "fabric"
+  | "color"
+  | "train"
+  | "waistline"
+  | "back"
+  | "detail";
 
-const TALL_DETAIL_IDS = new Set(['slit', 'overskirt']);
+const TALL_DETAIL_IDS = new Set(["slit", "overskirt"]);
 
 function artworkViewBox(category: OptionArtworkCategory, id: string) {
-  if (category === 'train') return '0 0 360 300';
-  if (category === 'silhouette' || category === 'color') return '0 0 300 300';
-  if (category === 'detail' && TALL_DETAIL_IDS.has(id)) return '0 0 300 300';
-  return '0 0 300 220';
+  if (category === "train") return "0 0 360 300";
+  if (category === "silhouette" || category === "color") return "0 0 300 300";
+  if (category === "detail" && TALL_DETAIL_IDS.has(id)) return "0 0 300 300";
+  return "0 0 300 220";
 }
 
 export function OptionArtwork({
   category,
   id,
-  className = '',
+  className = "",
   ...props
 }: {
   category: OptionArtworkCategory;
   id: string;
   className?: string;
-} & Omit<SVGProps<SVGSVGElement>, 'id'>) {
-  const symbolId = id === 'unknown' ? 'common-unknown' : `${category}-${id}`;
+} & Omit<SVGProps<SVGSVGElement>, "id">) {
+  const symbolId = id === "unknown" ? "common-unknown" : `${category}-${id}`;
   const href = `/assets/options.svg#${symbolId}`;
 
   return (

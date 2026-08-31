@@ -1,16 +1,183 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Heart } from 'lucide-react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { DressPreview } from '../../components/DressPreview';
-import { db } from '../../db/database';
-import { backStyleOptions, colorOptions, fabricOptions, necklineOptions, optionLabel, silhouetteOptions, topStyleOptions, trainOptions } from '../../lib/dress/options';
-import type { Dress, LocalAsset } from '../../types/domain';
+import { useLiveQuery } from "dexie-react-hooks";
+import { ArrowLeft, Heart } from "lucide-react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { DressPreview } from "../../components/DressPreview";
+import { db } from "../../db/database";
+import {
+  backStyleOptions,
+  colorOptions,
+  fabricOptions,
+  necklineOptions,
+  optionLabel,
+  silhouetteOptions,
+  topStyleOptions,
+  trainOptions,
+} from "../../lib/dress/options";
+import type { Dress, LocalAsset } from "../../types/domain";
 
-export function ComparePage(){
-  const {tourId=''}=useParams();const [params]=useSearchParams();const nav=useNavigate();const ids=[params.get('a'),params.get('b')].filter((v):v is string=>!!v);
-  const data=useLiveQuery(async()=>{if(ids.length!==2)return undefined;const dresses=(await Promise.all(ids.map(id=>db.dresses.get(id)))).filter((d):d is Dress=>!!d&&d.tourId===tourId);if(dresses.length!==2)return undefined;const tour=await db.tours.get(tourId);const face=tour?.faceAssetId?await db.assets.get(tour.faceAssetId):undefined;const shops=await db.shops.where('tourId').equals(tourId).toArray();return{dresses,face,shops}},[tourId,ids.join('|')]);
-  if(!data)return <main className="min-h-dvh px-5 pt-[calc(18px+env(safe-area-inset-top))]"><button aria-label="뒤로" className="grid h-11 w-11 place-items-center rounded-full bg-stone-50" onClick={()=>nav(-1)}><ArrowLeft/></button><div className="mt-16 text-center text-sm text-stone-400">비교할 드레스 2벌을 다시 선택해 주세요.</div></main>;
-  const [left,right]=data.dresses;const shopName=(d:Dress)=>data.shops.find(s=>s.id===d.shopId)?.name||'드레스샵';
-  return <main className="min-h-dvh pb-12"><header className="px-5 pt-[calc(18px+env(safe-area-inset-top))]"><button aria-label="결과로 돌아가기" className="grid h-11 w-11 place-items-center rounded-full bg-stone-50" onClick={()=>nav(-1)}><ArrowLeft/></button><p className="mt-7 text-xs font-semibold text-[#a75e55]">COMPARE</p><h1 className="mt-2 text-3xl font-black tracking-[-.04em]">두 벌을<br/>붙여서 비교해요</h1></header><section className="mt-6 px-3"><div className="grid grid-cols-2 gap-2">{data.dresses.map(d=><div key={d.id} className="min-w-0 rounded-3xl border border-stone-100 bg-white p-2"><DressPreview dress={d} faceAsset={data.face as LocalAsset|undefined}/><div className="px-1 pb-2 pt-3"><div className="flex items-center gap-1 text-[11px] text-stone-400"><span className="truncate">{shopName(d)}</span>{d.isFavorite&&<Heart className="shrink-0 text-[#b96e63]" size={12} fill="currentColor"/>}</div><div className="mt-1 truncate text-sm font-bold">{d.label}</div></div></div>)}</div><div className="mt-5 overflow-hidden rounded-3xl border border-stone-100 bg-white"><CompareRow label="어깨" left={optionLabel(topStyleOptions,left.topStyle)} right={optionLabel(topStyleOptions,right.topStyle)}/><CompareRow label="가슴선" left={optionLabel(necklineOptions,left.neckline)} right={optionLabel(necklineOptions,right.neckline)}/><CompareRow label="치마" left={optionLabel(silhouetteOptions,left.silhouette)} right={optionLabel(silhouetteOptions,right.silhouette)}/><CompareRow label="소재" left={optionLabel(fabricOptions,left.fabric)} right={optionLabel(fabricOptions,right.fabric)}/><CompareRow label="색상" left={optionLabel(colorOptions,left.color)} right={optionLabel(colorOptions,right.color)}/><CompareRow label="뒤 길이" left={optionLabel(trainOptions,left.train)} right={optionLabel(trainOptions,right.train)}/><CompareRow label="뒤태" left={optionLabel(backStyleOptions,left.backStyle??'unknown')} right={optionLabel(backStyleOptions,right.backStyle??'unknown')}/><CompareRow label="별점" left={left.rating?`${left.rating} / 5`:'미입력'} right={right.rating?`${right.rating} / 5`:'미입력'}/><CompareRow label="평가" left={left.quickTags.join(' · ')||'없음'} right={right.quickTags.join(' · ')||'없음'}/><CompareRow label="메모" left={left.memo||'없음'} right={right.memo||'없음'} last/></div></section></main>
+export function ComparePage() {
+  const { tourId = "" } = useParams();
+  const [params] = useSearchParams();
+  const nav = useNavigate();
+  const ids = [params.get("a"), params.get("b")].filter(
+    (v): v is string => !!v,
+  );
+  const data = useLiveQuery(async () => {
+    if (ids.length !== 2) return undefined;
+    const dresses = (
+      await Promise.all(ids.map((id) => db.dresses.get(id)))
+    ).filter((d): d is Dress => !!d && d.tourId === tourId);
+    if (dresses.length !== 2) return undefined;
+    const tour = await db.tours.get(tourId);
+    const face = tour?.faceAssetId
+      ? await db.assets.get(tour.faceAssetId)
+      : undefined;
+    const shops = await db.shops.where("tourId").equals(tourId).toArray();
+    return { dresses, face, shops };
+  }, [tourId, ids.join("|")]);
+  if (!data)
+    return (
+      <main className="min-h-dvh px-5 pt-[calc(18px+env(safe-area-inset-top))]">
+        <button
+          aria-label="뒤로"
+          className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
+          onClick={() => nav(-1)}
+        >
+          <ArrowLeft />
+        </button>
+        <div className="mt-16 text-center text-sm text-stone-400">
+          비교할 드레스 2벌을 다시 선택해 주세요.
+        </div>
+      </main>
+    );
+  const [left, right] = data.dresses;
+  const shopName = (d: Dress) =>
+    data.shops.find((s) => s.id === d.shopId)?.name || "드레스샵";
+  return (
+    <main className="min-h-dvh pb-12">
+      <header className="px-5 pt-[calc(18px+env(safe-area-inset-top))]">
+        <button
+          aria-label="결과로 돌아가기"
+          className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
+          onClick={() => nav(-1)}
+        >
+          <ArrowLeft />
+        </button>
+        <p className="mt-7 text-xs font-semibold text-[#a75e55]">COMPARE</p>
+        <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
+          두 벌을
+          <br />
+          붙여서 비교해요
+        </h1>
+      </header>
+      <section className="mt-6 px-3">
+        <div className="grid grid-cols-2 gap-2">
+          {data.dresses.map((d) => (
+            <div
+              key={d.id}
+              className="min-w-0 rounded-3xl border border-stone-100 bg-white p-2"
+            >
+              <DressPreview
+                dress={d}
+                faceAsset={data.face as LocalAsset | undefined}
+              />
+              <div className="px-1 pb-2 pt-3">
+                <div className="flex items-center gap-1 text-[11px] text-stone-400">
+                  <span className="truncate">{shopName(d)}</span>
+                  {d.isFavorite && (
+                    <Heart
+                      className="shrink-0 text-[#b96e63]"
+                      size={12}
+                      fill="currentColor"
+                    />
+                  )}
+                </div>
+                <div className="mt-1 truncate text-sm font-bold">{d.label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 overflow-hidden rounded-3xl border border-stone-100 bg-white">
+          <CompareRow
+            label="어깨"
+            left={optionLabel(topStyleOptions, left.topStyle)}
+            right={optionLabel(topStyleOptions, right.topStyle)}
+          />
+          <CompareRow
+            label="가슴선"
+            left={optionLabel(necklineOptions, left.neckline)}
+            right={optionLabel(necklineOptions, right.neckline)}
+          />
+          <CompareRow
+            label="치마"
+            left={optionLabel(silhouetteOptions, left.silhouette)}
+            right={optionLabel(silhouetteOptions, right.silhouette)}
+          />
+          <CompareRow
+            label="소재"
+            left={optionLabel(fabricOptions, left.fabric)}
+            right={optionLabel(fabricOptions, right.fabric)}
+          />
+          <CompareRow
+            label="색상"
+            left={optionLabel(colorOptions, left.color)}
+            right={optionLabel(colorOptions, right.color)}
+          />
+          <CompareRow
+            label="뒤 길이"
+            left={optionLabel(trainOptions, left.train)}
+            right={optionLabel(trainOptions, right.train)}
+          />
+          <CompareRow
+            label="뒤태"
+            left={optionLabel(backStyleOptions, left.backStyle ?? "unknown")}
+            right={optionLabel(backStyleOptions, right.backStyle ?? "unknown")}
+          />
+          <CompareRow
+            label="별점"
+            left={left.rating ? `${left.rating} / 5` : "미입력"}
+            right={right.rating ? `${right.rating} / 5` : "미입력"}
+          />
+          <CompareRow
+            label="평가"
+            left={left.quickTags.join(" · ") || "없음"}
+            right={right.quickTags.join(" · ") || "없음"}
+          />
+          <CompareRow
+            label="메모"
+            left={left.memo || "없음"}
+            right={right.memo || "없음"}
+            last
+          />
+        </div>
+      </section>
+    </main>
+  );
 }
-function CompareRow({label,left,right,last=false}:{label:string;left:string;right:string;last?:boolean}){return <div className={`grid grid-cols-[52px_1fr_1fr] ${last?'':'border-b border-stone-100'}`}><div className="bg-stone-50 px-2 py-4 text-[10px] font-semibold text-stone-400">{label}</div><div className="border-l border-stone-100 px-2 py-4 text-[11px] leading-5 text-stone-600">{left}</div><div className="border-l border-stone-100 px-2 py-4 text-[11px] leading-5 text-stone-600">{right}</div></div>}
+function CompareRow({
+  label,
+  left,
+  right,
+  last = false,
+}: {
+  label: string;
+  left: string;
+  right: string;
+  last?: boolean;
+}) {
+  return (
+    <div
+      className={`grid grid-cols-[52px_1fr_1fr] ${last ? "" : "border-b border-stone-100"}`}
+    >
+      <div className="bg-stone-50 px-2 py-4 text-[10px] font-semibold text-stone-400">
+        {label}
+      </div>
+      <div className="border-l border-stone-100 px-2 py-4 text-[11px] leading-5 text-stone-600">
+        {left}
+      </div>
+      <div className="border-l border-stone-100 px-2 py-4 text-[11px] leading-5 text-stone-600">
+        {right}
+      </div>
+    </div>
+  );
+}

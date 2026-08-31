@@ -1,16 +1,294 @@
-import { useEffect, useState } from 'react';
-import { ArrowLeft, CheckCircle2, Download, RefreshCw, Send, ShieldCheck, TriangleAlert } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { db } from '../../db/database';
-import type { Dress, Tour } from '../../types/domain';
-import type { ExportProgress, PdfExportMode } from '../../types/portable';
-import { useUIStore } from '../../stores/uiStore';
+import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Download,
+  RefreshCw,
+  Send,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { db } from "../../db/database";
+import type { Dress, Tour } from "../../types/domain";
+import type { ExportProgress, PdfExportMode } from "../../types/portable";
+import { useUIStore } from "../../stores/uiStore";
 
-type ExportData={tour:Tour;shopCount:number;dresses:Dress[];hasFace:boolean};
+type ExportData = {
+  tour: Tour;
+  shopCount: number;
+  dresses: Dress[];
+  hasFace: boolean;
+};
 
-export function ExportPage(){const {tourId=''}=useParams();const nav=useNavigate();const toast=useUIStore(s=>s.showToast);const [mode,setMode]=useState<PdfExportMode>('portable');const [includeFace,setIncludeFace]=useState(true);const [progress,setProgress]=useState<ExportProgress>();const [blob,setBlob]=useState<Blob>();const [busy,setBusy]=useState(false);const [data,setData]=useState<ExportData>();const [loadError,setLoadError]=useState<string>();const [loadKey,setLoadKey]=useState(0);
-useEffect(()=>{let active=true;setData(undefined);setLoadError(undefined);void(async()=>{try{const tour=await db.tours.get(tourId);if(!tour)throw new Error('이 기기에서 투어 기록을 찾을 수 없어요.');const [shopCount,dresses]=await Promise.all([db.shops.where('tourId').equals(tourId).count(),db.dresses.where('tourId').equals(tourId).toArray()]);if(active)setData({tour,shopCount,dresses,hasFace:!!tour.faceAssetId})}catch(e){if(active)setLoadError(e instanceof Error?e.message:'내보낼 기록을 불러오지 못했어요.')}})();return()=>{active=false}},[tourId,loadKey]);
-if(loadError)return <main className="min-h-dvh px-5 pt-[calc(18px+env(safe-area-inset-top))]"><button aria-label="뒤로" className="grid h-11 w-11 place-items-center rounded-full bg-stone-50" onClick={()=>nav(-1)}><ArrowLeft/></button><div role="alert" className="mt-10 rounded-3xl bg-red-50 p-5 text-red-700"><TriangleAlert/><h1 className="mt-3 font-bold">PDF 준비를 시작하지 못했어요.</h1><p className="mt-2 text-sm leading-6">{loadError}</p></div><button className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-stone-900 font-bold text-white" onClick={()=>setLoadKey(k=>k+1)}><RefreshCw size={17}/>다시 불러오기</button></main>;
-if(!data)return <main className="min-h-dvh px-5 pt-[calc(18px+env(safe-area-inset-top))]"><button aria-label="뒤로" className="grid h-11 w-11 place-items-center rounded-full bg-stone-50" onClick={()=>nav(-1)}><ArrowLeft/></button><div role="status" className="mt-16 text-center text-sm text-stone-400">내보내기 준비 중...</div></main>;
-const filename=`${data.tour.title.replace(/[\\/:*?"<>|]/g,'_')}${mode==='viewOnly'?'_보기용':''}.pdf`;const reset=()=>{setBlob(undefined);setProgress(undefined)};
-return <main className="min-h-dvh px-5 pb-36 pt-[calc(18px+env(safe-area-inset-top))]"><button aria-label="뒤로" className="grid h-11 w-11 place-items-center rounded-full bg-stone-50" onClick={()=>nav(-1)}><ArrowLeft/></button><p className="mt-8 text-xs font-semibold text-[#a75e55]">PDF EXPORT</p><h1 className="mt-2 text-3xl font-black tracking-[-.04em]">저장할 PDF를<br/>골라주세요</h1><div className="mt-7 grid gap-2"><button className={`rounded-3xl border p-4 text-left ${mode==='portable'?'border-[#b96e63] bg-[#fff2ee]':'border-stone-200 bg-white'}`} onClick={()=>{setMode('portable');reset()}}><div className="font-bold">복원 가능한 PDF <span className="ml-1 text-xs text-[#a75e55]">추천</span></div><p className="mt-1 text-xs leading-5 text-stone-400">사람이 보는 결과표 + 다른 기기에서 다시 편집할 원본 데이터를 한 파일에 담아요.</p></button><button className={`rounded-3xl border p-4 text-left ${mode==='viewOnly'?'border-[#b96e63] bg-[#fff2ee]':'border-stone-200 bg-white'}`} onClick={()=>{setMode('viewOnly');setIncludeFace(false);reset()}}><div className="font-bold">보기 전용 PDF</div><p className="mt-1 text-xs leading-5 text-stone-400">다른 사람에게 보여주기 위한 파일. 복원 데이터와 얼굴 사진을 넣지 않아요.</p></button></div><div className="mt-5 rounded-3xl bg-[#faf7f5] p-5"><div className="font-bold">{data.tour.title}</div><div className="mt-2 text-sm text-stone-400">샵 {data.shopCount} · 드레스 {data.dresses.length} · 후보 {data.dresses.filter(d=>d.isFavorite).length}</div><div className="mt-1 text-xs text-stone-300">예상 {1+data.dresses.length+(data.dresses.some(d=>d.isFavorite)?1:0)}페이지</div></div>{mode==='portable'&&data.hasFace&&<label className="mt-5 flex items-start gap-3 rounded-3xl border border-stone-100 bg-white p-4"><input type="checkbox" className="mt-1 h-5 w-5 accent-[#b96e63]" checked={includeFace} onChange={e=>{setIncludeFace(e.target.checked);reset()}}/><div><div className="font-semibold">얼굴 사진도 PDF에 포함</div><p className="mt-1 text-xs leading-5 text-stone-400">끄면 보이는 페이지뿐 아니라 PDF 내부 복원 데이터에서도 얼굴 바이트를 완전히 제외합니다.</p></div></label>}<div className="mt-5 flex gap-2 rounded-2xl bg-[#fff2ee] p-4 text-xs leading-5 text-[#8b5750]"><ShieldCheck className="shrink-0" size={18}/><span>PDF 생성과 공유 준비는 브라우저 안에서만 진행됩니다. 서버로 사진이나 기록을 보내지 않아요.</span></div>{progress&&<div className="mt-7"><div className="flex items-center justify-between text-sm"><span>{progress.label}</span><span className="text-stone-400">{progress.percent}%</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-100"><div className="h-full rounded-full bg-[#b96e63] transition-all" style={{width:`${progress.percent}%`}}/></div></div>}{blob&&<div className="mt-6 flex items-center gap-2 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700"><CheckCircle2 size={18}/>PDF가 준비됐어요.</div>}<div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">{!blob?<button disabled={busy||!data.dresses.length} className="h-14 w-full rounded-2xl bg-stone-900 font-bold text-white disabled:bg-stone-200" onClick={async()=>{setBusy(true);try{const mod=await import('../../lib/pdf/exportPdf');const out=await mod.exportPortablePdf(tourId,{includeFace:mode==='portable'&&includeFace&&data.hasFace,mode},setProgress);setBlob(out)}catch(e){toast(e instanceof Error?e.message:'PDF 생성에 실패했어요.');setProgress(undefined)}finally{setBusy(false)}}}>{busy?'PDF 만드는 중...':mode==='portable'?'복원 가능한 PDF 만들기':'보기 전용 PDF 만들기'}</button>:<div className="grid grid-cols-2 gap-2"><button className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white font-bold" onClick={async()=>{const mod=await import('../../lib/pdf/exportPdf');try{const shared=await mod.shareBlob(blob,filename,data.tour.title);if(!shared){mod.downloadBlob(blob,filename);toast('이 브라우저는 파일 공유를 지원하지 않아 저장했어요.')}}catch(e){if(e instanceof DOMException&&e.name==='AbortError')return;toast('공유하지 못했어요. 파일 저장을 이용해 주세요.')}}}><Send size={18}/>공유</button><button className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-stone-900 font-bold text-white" onClick={async()=>{const mod=await import('../../lib/pdf/exportPdf');mod.downloadBlob(blob,filename)}}><Download size={18}/>저장</button></div>}</div></main>}
+export function ExportPage() {
+  const { tourId = "" } = useParams();
+  const nav = useNavigate();
+  const toast = useUIStore((s) => s.showToast);
+  const [mode, setMode] = useState<PdfExportMode>("portable");
+  const [includeFace, setIncludeFace] = useState(true);
+  const [progress, setProgress] = useState<ExportProgress>();
+  const [blob, setBlob] = useState<Blob>();
+  const [busy, setBusy] = useState(false);
+  const [data, setData] = useState<ExportData>();
+  const [loadError, setLoadError] = useState<string>();
+  const [loadKey, setLoadKey] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setData(undefined);
+    setLoadError(undefined);
+    void (async () => {
+      try {
+        const tour = await db.tours.get(tourId);
+        if (!tour) throw new Error("이 기기에서 투어 기록을 찾을 수 없어요.");
+        const [shopCount, dresses] = await Promise.all([
+          db.shops.where("tourId").equals(tourId).count(),
+          db.dresses.where("tourId").equals(tourId).toArray(),
+        ]);
+        if (active)
+          setData({ tour, shopCount, dresses, hasFace: !!tour.faceAssetId });
+      } catch (e) {
+        if (active)
+          setLoadError(
+            e instanceof Error ? e.message : "내보낼 기록을 불러오지 못했어요.",
+          );
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [tourId, loadKey]);
+  if (loadError)
+    return (
+      <main className="min-h-dvh px-5 pt-[calc(18px+env(safe-area-inset-top))]">
+        <button
+          aria-label="뒤로"
+          className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
+          onClick={() => nav(-1)}
+        >
+          <ArrowLeft />
+        </button>
+        <div
+          role="alert"
+          className="mt-10 rounded-3xl bg-red-50 p-5 text-red-700"
+        >
+          <TriangleAlert />
+          <h1 className="mt-3 font-bold">PDF 준비를 시작하지 못했어요.</h1>
+          <p className="mt-2 text-sm leading-6">{loadError}</p>
+        </div>
+        <button
+          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-stone-900 font-bold text-white"
+          onClick={() => setLoadKey((k) => k + 1)}
+        >
+          <RefreshCw size={17} />
+          다시 불러오기
+        </button>
+      </main>
+    );
+  if (!data)
+    return (
+      <main className="min-h-dvh px-5 pt-[calc(18px+env(safe-area-inset-top))]">
+        <button
+          aria-label="뒤로"
+          className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
+          onClick={() => nav(-1)}
+        >
+          <ArrowLeft />
+        </button>
+        <div role="status" className="mt-16 text-center text-sm text-stone-400">
+          내보내기 준비 중...
+        </div>
+      </main>
+    );
+  const filename = `${data.tour.title.replace(/[\\/:*?"<>|]/g, "_")}${mode === "viewOnly" ? "_보기용" : ""}.pdf`;
+  const reset = () => {
+    setBlob(undefined);
+    setProgress(undefined);
+  };
+  return (
+    <main className="min-h-dvh px-5 pb-36 pt-[calc(18px+env(safe-area-inset-top))]">
+      <button
+        aria-label="뒤로"
+        className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
+        onClick={() => nav(-1)}
+      >
+        <ArrowLeft />
+      </button>
+      <p className="mt-8 text-xs font-semibold text-[#a75e55]">PDF EXPORT</p>
+      <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
+        저장할 PDF를
+        <br />
+        골라주세요
+      </h1>
+      <div className="mt-7 grid gap-2">
+        <button
+          className={`rounded-3xl border p-4 text-left ${mode === "portable" ? "border-[#b96e63] bg-[#fff2ee]" : "border-stone-200 bg-white"}`}
+          onClick={() => {
+            setMode("portable");
+            reset();
+          }}
+        >
+          <div className="font-bold">
+            복원 가능한 PDF{" "}
+            <span className="ml-1 text-xs text-[#a75e55]">추천</span>
+          </div>
+          <p className="mt-1 text-xs leading-5 text-stone-400">
+            사람이 보는 결과표 + 다른 기기에서 다시 편집할 원본 데이터를 한
+            파일에 담아요.
+          </p>
+        </button>
+        <button
+          className={`rounded-3xl border p-4 text-left ${mode === "viewOnly" ? "border-[#b96e63] bg-[#fff2ee]" : "border-stone-200 bg-white"}`}
+          onClick={() => {
+            setMode("viewOnly");
+            setIncludeFace(false);
+            reset();
+          }}
+        >
+          <div className="font-bold">보기 전용 PDF</div>
+          <p className="mt-1 text-xs leading-5 text-stone-400">
+            다른 사람에게 보여주기 위한 파일. 복원 데이터와 얼굴 사진을 넣지
+            않아요.
+          </p>
+        </button>
+      </div>
+      <div className="mt-5 rounded-3xl bg-[#faf7f5] p-5">
+        <div className="font-bold">{data.tour.title}</div>
+        <div className="mt-2 text-sm text-stone-400">
+          샵 {data.shopCount} · 드레스 {data.dresses.length} · 후보{" "}
+          {data.dresses.filter((d) => d.isFavorite).length}
+        </div>
+        <div className="mt-1 text-xs text-stone-300">
+          예상{" "}
+          {1 +
+            data.dresses.length +
+            (data.dresses.some((d) => d.isFavorite) ? 1 : 0)}
+          페이지
+        </div>
+      </div>
+      {mode === "portable" && data.hasFace && (
+        <label className="mt-5 flex items-start gap-3 rounded-3xl border border-stone-100 bg-white p-4">
+          <input
+            type="checkbox"
+            className="mt-1 h-5 w-5 accent-[#b96e63]"
+            checked={includeFace}
+            onChange={(e) => {
+              setIncludeFace(e.target.checked);
+              reset();
+            }}
+          />
+          <div>
+            <div className="font-semibold">얼굴 사진도 PDF에 포함</div>
+            <p className="mt-1 text-xs leading-5 text-stone-400">
+              끄면 보이는 페이지뿐 아니라 PDF 내부 복원 데이터에서도 얼굴
+              바이트를 완전히 제외합니다.
+            </p>
+          </div>
+        </label>
+      )}
+      <div className="mt-5 flex gap-2 rounded-2xl bg-[#fff2ee] p-4 text-xs leading-5 text-[#8b5750]">
+        <ShieldCheck className="shrink-0" size={18} />
+        <span>
+          PDF 생성과 공유 준비는 브라우저 안에서만 진행됩니다. 서버로 사진이나
+          기록을 보내지 않아요.
+        </span>
+      </div>
+      {progress && (
+        <div className="mt-7">
+          <div className="flex items-center justify-between text-sm">
+            <span>{progress.label}</span>
+            <span className="text-stone-400">{progress.percent}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-100">
+            <div
+              className="h-full rounded-full bg-[#b96e63] transition-all"
+              style={{ width: `${progress.percent}%` }}
+            />
+          </div>
+        </div>
+      )}
+      {blob && (
+        <div className="mt-6 flex items-center gap-2 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700">
+          <CheckCircle2 size={18} />
+          PDF가 준비됐어요.
+        </div>
+      )}
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+        {!blob ? (
+          <button
+            disabled={busy || !data.dresses.length}
+            className="h-14 w-full rounded-2xl bg-stone-900 font-bold text-white disabled:bg-stone-200"
+            onClick={async () => {
+              setBusy(true);
+              try {
+                const mod = await import("../../lib/pdf/exportPdf");
+                const out = await mod.exportPortablePdf(
+                  tourId,
+                  {
+                    includeFace:
+                      mode === "portable" && includeFace && data.hasFace,
+                    mode,
+                  },
+                  setProgress,
+                );
+                setBlob(out);
+              } catch (e) {
+                toast(
+                  e instanceof Error ? e.message : "PDF 생성에 실패했어요.",
+                );
+                setProgress(undefined);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {busy
+              ? "PDF 만드는 중..."
+              : mode === "portable"
+                ? "복원 가능한 PDF 만들기"
+                : "보기 전용 PDF 만들기"}
+          </button>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white font-bold"
+              onClick={async () => {
+                const mod = await import("../../lib/pdf/exportPdf");
+                try {
+                  const shared = await mod.shareBlob(
+                    blob,
+                    filename,
+                    data.tour.title,
+                  );
+                  if (!shared) {
+                    mod.downloadBlob(blob, filename);
+                    toast(
+                      "이 브라우저는 파일 공유를 지원하지 않아 저장했어요.",
+                    );
+                  }
+                } catch (e) {
+                  if (e instanceof DOMException && e.name === "AbortError")
+                    return;
+                  toast("공유하지 못했어요. 파일 저장을 이용해 주세요.");
+                }
+              }}
+            >
+              <Send size={18} />
+              공유
+            </button>
+            <button
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-stone-900 font-bold text-white"
+              onClick={async () => {
+                const mod = await import("../../lib/pdf/exportPdf");
+                mod.downloadBlob(blob, filename);
+              }}
+            >
+              <Download size={18} />
+              저장
+            </button>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

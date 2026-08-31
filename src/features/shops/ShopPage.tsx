@@ -1,13 +1,231 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowDown, ArrowLeft, ArrowUp, Copy, Heart, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { DressPreview } from '../../components/DressPreview';
-import { SaveStatus } from '../../components/SaveStatus';
-import { db } from '../../db/database';
-import { addDress, deleteDress, duplicateDress, patchShop, reorderDresses } from '../../db/repositories';
-import { summarizeDress } from '../../lib/dress/options';
-import { useUIStore } from '../../stores/uiStore';
+import { useLiveQuery } from "dexie-react-hooks";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  Copy,
+  Heart,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { DressPreview } from "../../components/DressPreview";
+import { SaveStatus } from "../../components/SaveStatus";
+import { db } from "../../db/database";
+import {
+  addDress,
+  deleteDress,
+  duplicateDress,
+  patchShop,
+  reorderDresses,
+} from "../../db/repositories";
+import { summarizeDress } from "../../lib/dress/options";
+import { useUIStore } from "../../stores/uiStore";
 
-export function ShopPage(){const {tourId='',shopId=''}=useParams();const nav=useNavigate();const toast=useUIStore(s=>s.showToast);const data=useLiveQuery(async()=>{const shop=await db.shops.get(shopId);if(!shop)return undefined;const dresses=(await db.dresses.where('shopId').equals(shopId).toArray()).sort((a,b)=>a.order-b.order);const tour=await db.tours.get(shop.tourId);const face=tour?.faceAssetId?await db.assets.get(tour.faceAssetId):undefined;return{shop,dresses,face}},[shopId]);if(!data)return <main className="p-8 text-center text-sm text-stone-400">기록을 불러오는 중...</main>;
-const move=async(index:number,delta:number)=>{const next=[...data.dresses];const j=index+delta;if(j<0||j>=next.length)return;[next[index],next[j]]=[next[j],next[index]];await reorderDresses(shopId,next.map(x=>x.id));toast('드레스 순서를 바꿨어요.')};const createDress=async()=>{try{const id=await addDress(shopId);nav(`/tour/${tourId}/dress/${id}`)}catch(e){toast(e instanceof Error?e.message:'드레스를 추가하지 못했어요.')}};
-return <main className="min-h-dvh pb-28"><header className="px-5 pt-[calc(18px+env(safe-area-inset-top))]"><div className="flex items-center justify-between"><button aria-label="투어로 돌아가기" className="grid h-11 w-11 place-items-center rounded-full bg-stone-50" onClick={()=>nav(`/tour/${tourId}`)}><ArrowLeft/></button><SaveStatus/></div><input aria-label="드레스샵 이름" maxLength={50} value={data.shop.name} onChange={e=>void patchShop(shopId,{name:e.target.value})} className="mt-7 w-full bg-transparent text-3xl font-black tracking-[-.04em] outline-none"/><textarea maxLength={1000} value={data.shop.memo||''} onChange={e=>void patchShop(shopId,{memo:e.target.value})} placeholder="샵 상담 메모 (선택)" className="mt-3 min-h-16 w-full resize-none rounded-2xl bg-stone-50 p-3 text-sm outline-none"/></header><section className="mt-7 px-5"><div className="mb-3 flex items-center justify-between"><h2 className="font-bold">입어본 드레스 <span className="text-stone-300">{data.dresses.length}</span></h2><button className="inline-flex h-10 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#a75e55]" onClick={()=>void createDress()}><Plus size={16}/>드레스 추가</button></div>{data.dresses.length===0?<div className="rounded-3xl border border-dashed border-stone-200 p-8 text-center text-sm text-stone-500">이 샵에서 입어본 첫 드레스를 기록해볼까요?</div>:<div className="space-y-4">{data.dresses.map((d,i)=><article key={d.id} className="rounded-3xl border border-stone-100 bg-white p-3 shadow-[0_6px_24px_rgba(60,45,40,.05)]"><div className="flex gap-3"><button aria-label={`${d.label} 편집`} className="w-[104px] shrink-0" onClick={()=>nav(`/tour/${tourId}/dress/${d.id}`)}><DressPreview dress={d} faceAsset={data.face}/></button><button className="min-w-0 flex-1 py-1 text-left" onClick={()=>nav(`/tour/${tourId}/dress/${d.id}`)}><div className="flex items-center gap-2"><h3 className="font-bold">{d.label}</h3>{d.isFavorite&&<Heart size={15} fill="#b96e63" className="text-[#b96e63]"/>}</div><p className="mt-2 line-clamp-2 text-xs leading-5 text-stone-400">{summarizeDress(d).slice(0,3).join(' · ')||'아직 특징을 고르지 않았어요'}</p>{d.rating&&<div className="mt-2 text-xs text-amber-500">{'★'.repeat(d.rating)}{'☆'.repeat(5-d.rating)}</div>}{d.memo&&<p className="mt-2 line-clamp-1 text-xs text-stone-500">{d.memo}</p>}</button></div><div className="mt-3 flex items-center border-t border-stone-50 pt-2"><button disabled={i===0} aria-label={`${d.label} 위로 이동`} className="grid h-9 w-9 place-items-center text-stone-400 disabled:opacity-20" onClick={()=>move(i,-1)}><ArrowUp size={15}/></button><button disabled={i===data.dresses.length-1} aria-label={`${d.label} 아래로 이동`} className="grid h-9 w-9 place-items-center text-stone-400 disabled:opacity-20" onClick={()=>move(i,1)}><ArrowDown size={15}/></button><button aria-label={`${d.label} 복제`} className="grid h-9 w-9 place-items-center text-stone-400" onClick={async()=>{try{const id=await duplicateDress(d.id);toast('드레스를 복제했어요.');nav(`/tour/${tourId}/dress/${id}`)}catch(e){toast(e instanceof Error?e.message:'드레스를 복제하지 못했어요.')}}}><Copy size={15}/></button><button aria-label={`${d.label} 편집`} className="grid h-9 w-9 place-items-center text-stone-400" onClick={()=>nav(`/tour/${tourId}/dress/${d.id}`)}><Pencil size={15}/></button><button aria-label={`${d.label} 삭제`} className="ml-auto grid h-9 w-9 place-items-center text-stone-300" onClick={async()=>{if(confirm(`${d.label}을 삭제할까요?`)){await deleteDress(d.id);toast('드레스를 삭제했어요.')}}}><Trash2 size={15}/></button></div></article>)}</div>}</section><div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur"><button className="h-14 w-full rounded-2xl bg-stone-900 font-bold text-white" onClick={()=>void createDress()}><Plus className="mr-1 inline" size={17}/>다음 드레스 추가</button></div></main>}
+export function ShopPage() {
+  const { tourId = "", shopId = "" } = useParams();
+  const nav = useNavigate();
+  const toast = useUIStore((s) => s.showToast);
+  const data = useLiveQuery(async () => {
+    const shop = await db.shops.get(shopId);
+    if (!shop) return undefined;
+    const dresses = (
+      await db.dresses.where("shopId").equals(shopId).toArray()
+    ).sort((a, b) => a.order - b.order);
+    const tour = await db.tours.get(shop.tourId);
+    const face = tour?.faceAssetId
+      ? await db.assets.get(tour.faceAssetId)
+      : undefined;
+    return { shop, dresses, face };
+  }, [shopId]);
+  if (!data)
+    return (
+      <main className="p-8 text-center text-sm text-stone-400">
+        기록을 불러오는 중...
+      </main>
+    );
+  const move = async (index: number, delta: number) => {
+    const next = [...data.dresses];
+    const j = index + delta;
+    if (j < 0 || j >= next.length) return;
+    [next[index], next[j]] = [next[j], next[index]];
+    await reorderDresses(
+      shopId,
+      next.map((x) => x.id),
+    );
+    toast("드레스 순서를 바꿨어요.");
+  };
+  const createDress = async () => {
+    try {
+      const id = await addDress(shopId);
+      nav(`/tour/${tourId}/dress/${id}`);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "드레스를 추가하지 못했어요.");
+    }
+  };
+  return (
+    <main className="min-h-dvh pb-28">
+      <header className="px-5 pt-[calc(18px+env(safe-area-inset-top))]">
+        <div className="flex items-center justify-between">
+          <button
+            aria-label="투어로 돌아가기"
+            className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
+            onClick={() => nav(`/tour/${tourId}`)}
+          >
+            <ArrowLeft />
+          </button>
+          <SaveStatus />
+        </div>
+        <input
+          aria-label="드레스샵 이름"
+          maxLength={50}
+          value={data.shop.name}
+          onChange={(e) => void patchShop(shopId, { name: e.target.value })}
+          className="mt-7 w-full bg-transparent text-3xl font-black tracking-[-.04em] outline-none"
+        />
+        <textarea
+          maxLength={1000}
+          value={data.shop.memo || ""}
+          onChange={(e) => void patchShop(shopId, { memo: e.target.value })}
+          placeholder="샵 상담 메모 (선택)"
+          className="mt-3 min-h-16 w-full resize-none rounded-2xl bg-stone-50 p-3 text-sm outline-none"
+        />
+      </header>
+      <section className="mt-7 px-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-bold">
+            입어본 드레스{" "}
+            <span className="text-stone-300">{data.dresses.length}</span>
+          </h2>
+          <button
+            className="inline-flex h-10 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#a75e55]"
+            onClick={() => void createDress()}
+          >
+            <Plus size={16} />
+            드레스 추가
+          </button>
+        </div>
+        {data.dresses.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-stone-200 p-8 text-center text-sm text-stone-500">
+            이 샵에서 입어본 첫 드레스를 기록해볼까요?
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {data.dresses.map((d, i) => (
+              <article
+                key={d.id}
+                className="rounded-3xl border border-stone-100 bg-white p-3 shadow-[0_6px_24px_rgba(60,45,40,.05)]"
+              >
+                <div className="flex gap-3">
+                  <button
+                    aria-label={`${d.label} 편집`}
+                    className="w-[104px] shrink-0"
+                    onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
+                  >
+                    <DressPreview dress={d} faceAsset={data.face} />
+                  </button>
+                  <button
+                    className="min-w-0 flex-1 py-1 text-left"
+                    onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold">{d.label}</h3>
+                      {d.isFavorite && (
+                        <Heart
+                          size={15}
+                          fill="#b96e63"
+                          className="text-[#b96e63]"
+                        />
+                      )}
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-xs leading-5 text-stone-400">
+                      {summarizeDress(d).slice(0, 3).join(" · ") ||
+                        "아직 특징을 고르지 않았어요"}
+                    </p>
+                    {d.rating && (
+                      <div className="mt-2 text-xs text-amber-500">
+                        {"★".repeat(d.rating)}
+                        {"☆".repeat(5 - d.rating)}
+                      </div>
+                    )}
+                    {d.memo && (
+                      <p className="mt-2 line-clamp-1 text-xs text-stone-500">
+                        {d.memo}
+                      </p>
+                    )}
+                  </button>
+                </div>
+                <div className="mt-3 flex items-center border-t border-stone-50 pt-2">
+                  <button
+                    disabled={i === 0}
+                    aria-label={`${d.label} 위로 이동`}
+                    className="grid h-9 w-9 place-items-center text-stone-400 disabled:opacity-20"
+                    onClick={() => move(i, -1)}
+                  >
+                    <ArrowUp size={15} />
+                  </button>
+                  <button
+                    disabled={i === data.dresses.length - 1}
+                    aria-label={`${d.label} 아래로 이동`}
+                    className="grid h-9 w-9 place-items-center text-stone-400 disabled:opacity-20"
+                    onClick={() => move(i, 1)}
+                  >
+                    <ArrowDown size={15} />
+                  </button>
+                  <button
+                    aria-label={`${d.label} 복제`}
+                    className="grid h-9 w-9 place-items-center text-stone-400"
+                    onClick={async () => {
+                      try {
+                        const id = await duplicateDress(d.id);
+                        toast("드레스를 복제했어요.");
+                        nav(`/tour/${tourId}/dress/${id}`);
+                      } catch (e) {
+                        toast(
+                          e instanceof Error
+                            ? e.message
+                            : "드레스를 복제하지 못했어요.",
+                        );
+                      }
+                    }}
+                  >
+                    <Copy size={15} />
+                  </button>
+                  <button
+                    aria-label={`${d.label} 편집`}
+                    className="grid h-9 w-9 place-items-center text-stone-400"
+                    onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
+                  >
+                    <Pencil size={15} />
+                  </button>
+                  <button
+                    aria-label={`${d.label} 삭제`}
+                    className="ml-auto grid h-9 w-9 place-items-center text-stone-300"
+                    onClick={async () => {
+                      if (confirm(`${d.label}을 삭제할까요?`)) {
+                        await deleteDress(d.id);
+                        toast("드레스를 삭제했어요.");
+                      }
+                    }}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+        <button
+          className="h-14 w-full rounded-2xl bg-stone-900 font-bold text-white"
+          onClick={() => void createDress()}
+        >
+          <Plus className="mr-1 inline" size={17} />
+          다음 드레스 추가
+        </button>
+      </div>
+    </main>
+  );
+}
