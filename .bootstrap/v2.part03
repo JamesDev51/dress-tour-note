@@ -1,0 +1,327 @@
+cat > src/pdf.ts <<'EOF_PDF'
+import { PDFDocument } from 'pdf-lib';
+import { dressSvgDataUrl } from './dress';
+import {
+  averageScore,
+  dressStyleSummary,
+  makeBackup,
+  optionLabels,
+  parseBackup,
+  type DressNote,
+  type GudressBackup,
+  type ShopNote,
+  type TourDocument,
+} from './domain';
+
+const PAGE_WIDTH = 1240;
+const PAGE_HEIGHT = 1754;
+const BACKUP_NAME = 'gudress-tour.json';
+const MANIFEST_NAME = 'gudress-manifest.json';
+
+export interface PdfProgress {
+  stage: 'prepare' | 'render' | 'attach' | 'save' | 'verify';
+  current: number;
+  total: number;
+  message: string;
+}
+
+interface BackupManifest {
+  app: 'gudress';
+  formatVersion: 2;
+  backupFile: typeof BACKUP_NAME;
+  sha256: string;
+  createdAt: string;
+}
+
+function canvasPage() {
+  const canvas = document.createElement('canvas');
+  canvas.width = PAGE_WIDTH;
+  canvas.height = PAGE_HEIGHT;
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('PDF 화면을 만들지 못했어요.');
+  context.fillStyle = '#fbf7f5';
+  context.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
+  context.textBaseline = 'top';
+  return { canvas, context };
+}
+
+function roundedRect(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number, fill: string, stroke?: string) {
+  context.beginPath();
+  context.roundRect(x, y, width, height, radius);
+  context.fillStyle = fill;
+  context.fill();
+  if (stroke) {
+    context.strokeStyle = stroke;
+    context.lineWidth = 2;
+    context.stroke();
+  }
+}
+
+function font(context: CanvasRenderingContext2D, size: number, weight = 500, color = '#352d2b') {
+  context.font = `${weight} ${size}px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif`;
+  context.fillStyle = color;
+}
+
+function wrapText(context: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number, maxLines = 8) {
+  const paragraphs = (text || '').split('\n');
+  let lineIndex = 0;
+  for (const paragraph of paragraphs) {
+    const words = paragraph.split('');
+    let line = '';
+    for (const word of words) {
+      const next = line + word;
+      if (context.measureText(next).width > maxWidth && line) {
+        context.fillText(line, x, y + lineIndex * lineHeight);
+        lineIndex += 1;
+        line = word;
+        if (lineIndex >= maxLines) return y + lineIndex * lineHeight;
+      } else line = next;
+    }
+    if (lineIndex < maxLines) {
+      context.fillText(line || ' ', x, y + lineIndex * lineHeight);
+      lineIndex += 1;
+    }
+    if (lineIndex >= maxLines) break;
+  }
+  return y + lineIndex * lineHeight;
+}
+
+function drawHeader(context: CanvasRenderingContext2D, label: string, pageNumber: number) {
+  font(context, 27, 700, '#a36f76');
+  context.fillText('그드레스 · DRESS TOUR NOTE', 76, 60);
+  font(context, 24, 500, '#8b7a75');
+  context.textAlign = 'right';
+  context.fillText(`${label}  ·  ${pageNumber}`, PAGE_WIDTH - 76, 63);
+  context.textAlign = 'left';
+  context.strokeStyle = '#ded0cc';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(76, 112);
+  context.lineTo(PAGE_WIDTH - 76, 112);
+  context.stroke();
+}
+
+function imageFromSource(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('드레스 이미지를 PDF에 넣지 못했어요.'));
+    image.src = src;
+  });
+}
+
+function canvasJpeg(canvas: HTMLCanvasElement) {
+  return new Promise<Uint8Array>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) return reject(new Error('PDF 페이지 변환에 실패했어요.'));
+      blob.arrayBuffer().then((buffer) => resolve(new Uint8Array(buffer))).catch(reject);
+    }, 'image/jpeg', 0.9);
+  });
+}
+
+async function addCanvasPage(pdf: PDFDocument, canvas: HTMLCanvasElement) {
+  const bytes = await canvasJpeg(canvas);
+  const image = await pdf.embedJpg(bytes);
+  const page = pdf.addPage([595.28, 841.89]);
+  page.drawImage(image, { x: 0, y: 0, width: 595.28, height: 841.89 });
+}
+
+async function coverPage(tour: TourDocument) {
+  const { canvas, context } = canvasPage();
+  font(context, 30, 700, '#a36f76');
+  context.fillText('GUDRESS', 84, 90);
+  font(context, 88, 800);
+  context.fillText('우리의', 84, 272);
+  context.fillText('드레스투어', 84, 380);
+  context.fillText('기록', 84, 488);
+  font(context, 34, 500, '#786661');
+  context.fillText('사진을 찍지 못해도, 모양은 잊지 않도록.', 88, 640);
+  roundedRect(context, 84, 782, PAGE_WIDTH - 168, 394, 36, '#ffffff', '#e3d6d2');
+  font(context, 24, 700, '#a36f76'); context.fillText('TOUR', 132, 834);
+  font(context, 52, 760); context.fillText(tour.title, 132, 888);
+  font(context, 30, 500, '#786661');
+  context.fillText(`신부  ${tour.brideName || '미입력'}`, 132, 994);
+  context.fillText(`동행인  ${tour.partnerName || '미입력'}`, 132, 1050);
+  context.fillText(`날짜  ${tour.tourDate || '미입력'}`, 132, 1106);
+  font(context, 28, 500, '#8b7a75');
+  context.fillText(`드레스샵 ${tour.shops.length}곳 · 드레스 ${tour.dresses.length}벌 · 후보 ${tour.dresses.filter((dress) => dress.favorite).length}벌`, 88, 1320);
+  font(context, 22, 500, '#9b8984');
+  context.fillText('이 PDF를 그드레스 웹에 다시 불러오면 다른 기기에서도 계속 편집할 수 있어요.', 88, 1578);
+  return canvas;
+}
+
+function summaryPage(tour: TourDocument, pageNumber: number) {
+  const { canvas, context } = canvasPage();
+  drawHeader(context, 'SUMMARY', pageNumber);
+  font(context, 58, 800); context.fillText('투어 한눈에 보기', 76, 170);
+  font(context, 28, 500, '#786661'); context.fillText('샵별로 기록한 드레스와 후보를 정리했어요.', 76, 252);
+  let y = 340;
+  const shops = [...tour.shops].sort((a, b) => a.order - b.order);
+  for (const shop of shops) {
+    const dresses = tour.dresses.filter((dress) => dress.shopId === shop.id).sort((a, b) => a.order - b.order);
+    const height = Math.max(150, 112 + dresses.length * 42);
+    if (y + height > PAGE_HEIGHT - 120) break;
+    roundedRect(context, 76, y, PAGE_WIDTH - 152, height, 28, '#fff', '#e1d3cf');
+    font(context, 34, 760); context.fillText(shop.name, 112, y + 32);
+    font(context, 24, 500, '#8b7a75'); context.textAlign = 'right';
+    context.fillText(`${dresses.length}벌`, PAGE_WIDTH - 112, y + 39); context.textAlign = 'left';
+    let lineY = y + 89;
+    for (const dress of dresses) {
+      font(context, 23, dress.favorite ? 760 : 500, dress.favorite ? '#a36f76' : '#655651');
+      context.fillText(`${dress.favorite ? '♥ ' : '· '}${dress.name}`, 116, lineY);
+      font(context, 21, 500, '#8b7a75');
+      context.fillText(dressStyleSummary(dress), 344, lineY + 1);
+      lineY += 40;
+    }
+    y += height + 24;
+  }
+  return canvas;
+}
+
+async function dressPage(tour: TourDocument, shop: ShopNote, dress: DressNote, pageNumber: number) {
+  const { canvas, context } = canvasPage();
+  drawHeader(context, shop.name, pageNumber);
+  font(context, 58, 800); context.fillText(dress.name, 76, 166);
+  if (dress.favorite) {
+    roundedRect(context, PAGE_WIDTH - 280, 166, 204, 62, 31, '#f3dcdf');
+    font(context, 25, 750, '#9a626a'); context.textAlign = 'center'; context.fillText('♥ 최종 후보', PAGE_WIDTH - 178, 184); context.textAlign = 'left';
+  }
+  roundedRect(context, 76, 272, 600, 1010, 34, '#fff', '#e1d3cf');
+  const svgImage = await imageFromSource(dressSvgDataUrl(dress.design, dress.view, tour.face));
+  context.drawImage(svgImage, 104, 304, 544, 956);
+  roundedRect(context, 706, 272, 458, 1010, 34, '#fff', '#e1d3cf');
+  font(context, 23, 750, '#a36f76'); context.fillText('STYLE', 748, 316);
+  font(context, 32, 700); wrapText(context, dressStyleSummary(dress), 748, 366, 372, 46, 5);
+  let y = 520;
+  const d = dress.design;
+  const rows = [
+    ['뒷모습', optionLabels.back[d.back]], ['베일', optionLabels.veil[d.veil]], ['장갑', optionLabels.gloves[d.gloves]], ['볼레로', d.bolero ? '있음' : '없음'],
+  ];
+  for (const [label, value] of rows) {
+    font(context, 21, 650, '#8b7a75'); context.fillText(label, 748, y);
+    font(context, 25, 650); context.fillText(value, 890, y - 3); y += 54;
+  }
+  if (d.details.length) {
+    font(context, 21, 650, '#8b7a75'); context.fillText('디테일', 748, y); y += 42;
+    font(context, 23, 600); wrapText(context, d.details.map((detail) => optionLabels.details[detail]).join(' · '), 748, y, 372, 36, 4); y += 120;
+  }
+  const score = averageScore(dress);
+  font(context, 21, 750, '#a36f76'); context.fillText('SCORE', 748, y); y += 48;
+  font(context, 46, 800); context.fillText(score ? `${score} / 5` : '미평가', 748, y); y += 82;
+  if (dress.quickTags.length) {
+    font(context, 21, 750, '#a36f76'); context.fillText('QUICK MEMO', 748, y); y += 44;
+    font(context, 22, 600); wrapText(context, dress.quickTags.join(' · '), 748, y, 372, 35, 5); y += 148;
+  }
+  font(context, 21, 750, '#a36f76'); context.fillText('MEMO', 748, y); y += 45;
+  font(context, 24, 500, '#514542'); wrapText(context, dress.memo || '메모 없음', 748, y, 372, 39, 9);
+  roundedRect(context, 76, 1324, PAGE_WIDTH - 152, 284, 30, '#fff', '#e1d3cf');
+  font(context, 23, 750, '#a36f76'); context.fillText('SHOP NOTE', 112, 1364);
+  font(context, 25, 600); context.fillText(`${shop.visitTime || '시간 미입력'}  ·  ${shop.consultant || '담당자 미입력'}`, 112, 1410);
+  font(context, 23, 500, '#655651'); wrapText(context, shop.memo || tour.generalMemo || '샵 메모 없음', 112, 1464, PAGE_WIDTH - 224, 36, 3);
+  return canvas;
+}
+
+function favoritesPage(tour: TourDocument, pageNumber: number) {
+  const { canvas, context } = canvasPage();
+  drawHeader(context, 'MY FAVORITES', pageNumber);
+  font(context, 58, 800); context.fillText('최종 후보', 76, 170);
+  const favorites = tour.dresses.filter((dress) => dress.favorite).sort((a, b) => averageScore(b) - averageScore(a));
+  let y = 310;
+  if (!favorites.length) {
+    font(context, 31, 600, '#8b7a75'); context.fillText('아직 후보로 저장한 드레스가 없어요.', 76, y);
+  }
+  favorites.slice(0, 8).forEach((dress, index) => {
+    const shop = tour.shops.find((item) => item.id === dress.shopId);
+    roundedRect(context, 76, y, PAGE_WIDTH - 152, 142, 26, '#fff', '#e1d3cf');
+    font(context, 44, 800, '#a36f76'); context.fillText(`${index + 1}`, 110, y + 42);
+    font(context, 31, 750); context.fillText(dress.name, 184, y + 28);
+    font(context, 23, 550, '#8b7a75'); context.fillText(shop?.name || '삭제된 샵', 184, y + 75);
+    context.textAlign = 'right'; font(context, 30, 800); context.fillText(averageScore(dress) ? `${averageScore(dress)}점` : '미평가', PAGE_WIDTH - 112, y + 48); context.textAlign = 'left';
+    y += 166;
+  });
+  return canvas;
+}
+
+async function sha256(bytes: Uint8Array) {
+  const digest = await crypto.subtle.digest('SHA-256', bytes as BufferSource);
+  return Array.from(new Uint8Array(digest)).map((value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+export async function createTourPdf(tour: TourDocument, onProgress?: (progress: PdfProgress) => void) {
+  const sortedShops = [...tour.shops].sort((a, b) => a.order - b.order);
+  const dressEntries = sortedShops.flatMap((shop) => tour.dresses.filter((dress) => dress.shopId === shop.id).sort((a, b) => a.order - b.order).map((dress) => ({ shop, dress })));
+  const totalPages = 3 + dressEntries.length;
+  onProgress?.({ stage: 'prepare', current: 0, total: totalPages, message: 'PDF를 준비하고 있어요.' });
+  const pdf = await PDFDocument.create();
+  pdf.setTitle(`${tour.title} · 그드레스`);
+  pdf.setAuthor('그드레스');
+  pdf.setSubject('이 PDF에는 그드레스 편집 원본이 포함되어 있습니다.');
+  const canvases: HTMLCanvasElement[] = [await coverPage(tour), summaryPage(tour, 2)];
+  let pageNumber = 3;
+  for (const entry of dressEntries) canvases.push(await dressPage(tour, entry.shop, entry.dress, pageNumber++));
+  canvases.push(favoritesPage(tour, pageNumber));
+  for (let index = 0; index < canvases.length; index += 1) {
+    onProgress?.({ stage: 'render', current: index + 1, total: canvases.length, message: `${index + 1}/${canvases.length} 페이지를 만들고 있어요.` });
+    await addCanvasPage(pdf, canvases[index]);
+  }
+  onProgress?.({ stage: 'attach', current: 1, total: 1, message: '다른 기기에서 불러올 원본을 넣고 있어요.' });
+  const backup = makeBackup(tour);
+  const backupBytes = new TextEncoder().encode(JSON.stringify(backup));
+  const manifest: BackupManifest = { app: 'gudress', formatVersion: 2, backupFile: BACKUP_NAME, sha256: await sha256(backupBytes), createdAt: new Date().toISOString() };
+  await pdf.attach(backupBytes, BACKUP_NAME, { mimeType: 'application/json', description: '그드레스 편집 원본' });
+  await pdf.attach(new TextEncoder().encode(JSON.stringify(manifest)), MANIFEST_NAME, { mimeType: 'application/json', description: '그드레스 원본 무결성 정보' });
+  if (tour.face?.dataUrl) {
+    const response = await fetch(tour.face.dataUrl);
+    await pdf.attach(new Uint8Array(await response.arrayBuffer()), 'gudress-face.webp', { mimeType: 'image/webp', description: '사용자가 선택한 로컬 얼굴 사진' });
+  }
+  onProgress?.({ stage: 'save', current: 1, total: 1, message: 'PDF 파일을 마무리하고 있어요.' });
+  const bytes = await pdf.save({ useObjectStreams: true });
+  const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
+  const safeTitle = tour.title.replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 50) || '드레스투어';
+  return { blob, fileName: `${safeTitle}-${tour.tourDate || '기록'}.pdf` };
+}
+
+function attachmentByFileName(attachments: Record<string, { filename?: string; content: Uint8Array }> | null, fileName: string) {
+  if (!attachments) return undefined;
+  return Object.values(attachments).find((attachment) => attachment.filename === fileName) || attachments[fileName];
+}
+
+export async function importTourPdf(file: File, onProgress?: (progress: PdfProgress) => void): Promise<GudressBackup> {
+  if (file.size > 30 * 1024 * 1024) throw new Error('30MB 이하 PDF를 선택해 주세요.');
+  if (file.type && file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) throw new Error('PDF 파일만 불러올 수 있어요.');
+  onProgress?.({ stage: 'prepare', current: 0, total: 1, message: 'PDF 안의 원본 데이터를 찾고 있어요.' });
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.min.mjs', import.meta.url).toString();
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const document = await pdfjs.getDocument({ data: bytes }).promise;
+  const attachments = await document.getAttachments() as Record<string, { filename?: string; content: Uint8Array }> | null;
+  const backupAttachment = attachmentByFileName(attachments, BACKUP_NAME);
+  const manifestAttachment = attachmentByFileName(attachments, MANIFEST_NAME);
+  if (!backupAttachment || !manifestAttachment) throw new Error('그드레스에서 내보낸 원본 PDF만 다시 불러올 수 있어요.');
+  const manifest = JSON.parse(new TextDecoder().decode(manifestAttachment.content)) as BackupManifest;
+  if (manifest.app !== 'gudress' || manifest.formatVersion !== 2) throw new Error('지원하지 않는 PDF 버전이에요.');
+  onProgress?.({ stage: 'verify', current: 1, total: 1, message: '기록이 손상되지 않았는지 확인하고 있어요.' });
+  const actualHash = await sha256(backupAttachment.content);
+  if (actualHash !== manifest.sha256) throw new Error('PDF 안의 원본 데이터가 손상되었어요.');
+  const parsed: unknown = JSON.parse(new TextDecoder().decode(backupAttachment.content));
+  return parseBackup(parsed);
+}
+
+export async function verifyCreatedPdf(blob: Blob) {
+  const file = new File([blob], 'verify.pdf', { type: 'application/pdf' });
+  return importTourPdf(file);
+}
+
+export async function shareOrDownloadPdf(blob: Blob, fileName: string) {
+  const file = new File([blob], fileName, { type: 'application/pdf' });
+  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: '그드레스 기록', text: '드레스투어 기록 PDF' }); return 'shared' as const; }
+    catch (error) { if (error instanceof DOMException && error.name === 'AbortError') return 'cancelled' as const; }
+  }
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url; anchor.download = fileName; anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  return 'downloaded' as const;
+}
+EOF_PDF
