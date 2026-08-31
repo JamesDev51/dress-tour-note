@@ -43,6 +43,10 @@ jobs:
 
           archive = Path('/tmp/dress-tour-note.tar.gz')
           archive.write_bytes(archive_bytes)
+          workflow_backup = Path('/tmp/dress-tour-note-workflows')
+          if workflow_backup.exists():
+              shutil.rmtree(workflow_backup)
+          shutil.copytree('.github/workflows', workflow_backup)
 
           for child in list(Path('.').iterdir()):
               if child.name == '.git':
@@ -58,6 +62,12 @@ jobs:
                   if target.is_absolute() or '..' in target.parts:
                       raise SystemExit(f'Unsafe archive member: {member.name}')
               bundle.extractall('.', filter='data')
+
+          extracted_workflows = Path('.github/workflows')
+          if extracted_workflows.exists():
+              shutil.rmtree(extracted_workflows)
+          extracted_workflows.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copytree(workflow_backup, extracted_workflows)
           PY
 
       - name: Commit restored source tree
