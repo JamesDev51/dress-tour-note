@@ -71,10 +71,12 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
 
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
   let documentProxy;
   try {
-    documentProxy = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+    documentProxy = await loadingTask.promise;
   } catch {
+    await loadingTask.destroy();
     throw new Error('파일을 읽을 수 없어요. 원본 PDF를 다시 선택해 주세요.');
   }
 
@@ -158,7 +160,7 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
       legacyFormat,
     };
   } finally {
-    await documentProxy.destroy();
+    await loadingTask.destroy();
   }
 }
 
