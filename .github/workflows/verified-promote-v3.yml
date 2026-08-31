@@ -1,0 +1,113 @@
+name: Verify then atomically promote application
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - .github/verified-promote-v3.trigger
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-promote:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout current master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download and verify candidate source
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --connect-timeout 20 --max-time 300 \
+            --fail --location --silent --show-error \
+            'https://filebin.net/dress-tour-note-prd-20260831/source-v2.tar.xz' \
+            --output /tmp/dress-tour-note-v2.tar.xz
+          echo '573f95345c9990c02d3eb89d3176ec145b030e009ada6c1a9032403c7391f9f9  /tmp/dress-tour-note-v2.tar.xz' | sha256sum --check
+          mkdir -p /tmp/dress-tour-note-candidate
+          tar -xJf /tmp/dress-tour-note-v2.tar.xz -C /tmp/dress-tour-note-candidate
+
+      - name: Install candidate dependencies
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm install
+
+      - name: Normalize candidate formatting
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm run format
+
+      - name: Apply safe ESLint fixes
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm run lint -- --fix
+
+      - name: Verify formatting
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm run format:check
+
+      - name: Verify ESLint
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm run lint
+
+      - name: Verify strict TypeScript
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm run typecheck
+
+      - name: Run Vitest suite
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm test -- --run
+
+      - name: Build production bundle
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npx playwright install --with-deps chromium
+
+      - name: Run mobile Playwright E2E
+        working-directory: /tmp/dress-tour-note-candidate
+        run: npm run test:e2e
+
+      - name: Write verification record into candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/dress-tour-note-candidate/docs
+          cat > /tmp/dress-tour-note-candidate/docs/verification.md <<EOF
+          # Release verification
+
+          Candidate archive SHA-256: 573f95345c9990c02d3eb89d3176ec145b030e009ada6c1a9032403c7391f9f9
+
+          Environment: GitHub-hosted Ubuntu / Node 22 / Chromium
+
+          Passed before atomic promotion:
+
+          - Prettier normalization and format check
+          - ESLint autofix and clean lint check
+          - TypeScript strict typecheck
+          - Vitest unit, component, repository, renderer, and PDF round-trip tests
+          - Vite production build
+          - Playwright Chromium mobile end-to-end tests
+          EOF
+
+      - name: Atomically replace master source and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/dress-tour-note-candidate/. .
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: promote fully verified dress tour note application'
+          git push origin HEAD:master
