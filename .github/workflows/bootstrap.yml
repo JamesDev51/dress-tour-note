@@ -29,7 +29,7 @@ jobs:
           import shutil
           import tarfile
 
-          expected_parts = 13
+          expected_parts = 6
           expected_sha256 = 'f9fcddf3d8780848d960b2805c5cb9ab707735baaa9fca357a8e8ac8e58ae9c5'
           parts = sorted(Path('.').glob('.project-bundle-part-*'))
           if len(parts) != expected_parts:
