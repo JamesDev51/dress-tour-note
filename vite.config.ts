@@ -23,8 +23,31 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        globIgnores: [
+          '**/assets/heic-to-*.js',
+          '**/assets/exportPdf-*.js',
+          '**/assets/noto-serif-*.woff2'
+        ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
-        cleanupOutdatedCaches: true
+        cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/(?:heic-to|exportPdf)-.*\.js$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'gudress-optional-features',
+              expiration: { maxEntries: 8, maxAgeSeconds: 30 * 24 * 60 * 60 }
+            }
+          },
+          {
+            urlPattern: /\/assets\/noto-serif-.*\.woff2$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'gudress-optional-fonts',
+              expiration: { maxEntries: 4, maxAgeSeconds: 90 * 24 * 60 * 60 }
+            }
+          }
+        ]
       }
     })
   ]
