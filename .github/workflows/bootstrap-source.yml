@@ -24,6 +24,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cat <<'CHECKSUMS' | sha256sum --check
+          efd199fda5df6d6e9ce17701ed50ebcced63a9e7d5cf2a46eafe5a72173b4cf7  .bootstrap/source.part-00
+          e34d07b1142c08a822958fb767ac631be57cb6152533027e5e8d2ae6c1c3c5bc  .bootstrap/source.part-01
+          4ae4d5e5b81e77d921223a10f195983351de2064eae3e43745c7220e60c36b35  .bootstrap/source.part-02
+          d25306a1a4bc340d502889beb1564fe6c55c26fc798062ef9618d82d587d57b7  .bootstrap/source.part-03
+          c6914a620b2310beff5f9e0598b796d13e828f4380c6b8d2adb76f6e1e02dbf2  .bootstrap/source.part-04
+          6ff8ffe2fb2ddefe767997305cfab2c7c0bb786c3ac671aa6f985f6fe5d333d5  .bootstrap/source.part-05
+          aa2189497e2d731cf932f0a8b172fdc3c76bc301da60e13a93946db981ea8e33  .bootstrap/source.part-06
+          9a358c0c2a7df2f46aed9bce4e126a912d5babe4e917c232fb007eb0d5a2080f  .bootstrap/source.part-07
+          56ce69840adf7ddb7f95fa0cc1945032d8352791aabfac210d76d47eb7cab2c3  .bootstrap/source.part-08
+          5a62027d207668ba77c2f068fb1412a83b05ec48f3c6297730603aea752cb7f3  .bootstrap/source.part-09
+          CHECKSUMS
           cat .bootstrap/source.part-* | base64 --decode > /tmp/dress-tour-note.tar.xz
           echo "564d9780df03f0211b1dd4a55836752d0aac27bd95c163565ff9d9a6779b7343  /tmp/dress-tour-note.tar.xz" | sha256sum --check
           tar -xJf /tmp/dress-tour-note.tar.xz -C .
