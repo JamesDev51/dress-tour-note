@@ -1,4 +1,4 @@
-name: Apply generated option artwork
+name: Finalize generated option artwork
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  apply:
+  finalize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -26,27 +26,49 @@ jobs:
         with:
           node-version: 22
 
-      - name: Generate SVG option sprite
-        run: node scripts/generate-option-assets.mjs
-
-      - name: Repair one-time patch matcher
+      - name: Normalize and generate SVG sprite
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('.asset-patch/apply.py')
-          lines = path.read_text(encoding='utf-8').splitlines()
-          for index, line in enumerate(lines):
-              if line.startswith('editor, removed = re.subn('):
-                  lines[index] = 'editor, removed = re.subn(r"\\nfunction TinyIcon.*?\\n\\nexport function", "\\n\\nexport function", editor, count=1, flags=re.S)'
-                  break
-          else:
-              raise SystemExit('TinyIcon matcher line not found')
-          path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          path = Path('scripts/generate-option-assets.mjs')
+          source = path.read_text(encoding='utf-8')
+          source = source.replace(
+              'writeFileSync(target, gunzipSync(compressed));',
+              'const svg = gunzipSync(compressed).toString("utf8").replace(\' style="display:none"\', "");\nwriteFileSync(target, svg);',
+          )
+          path.write_text(source, encoding='utf-8')
           PY
+          node scripts/generate-option-assets.mjs
 
-      - name: Integrate artwork into the application
-        run: python .asset-patch/apply.py
+      - name: Validate complete artwork catalog
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          sprite = Path('public/assets/options.svg').read_text(encoding='utf-8')
+          editor = Path('src/features/dress-editor/DressEditorPage.tsx').read_text(encoding='utf-8')
+          expected = [
+              'common-unknown',
+              *[f'top-{x}' for x in ['strapless','offShoulder','spaghetti','wideStrap','halter','oneShoulder','shortSleeve','longSleeve']],
+              *[f'neckline-{x}' for x in ['straight','sweetheart','v','square','scoop','high','illusion','asymmetric']],
+              *[f'silhouette-{x}' for x in ['aLine','ballGown','fitAndFlare','mermaid','sheath','teaLength']],
+              *[f'fabric-{x}' for x in ['mikadoSatin','lace','tulle','organzaChiffon','glitterBeaded','floral3D']],
+              *[f'color-{x}' for x in ['pureWhite','ivory','champagne']],
+              *[f'train-{x}' for x in ['none','sweep','chapel','cathedral']],
+              *[f'waistline-{x}' for x in ['natural','basque','drop','empire']],
+              *[f'back-{x}' for x in ['openBack','vBack','buttonBack','corsetBack','illusionBack','bowBack']],
+              *[f'detail-{x}' for x in ['corset','draping','waistBow','backBow','pearl','sequin','floral','slit','sheer','detachableSleeve','overskirt','buttons']],
+          ]
+          missing = [symbol for symbol in expected if f'id="{symbol}"' not in sprite]
+          if missing:
+              raise SystemExit(f'Missing artwork symbols: {missing}')
+          if 'TinyIcon' in editor or 'OptionArtwork' not in editor:
+              raise SystemExit('Dress editor is not wired to the generated artwork')
+          if 'style="display:none"' in sprite:
+              raise SystemExit('External sprite root is still hidden')
+          print(f'Validated {len(expected)} generated SVG artworks.')
+          PY
 
       - name: Install dependencies
         run: npm install
