@@ -7,5 +7,8 @@ const compressed = Buffer.from(
   "base64",
 );
 mkdirSync("public/assets", { recursive: true });
-writeFileSync(target, gunzipSync(compressed));
+const svg = gunzipSync(compressed)
+  .toString("utf8")
+  .replace(' style="display:none"', "");
+writeFileSync(target, svg);
 console.log("Generated 58 dress option SVG artworks.");
