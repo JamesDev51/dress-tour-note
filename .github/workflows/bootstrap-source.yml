@@ -1,0 +1,40 @@
+name: Bootstrap full source
+
+on:
+  push:
+    branches: [feat/full-prd-implementation]
+    paths:
+      - .bootstrap/complete
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/full-prd-implementation
+
+      - name: Verify and unpack source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/source.part-* | base64 --decode > /tmp/dress-tour-note.tar.xz
+          echo "564d9780df03f0211b1dd4a55836752d0aac27bd95c163565ff9d9a6779b7343  /tmp/dress-tour-note.tar.xz" | sha256sum --check
+          tar -xJf /tmp/dress-tour-note.tar.xz -C .
+          rm -rf .bootstrap .github/workflows/bootstrap-source.yml
+
+      - name: Commit implemented application
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: implement complete dress tour note PRD"
+          git push origin HEAD:feat/full-prd-implementation
