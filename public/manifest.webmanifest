@@ -1,0 +1,17 @@
+{
+  "name": "그드레스 - 드레스투어 노트",
+  "short_name": "그드레스",
+  "description": "사진을 찍지 못하는 드레스투어에서 드레스 특징을 조합해 기록하고 PDF로 보관하는 모바일 웹앱",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9f5f1",
+  "theme_color": "#7d3e38",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
