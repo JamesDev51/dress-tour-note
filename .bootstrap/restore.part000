@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+set -euo pipefail
+find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+mkdir -p '.github/workflows'
+cat > '.github/workflows/ci.yml' <<'__GUDRESS_FILE_000_8BEA1F__'
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Preserve generated lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-lock-${{ github.run_id }}
+          path: package-lock.json
+          if-no-files-found: ignore
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit and integration tests
+        run: npm run test:run
+
+      - name: Production build
+        run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Mobile product flow
+        run: npm run test:e2e
+
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+__GUDRESS_FILE_000_8BEA1F__
+mkdir -p '.'
+cat > '.gitignore' <<'__GUDRESS_FILE_001_8BEA1F__'
+node_modules
+dist
+coverage
+playwright-report
+test-results
+*.local
+.DS_Store
+.vscode
+.idea
+__GUDRESS_FILE_001_8BEA1F__
+mkdir -p '.'
+cat > '.prettierignore' <<'__GUDRESS_FILE_002_8BEA1F__'
+dist
+coverage
+playwright-report
+test-results
+package-lock.json
+__GUDRESS_FILE_002_8BEA1F__
+mkdir -p '.'
+cat > '.prettierrc.json' <<'__GUDRESS_FILE_003_8BEA1F__'
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "semi": true
+}
+__GUDRESS_FILE_003_8BEA1F__
+mkdir -p '.'
+cat > 'README.md' <<'__GUDRESS_FILE_004_8BEA1F__'
+# 그드레스 · Dress Tour Note
+
+사진 촬영이 제한된 드레스투어에서 그림을 잘 그리지 못해도 드레스의 형태를 기록하고, 비교하고, 다시 편집할 수 있는 **모바일 전용 로컬 웹앱**입니다.
+
+## 핵심 원칙
+
+- 서버, 계정, 로그인, 사용자 데이터 업로드가 없습니다.
+- 투어·샵·드레스·메모·점수·얼굴 이미지는 현재 브라우저의 IndexedDB에만 저장합니다.
+- 어깨/소매, 가슴선, 허리, 치마, 트레인, 소재, 장식, 뒷모습, 액세서리를 동일한 SVG 렌더러로 조합합니다.
+- 내보낸 PDF는 사람이 읽는 A4 문서인 동시에 구조화 데이터와 해시가 포함된 복원 원본입니다.
+- 원본 PDF를 다른 기기의 같은 웹앱에서 불러오면 기록을 그대로 이어서 수정할 수 있습니다.
+- 데스크톱에서도 최대 430px의 모바일 앱 화면으로 표시합니다.
+
+## 기술 스택
+
+- React 19, TypeScript, Vite
+- React Router
+- Dexie / IndexedDB
+- Zustand
+- Zod
+- SVG dress composer
+- pdf-lib + PDF.js
+- Vitest + Testing Library + Playwright
+- Vercel static deployment + PWA service worker
+
+## 개발
+
+```bash
+npm install
+npm run dev
+```
+
+전체 검증:
+
+```bash
+npm run check
+npm run test:e2e
+```
+
+## 주요 경로
+
+- `/` 랜딩, 최근 초안 및 로컬 기록
+- `/tour/new` 새 투어
+- `/tour/:tourId` 투어 대시보드
+- `/tour/:tourId/shop/:shopId` 샵과 드레스 목록
+- `/tour/:tourId/dress/:dressId` 드레스 조
