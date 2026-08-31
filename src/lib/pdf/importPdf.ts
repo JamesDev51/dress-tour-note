@@ -15,10 +15,28 @@ import {
 } from './portable';
 
 type PdfAttachment = { filename?: string; content: Uint8Array };
+type PdfAttachmentMetadata = { filename?: string; content?: Uint8Array };
 type PdfAttachmentEntry = [string, PdfAttachment];
 
 function bytesToString(bytes: Uint8Array) {
   return new TextDecoder().decode(bytes);
+}
+
+async function normalizeAttachments(
+  documentProxy: unknown,
+  attachments: Map<string, PdfAttachmentMetadata> | Record<string, PdfAttachmentMetadata>,
+): Promise<PdfAttachmentEntry[]> {
+  const rawEntries = attachments instanceof Map ? [...attachments.entries()] : Object.entries(attachments);
+  const contentReader = documentProxy as {
+    getAttachmentContent: (id: string) => Promise<Uint8Array>;
+  };
+  const entries: PdfAttachmentEntry[] = [];
+
+  for (const [key, value] of rawEntries) {
+    const content = value.content ?? (await contentReader.getAttachmentContent(key));
+    entries.push([key, { filename: value.filename, content }]);
+  }
+  return entries;
 }
 
 function findAttachment(entries: PdfAttachmentEntry[], fileName: string) {
@@ -82,8 +100,13 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
 
   try {
     const attachments = await documentProxy.getAttachments();
-    if (!attachments) throw new Error('복원 가능한 그드레스 PDF가 아니에요.');
-    const entries = Object.entries(attachments) as PdfAttachmentEntry[];
+    if (!attachments || attachments.size === 0) {
+      throw new Error('복원 가능한 그드레스 PDF가 아니에요.');
+    }
+    const entries = await normalizeAttachments(
+      documentProxy,
+      attachments as unknown as Map<string, PdfAttachmentMetadata> | Record<string, PdfAttachmentMetadata>,
+    );
 
     let payload: PortableTourV1;
     let integrityVerified = false;
