@@ -1,0 +1,227 @@
+cat > src/pages-home.tsx <<'EOF_PAGES_HOME'
+import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAppState } from './app-state';
+import { AppShell, Button, EmptyState, Modal, TextArea, TextField } from './components';
+import { createDress, createShop, createTour, nowIso, uid, type DressNote, type ShopNote, type TourDocument } from './domain';
+import { DressPreview } from './dress';
+import { processFacePhoto } from './image';
+import { createTourPdf, shareOrDownloadPdf, verifyCreatedPdf, type PdfProgress } from './pdf';
+
+function formatDate(value: string) {
+  if (!value) return '날짜 미정';
+  try { return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(`${value}T00:00:00`)); }
+  catch { return value; }
+}
+
+export function HomePage() {
+  const navigate = useNavigate();
+  const { tours, removeTour, copyTour } = useAppState();
+  const [deleteId, setDeleteId] = useState<string>();
+  const deleting = tours.find((tour) => tour.id === deleteId);
+  return <AppShell actions={<button className="icon-button" aria-label="설정" onClick={() => navigate('/settings')}>⚙</button>}>
+    <section className="hero">
+      <span className="hero-kicker">DRESS TOUR NOTE</span>
+      <h1>사진 대신<br/><em>모양으로</em> 기억해요</h1>
+      <p>그림을 못 그려도 괜찮아요. 본 드레스와 비슷한 모양을 골라 기록하고, PDF 하나로 옮겨 다니세요.</p>
+      <div className="hero-actions">
+        <Button full onClick={() => navigate('/tour/new')}>＋ 새 드레스투어 시작</Button>
+        <Button full variant="secondary" onClick={() => navigate('/import')}>PDF 기록 불러오기</Button>
+      </div>
+      <div className="privacy-pill">🔒 사진과 기록은 이 기기 안에만 저장돼요</div>
+    </section>
+    <section className="section-block">
+      <div className="section-heading"><div><span>MY TOURS</span><h2>최근 기록</h2></div><strong>{tours.length}</strong></div>
+      {!tours.length ? <EmptyState icon="👗" title="아직 기록이 없어요" description="드레스투어 전에 미리 만들어두면 샵에서 바로 기록할 수 있어요." action={<Button onClick={() => navigate('/tour/new')}>첫 기록 만들기</Button>} /> :
+        <div className="tour-list">{tours.map((tour) => {
+          const favorites = tour.dresses.filter((dress) => dress.favorite).length;
+          return <article className="tour-card" key={tour.id}>
+            <button className="tour-card-main" onClick={() => navigate(`/tour/${tour.id}`)}>
+              <span className="tour-date">{formatDate(tour.tourDate)}</span>
+              <h3>{tour.title}</h3>
+              <p>{tour.shops.length}개 샵 · {tour.dresses.length}벌 · 후보 {favorites}벌</p>
+              <span className="tour-open">열기 ›</span>
+            </button>
+            <div className="card-menu">
+              <button onClick={() => void copyTour(tour).then((copy) => navigate(`/tour/${copy.id}`))}>사본</button>
+              <button className="danger-text" onClick={() => setDeleteId(tour.id)}>삭제</button>
+            </div>
+          </article>;
+        })}</div>}
+    </section>
+    <Modal open={Boolean(deleteId)} title="이 투어를 삭제할까요?" onClose={() => setDeleteId(undefined)}>
+      <p className="modal-copy"><strong>{deleting?.title}</strong>에 적어둔 샵, 드레스, 메모가 현재 기기에서 모두 삭제돼요. 내보낸 PDF는 그대로 남아 있어요.</p>
+      <div className="modal-actions"><Button variant="secondary" onClick={() => setDeleteId(undefined)}>취소</Button><Button variant="danger" onClick={() => { if (deleteId) void removeTour(deleteId); setDeleteId(undefined); }}>삭제</Button></div>
+    </Modal>
+  </AppShell>;
+}
+
+export function NewTourPage() {
+  const navigate = useNavigate();
+  const { addTour } = useAppState();
+  const initial = useMemo(() => createTour(), []);
+  const [title, setTitle] = useState(initial.title);
+  const [brideName, setBrideName] = useState('');
+  const [partnerName, setPartnerName] = useState('');
+  const [tourDate, setTourDate] = useState(initial.tourDate);
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!title.trim()) return;
+    setSubmitting(true);
+    const tour = createTour({ title, brideName, partnerName, tourDate });
+    await addTour(tour);
+    navigate(`/tour/${tour.id}`, { replace: true });
+  };
+  return <AppShell title="새 드레스투어" eyebrow="NEW TOUR" back bottom={<Button full form="new-tour-form" type="submit" disabled={submitting || !title.trim()}>{submitting ? '만드는 중…' : '투어 시작하기'}</Button>}>
+    <form id="new-tour-form" className="form-stack" onSubmit={(event) => void submit(event)}>
+      <div className="intro-card"><span>01</span><h1>어떤 투어를<br/>기록할까요?</h1><p>이름과 날짜는 나중에 언제든 바꿀 수 있어요.</p></div>
+      <TextField label="투어 이름" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="예: 12월 드레스투어" maxLength={50} autoFocus />
+      <div className="two-columns"><TextField label="신부 이름" value={brideName} onChange={(event) => setBrideName(event.target.value)} placeholder="선택" maxLength={20} /><TextField label="동행인 이름" value={partnerName} onChange={(event) => setPartnerName(event.target.value)} placeholder="선택" maxLength={20} /></div>
+      <TextField label="투어 날짜" type="date" value={tourDate} onChange={(event) => setTourDate(event.target.value)} />
+      <aside className="notice-card"><strong>서버에 저장하지 않아요</strong><p>입력한 기록과 사진은 현재 브라우저의 IndexedDB에 자동 저장돼요. 다른 기기로 옮길 때는 PDF를 사용해 주세요.</p></aside>
+    </form>
+  </AppShell>;
+}
+
+export function TourPage() {
+  const { tourId } = useParams();
+  const navigate = useNavigate();
+  const { getTour, updateTour } = useAppState();
+  const tour = getTour(tourId);
+  const [shopModal, setShopModal] = useState(false);
+  const [shopName, setShopName] = useState('');
+  const [deleteShopId, setDeleteShopId] = useState<string>();
+  const [exporting, setExporting] = useState(false);
+  const [progress, setProgress] = useState<PdfProgress>();
+  const [pageError, setPageError] = useState<string>();
+  const fileRef = useRef<HTMLInputElement>(null);
+  if (!tour || !tourId) return <MissingRecord />;
+
+  const addShop = () => {
+    const shop = createShop(tour, shopName);
+    updateTour(tourId, (draft) => { draft.shops.push(shop); });
+    setShopModal(false); setShopName('');
+    navigate(`/tour/${tourId}/shop/${shop.id}`);
+  };
+  const removeShop = (shopId: string) => {
+    updateTour(tourId, (draft) => {
+      draft.shops = draft.shops.filter((shop) => shop.id !== shopId).map((shop, index) => ({ ...shop, order: index }));
+      draft.dresses = draft.dresses.filter((dress) => dress.shopId !== shopId);
+    });
+    setDeleteShopId(undefined);
+  };
+  const moveShop = (shopId: string, direction: -1 | 1) => {
+    updateTour(tourId, (draft) => {
+      const sorted = [...draft.shops].sort((a, b) => a.order - b.order);
+      const index = sorted.findIndex((shop) => shop.id === shopId);
+      const target = index + direction;
+      if (target < 0 || target >= sorted.length) return;
+      [sorted[index], sorted[target]] = [sorted[target], sorted[index]];
+      draft.shops = sorted.map((shop, order) => ({ ...shop, order, updatedAt: nowIso() }));
+    });
+  };
+  const uploadFace = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; if (!file) return;
+    try { const face = await processFacePhoto(file); updateTour(tourId, (draft) => { draft.face = face; }); }
+    catch (reason) { setPageError(reason instanceof Error ? reason.message : '사진을 불러오지 못했어요.'); }
+    event.target.value = '';
+  };
+  const exportPdf = async () => {
+    setExporting(true); setPageError(undefined);
+    try {
+      const result = await createTourPdf(tour, setProgress);
+      setProgress({ stage: 'verify', current: 1, total: 1, message: '다시 불러올 수 있는지 마지막으로 확인해요.' });
+      await verifyCreatedPdf(result.blob);
+      await shareOrDownloadPdf(result.blob, result.fileName);
+    } catch (reason) { setPageError(reason instanceof Error ? reason.message : 'PDF를 만들지 못했어요.'); }
+    finally { setExporting(false); setProgress(undefined); }
+  };
+  const sortedShops = [...tour.shops].sort((a, b) => a.order - b.order);
+  const favorites = tour.dresses.filter((dress) => dress.favorite);
+  return <AppShell title={tour.title} eyebrow={formatDate(tour.tourDate)} back actions={<button className="icon-button" aria-label="PDF 내보내기" onClick={() => void exportPdf()}>⇧</button>} bottom={<div className="bottom-grid"><Button full onClick={() => setShopModal(true)}>＋ 드레스샵 추가</Button><Button full variant="secondary" onClick={() => void exportPdf()} disabled={exporting}>PDF</Button></div>}>
+    {pageError && <div className="inline-error" role="alert">{pageError}<button onClick={() => setPageError(undefined)}>×</button></div>}
+    <section className="tour-overview">
+      <div><span>SHOPS</span><strong>{tour.shops.length}</strong></div><div><span>DRESSES</span><strong>{tour.dresses.length}</strong></div><div><span>FAVORITES</span><strong>{favorites.length}</strong></div>
+    </section>
+    <details className="edit-panel"><summary>투어 기본 정보 수정</summary><div className="form-stack compact">
+      <TextField label="투어 이름" value={tour.title} onChange={(event) => updateTour(tourId, (draft) => { draft.title = event.target.value; })} />
+      <div className="two-columns"><TextField label="신부 이름" value={tour.brideName} onChange={(event) => updateTour(tourId, (draft) => { draft.brideName = event.target.value; })} /><TextField label="동행인 이름" value={tour.partnerName} onChange={(event) => updateTour(tourId, (draft) => { draft.partnerName = event.target.value; })} /></div>
+      <TextField label="투어 날짜" type="date" value={tour.tourDate} onChange={(event) => updateTour(tourId, (draft) => { draft.tourDate = event.target.value; })} />
+      <TextArea label="전체 메모" value={tour.generalMemo} onChange={(event) => updateTour(tourId, (draft) => { draft.generalMemo = event.target.value; })} rows={3} placeholder="투어 전체에서 기억할 내용을 적어주세요." />
+    </div></details>
+    <section className="face-card">
+      <div><span className="section-kicker">MY FACE</span><h2>내 얼굴로 느낌 보기</h2><p>가상 피팅이 아니라 목선과 전체 분위기를 기억하기 위한 기능이에요.</p></div>
+      <input ref={fileRef} type="file" accept="image/*" hidden onChange={(event) => void uploadFace(event)} />
+      {tour.face ? <div className="face-row"><img src={tour.face.dataUrl} alt="선택한 얼굴"/><div><strong>{tour.face.fileName}</strong><button onClick={() => fileRef.current?.click()}>사진 바꾸기</button><button className="danger-text" onClick={() => updateTour(tourId, (draft) => { delete draft.face; })}>삭제</button></div></div> : <Button variant="secondary" onClick={() => fileRef.current?.click()}>얼굴 사진 선택</Button>}
+      <small>사진은 서버로 전송되지 않고 이 기기와 내보낸 PDF 안에만 들어가요.</small>
+    </section>
+    <section className="section-block">
+      <div className="section-heading"><div><span>SHOPS</span><h2>드레스샵</h2></div></div>
+      {!sortedShops.length ? <EmptyState icon="⌂" title="첫 샵을 추가해 주세요" description="샵을 만든 뒤 입어본 드레스를 차례대로 기록할 수 있어요." action={<Button onClick={() => setShopModal(true)}>드레스샵 추가</Button>} /> : <div className="shop-list">{sortedShops.map((shop, index) => {
+        const dresses = tour.dresses.filter((dress) => dress.shopId === shop.id);
+        return <article className="shop-card" key={shop.id}>
+          <button className="shop-main" onClick={() => navigate(`/tour/${tourId}/shop/${shop.id}`)}><span className="shop-order">{String(index + 1).padStart(2, '0')}</span><div><h3>{shop.name}</h3><p>{dresses.length}벌 · 후보 {dresses.filter((dress) => dress.favorite).length}벌</p></div><span>›</span></button>
+          <div className="shop-tools"><button aria-label="위로 이동" disabled={index === 0} onClick={() => moveShop(shop.id, -1)}>↑</button><button aria-label="아래로 이동" disabled={index === sortedShops.length - 1} onClick={() => moveShop(shop.id, 1)}>↓</button><button className="danger-text" onClick={() => setDeleteShopId(shop.id)}>삭제</button></div>
+        </article>;
+      })}</div>}
+    </section>
+    {favorites.length > 0 && <section className="section-block"><div className="section-heading"><div><span>FAVORITES</span><h2>후보 모아보기</h2></div></div><div className="favorite-strip">{favorites.map((dress) => <button key={dress.id} onClick={() => navigate(`/tour/${tourId}/dress/${dress.id}`)}><DressPreview design={dress.design} view={dress.view} face={tour.face}/><strong>{dress.name}</strong><span>{tour.shops.find((shop) => shop.id === dress.shopId)?.name}</span></button>)}</div></section>}
+    <Modal open={shopModal} title="드레스샵 추가" onClose={() => setShopModal(false)}><div className="form-stack compact"><TextField label="드레스샵 이름" value={shopName} onChange={(event) => setShopName(event.target.value)} placeholder="예: 아뜰리에 로리에" autoFocus/><div className="modal-actions"><Button variant="secondary" onClick={() => setShopModal(false)}>취소</Button><Button onClick={addShop}>샵 저장</Button></div></div></Modal>
+    <Modal open={Boolean(deleteShopId)} title="샵 기록을 삭제할까요?" onClose={() => setDeleteShopId(undefined)}><p className="modal-copy">이 샵에 기록한 드레스도 함께 삭제돼요.</p><div className="modal-actions"><Button variant="secondary" onClick={() => setDeleteShopId(undefined)}>취소</Button><Button variant="danger" onClick={() => deleteShopId && removeShop(deleteShopId)}>함께 삭제</Button></div></Modal>
+    <Modal open={exporting} title="PDF 만들기" onClose={() => undefined}><div className="progress-box"><span className="loader"/><strong>{progress?.message || '준비 중이에요.'}</strong>{progress && <progress value={progress.current} max={progress.total}/>}<small>화면을 닫지 않아도 자동 저장된 기록은 그대로 남아 있어요.</small></div></Modal>
+  </AppShell>;
+}
+
+export function ShopPage() {
+  const { tourId, shopId } = useParams();
+  const navigate = useNavigate();
+  const { getTour, updateTour } = useAppState();
+  const tour = getTour(tourId);
+  const shop = tour?.shops.find((item) => item.id === shopId);
+  const [deleteDressId, setDeleteDressId] = useState<string>();
+  if (!tour || !shop || !tourId || !shopId) return <MissingRecord />;
+  const dresses = tour.dresses.filter((dress) => dress.shopId === shopId).sort((a, b) => a.order - b.order);
+  const addDress = () => {
+    const dress = createDress(tour, shopId);
+    updateTour(tourId, (draft) => { draft.dresses.push(dress); });
+    navigate(`/tour/${tourId}/dress/${dress.id}`);
+  };
+  const duplicateDress = (source: DressNote) => {
+    const copy: DressNote = { ...structuredClone(source), id: uid('dress'), name: `${source.name} 사본`, order: dresses.length, favorite: false, createdAt: nowIso(), updatedAt: nowIso() };
+    updateTour(tourId, (draft) => { draft.dresses.push(copy); });
+  };
+  const deleteDress = (id: string) => {
+    updateTour(tourId, (draft) => { draft.dresses = draft.dresses.filter((dress) => dress.id !== id).map((dress) => dress.shopId === shopId ? { ...dress, order: draft.dresses.filter((item) => item.shopId === shopId && item.id !== id).findIndex((item) => item.id === dress.id) } : dress); });
+    setDeleteDressId(undefined);
+  };
+  const moveDress = (id: string, direction: -1 | 1) => {
+    updateTour(tourId, (draft) => {
+      const sorted = draft.dresses.filter((dress) => dress.shopId === shopId).sort((a, b) => a.order - b.order);
+      const index = sorted.findIndex((dress) => dress.id === id); const target = index + direction;
+      if (target < 0 || target >= sorted.length) return;
+      [sorted[index], sorted[target]] = [sorted[target], sorted[index]];
+      const orders = new Map(sorted.map((dress, order) => [dress.id, order]));
+      draft.dresses = draft.dresses.map((dress) => orders.has(dress.id) ? { ...dress, order: orders.get(dress.id)!, updatedAt: nowIso() } : dress);
+    });
+  };
+  return <AppShell title={shop.name} eyebrow={`${dresses.length} DRESSES`} back bottom={<Button full onClick={addDress}>{dresses.length ? '＋ 드레스 한 벌 더 추가' : '＋ 첫 드레스 추가'}</Button>}>
+    <details className="edit-panel" open={!shop.name.trim()}><summary>샵 정보와 메모</summary><div className="form-stack compact">
+      <TextField label="드레스샵 이름" value={shop.name} onChange={(event) => updateTour(tourId, (draft) => { const item = draft.shops.find((value) => value.id === shopId); if (item) { item.name = event.target.value; item.updatedAt = nowIso(); } })}/>
+      <TextField label="주소" value={shop.address} onChange={(event) => updateTour(tourId, (draft) => { const item = draft.shops.find((value) => value.id === shopId); if (item) item.address = event.target.value; })} placeholder="선택"/>
+      <div className="two-columns"><TextField label="방문 시간" type="time" value={shop.visitTime} onChange={(event) => updateTour(tourId, (draft) => { const item = draft.shops.find((value) => value.id === shopId); if (item) item.visitTime = event.target.value; })}/><TextField label="담당자" value={shop.consultant} onChange={(event) => updateTour(tourId, (draft) => { const item = draft.shops.find((value) => value.id === shopId); if (item) item.consultant = event.target.value; })} placeholder="선택"/></div>
+      <TextArea label="샵 메모" value={shop.memo} onChange={(event) => updateTour(tourId, (draft) => { const item = draft.shops.find((value) => value.id === shopId); if (item) item.memo = event.target.value; })} rows={3} placeholder="피팅비, 분위기, 상담 내용 등"/>
+    </div></details>
+    {!dresses.length ? <EmptyState icon="♢" title="아직 드레스가 없어요" description="입어본 순서대로 추가하면 나중에 기억하기 쉬워요." action={<Button onClick={addDress}>첫 드레스 추가</Button>}/> : <div className="dress-list">{dresses.map((dress, index) => <article className={`dress-card ${dress.favorite ? 'favorite' : ''}`} key={dress.id}>
+      <button className="dress-card-preview" onClick={() => navigate(`/tour/${tourId}/dress/${dress.id}`)}><DressPreview design={dress.design} view={dress.view} face={tour.face}/>{dress.favorite && <span className="favorite-badge">♥ 후보</span>}</button>
+      <div className="dress-card-copy"><button className="dress-card-title" onClick={() => navigate(`/tour/${tourId}/dress/${dress.id}`)}><strong>{dress.name}</strong><span>{dress.design.shoulder} · {dress.design.skirt}</span></button><div className="dress-card-tools"><button disabled={index === 0} aria-label="위로 이동" onClick={() => moveDress(dress.id, -1)}>↑</button><button disabled={index === dresses.length - 1} aria-label="아래로 이동" onClick={() => moveDress(dress.id, 1)}>↓</button><button onClick={() => duplicateDress(dress)}>복제</button><button className="danger-text" onClick={() => setDeleteDressId(dress.id)}>삭제</button></div></div>
+    </article>)}</div>}
+    <Modal open={Boolean(deleteDressId)} title="드레스 기록을 삭제할까요?" onClose={() => setDeleteDressId(undefined)}><p className="modal-copy">선택한 모양과 메모가 현재 기기에서 삭제돼요.</p><div className="modal-actions"><Button variant="secondary" onClick={() => setDeleteDressId(undefined)}>취소</Button><Button variant="danger" onClick={() => deleteDressId && deleteDress(deleteDressId)}>삭제</Button></div></Modal>
+  </AppShell>;
+}
+
+export function MissingRecord() {
+  const navigate = useNavigate();
+  return <AppShell back><EmptyState icon="?" title="기록을 찾지 못했어요" description="삭제됐거나 다른 기기에 저장된 기록일 수 있어요." action={<Button onClick={() => navigate('/')}>홈으로 가기</Button>}/></AppShell>;
+}
+EOF_PAGES_HOME
