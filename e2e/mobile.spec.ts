@@ -43,6 +43,21 @@ async function createTour(page:Page,{twoDresses=false,face=false}:{twoDresses?:b
   return tourId;
 }
 
+async function expectImportPreview(page:Page,title:string){
+  await expect.poll(async()=>{
+    if(await page.getByText(title,{exact:true}).count())return 'preview';
+    const status=await page.getByRole('status').textContent().catch(()=>null);
+    if(status)return `status: ${status}`;
+    if(await page.getByText('복원 데이터를 확인하는 중...',{exact:true}).count())return 'loading';
+    return 'waiting';
+  },{timeout:25_000,message:'PDF import should render a preview instead of hanging or surfacing an error'}).toBe('preview');
+}
+
+test.beforeEach(async({page})=>{
+  page.on('pageerror',error=>console.log(`[pageerror] ${error.message}`));
+  page.on('console',message=>{if(message.type()==='error')console.log(`[console.error] ${message.text()}`)});
+});
+
 test('mobile core flow autosaves, reloads and compares two dresses',async({page})=>{
   const tourId=await createTour(page,{twoDresses:true});
   await page.reload();
@@ -62,6 +77,7 @@ test('mobile core flow autosaves, reloads and compares two dresses',async({page}
 test('portable PDF downloads, imports as a copy, and restores face data',async({page})=>{
   const tourId=await createTour(page,{face:true});
   await page.goto(`/tour/${tourId}/export`);
+  await expect(page.getByText('저장할 PDF를',{exact:false})).toBeVisible({timeout:20_000});
   await page.getByRole('button',{name:'복원 가능한 PDF 만들기',exact:true}).click();
   await expect(page.getByText('PDF가 준비됐어요.')).toBeVisible({timeout:40_000});
   const downloadPromise=page.waitForEvent('download');
@@ -71,7 +87,7 @@ test('portable PDF downloads, imports as a copy, and restores face data',async({
   expect(path).toBeTruthy();
   await page.goto('/import');
   await page.locator('input[type="file"]').setInputFiles(path!);
-  await expect(page.getByText('E2E 드레스투어',{exact:true})).toBeVisible({timeout:20_000});
+  await expectImportPreview(page,'E2E 드레스투어');
   await expect(page.getByText('이 기기에 같은 투어가 있어요')).toBeVisible();
   await page.getByRole('button',{name:'이 기록 불러오기',exact:true}).click();
   await expect(page).toHaveURL(/\/tour\/[^/]+$/);
