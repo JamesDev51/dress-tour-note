@@ -25,6 +25,19 @@ export interface PortableTourV1 {
   assets: PortableAssetRef[];
 }
 
+export interface PortableManifestV1 {
+  appId: 'kr.gudress.web';
+  format: 'gudress-portable-pdf';
+  formatVersion: 1;
+  schemaVersion: 1;
+  createdAt: string;
+  tourAttachment: 'gudress-tour.json';
+  faceAttachment?: string;
+  tourSha256: string;
+  faceSha256: string | null;
+  generator: string;
+}
+
 export interface ImportPreview {
   payload: PortableTourV1;
   hasConflict: boolean;
@@ -34,6 +47,8 @@ export interface ImportPreview {
   dressCount: number;
   favoriteCount: number;
   assetBytes: Map<string, Uint8Array>;
+  integrityVerified: boolean;
+  legacyFormat: boolean;
 }
 
 export type ImportStrategy = 'copy' | 'overwrite';
@@ -44,9 +59,20 @@ export interface ExportOptions {
   mode: PdfExportMode;
 }
 
-export type ExportProgress = { step: 'prepare' | 'render' | 'assemble' | 'attach' | 'done'; percent: number; label: string };
+export type ExportProgress = {
+  step: 'prepare' | 'render' | 'assemble' | 'attach' | 'verify' | 'done';
+  percent: number;
+  label: string;
+};
 
 export interface PortableBundle {
   payload: PortableTourV1;
   assets: LocalAsset[];
+}
+
+export interface PortableSerializedFiles {
+  manifest: PortableManifestV1;
+  manifestBytes: Uint8Array;
+  tourBytes: Uint8Array;
+  faceBytes?: Uint8Array;
 }
