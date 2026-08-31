@@ -8,16 +8,16 @@
 *{box-sizing:border-box}
 html{background:#f4efec;scroll-padding-top:88px;scroll-padding-bottom:120px}
 body{margin:0;min-width:320px;min-height:100dvh}
-button,input,textarea{font:inherit}
+button,input,textarea{font:inherit;scroll-margin-block:96px 128px}
 button{touch-action:manipulation}
 .dress-preview svg{display:block;width:100%;height:100%}
 input[type="range"]{min-height:36px}
 ::selection{background:#f1d5ce}
 .app-root{background:#f4efec}
 .app-shell{background:#fffdfa}
-.app-root>[role="status"]{pointer-events:none}
+.app-root [role="status"]{pointer-events:none}
 .app-root[data-theme="clean"]{background:#eef0f2}
 .app-root[data-theme="clean"] .app-shell{background:#fff}
 .app-root[data-font="serif"],.app-root[data-font="serif"] button,.app-root[data-font="serif"] input,.app-root[data-font="serif"] textarea{font-family:"Noto Serif KR",serif}
-@media (max-width:767px){[class~="top-[72px]"]{position:relative!important;top:auto!important}}
+@media (max-width:767px){.app-shell main div.sticky{position:static!important;top:auto!important}}
 @media (min-width:768px){body::before{content:"모바일 전용 웹 · 브라우저 폭을 줄이면 실제 사용 화면과 비슷합니다";position:fixed;left:24px;top:24px;color:#a3918c;font-size:12px;max-width:180px;line-height:1.6}}
