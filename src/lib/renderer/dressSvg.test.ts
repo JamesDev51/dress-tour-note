@@ -42,4 +42,29 @@ describe("dress SVG person composition", () => {
     expect(svg).toContain(`href="${faceDataUrl}"`);
     expect(svg).toContain('clip-path="url(#face-dress-svg)"');
   });
+
+  it("does not render retired train, waistline, or detail effects", () => {
+    const legacyDress: Dress = {
+      ...dress,
+      topStyle: "spaghetti",
+      neckline: "high",
+      silhouette: "fitAndFlare",
+      waistline: "basque",
+      backStyle: "bowBack",
+      fabric: "glitterBeaded",
+      train: "chapel",
+      details: ["waistBow", "buttons"],
+    };
+    const svg = dressSvgMarkup(
+      legacyDress,
+      "data:image/webp;base64,person-base",
+      undefined,
+      false,
+    );
+
+    expect(svg).not.toContain("M180 470 C240 500");
+    expect(svg).not.toContain("M148 252L180 274");
+    expect(svg).not.toContain("M0 0C-18-18");
+    expect(svg).not.toContain('<circle cx="180" cy="205"');
+  });
 });

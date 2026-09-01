@@ -1,6 +1,6 @@
 import type { Dress, FaceTransform } from "../../types/domain";
 import { loadDressPersonBase } from "../image/dressPerson";
-import { colorHex } from "../dress/options";
+import { colorHex, dressForPresentation } from "../dress/options";
 
 const esc = (v: string) =>
   v.replace(
@@ -69,11 +69,6 @@ function upperExtras(top: Dress["topStyle"], base: string, shadow: string) {
       return "";
   }
 }
-function trainPath(type: Dress["train"], base: string) {
-  if (type === "none" || type === "unknown") return "";
-  const ext = type === "sweep" ? 40 : type === "chapel" ? 85 : 145;
-  return `<path d="M180 470 C240 500 ${260 + ext} 545 ${280 + ext} 596 C230 606 175 602 130 588 C175 560 190 520 180 470 Z" fill="${base}" opacity=".8"/>`;
-}
 function pattern(dress: Dress, id: string) {
   switch (dress.fabric) {
     case "lace":
@@ -95,32 +90,6 @@ function pattern(dress: Dress, id: string) {
     default:
       return "";
   }
-}
-function detailOverlays(dress: Dress, base: string) {
-  let out = "";
-  if (dress.details.includes("waistBow"))
-    out += `<g transform="translate(180 260)"><path d="M0 0C-18-18-38-13-35 7C-25 18-10 12 0 4C10 12 25 18 35 7C38-13 18-18 0 0Z" fill="#eaded8"/><circle r="6" fill="#d6c4bb"/></g>`;
-  if (dress.details.includes("buttons"))
-    out += Array.from(
-      { length: 7 },
-      (_, i) =>
-        `<circle cx="180" cy="${205 + i * 16}" r="2.4" fill="#cdbdb4"/>`,
-    ).join("");
-  if (dress.details.includes("pearl"))
-    out += `<path d="M145 245 Q180 275 215 245" fill="none" stroke="#cfbfb5" stroke-width="5" stroke-dasharray="2 8" stroke-linecap="round"/>`;
-  if (dress.details.includes("slit"))
-    out += `<path d="M202 330 L205 565" stroke="#c9bbb3" stroke-width="2"/>`;
-  if (dress.details.includes("draping"))
-    out += `<path d="M145 210Q180 225 215 208M143 230Q180 245 217 228" fill="none" stroke="#d8cec8" stroke-width="2"/>`;
-  if (dress.details.includes("corset"))
-    out += `<path d="M160 195L170 252M200 195L190 252M180 195V252" stroke="#d8cec8" stroke-width="1.5"/>`;
-  if (dress.details.includes("floral"))
-    out += `<g fill="#eee2dc"><circle cx="155" cy="230" r="7"/><circle cx="205" cy="215" r="6"/><circle cx="220" cy="320" r="8"/></g>`;
-  if (dress.details.includes("sequin"))
-    out += `<g fill="#d6c1b6">${Array.from({ length: 18 }, (_, i) => `<circle cx="${135 + ((i * 23) % 105)}" cy="${280 + ((i * 37) % 220)}" r="1.5"/>`).join("")}</g>`;
-  if (dress.details.includes("overskirt"))
-    out += `<path d="M145 260C90 330 62 470 52 585M215 260C270 330 298 470 308 585" fill="none" stroke="${base}" stroke-width="5" opacity=".55"/>`;
-  return out;
 }
 export function dressSvgMarkup(
   dress: Dress,
@@ -145,7 +114,7 @@ export function dressSvgMarkup(
     includeFace && faceDataUrl
       ? `<g clip-path="url(#face-${id})"><image href="${esc(faceDataUrl)}" x="120" y="10" width="120" height="126" preserveAspectRatio="xMidYMid slice" transform="translate(${ft.x * 34} ${ft.y * 28}) rotate(${ft.rotation} 180 72) translate(${180 * (1 - ft.scale)} ${72 * (1 - ft.scale)}) scale(${ft.scale})"/></g>`
       : "";
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-label="${esc(dress.label)} 드레스 미리보기"><defs><clipPath id="face-${id}"><ellipse cx="180" cy="70" rx="43" ry="49"/></clipPath>${pat}</defs><rect width="360" height="640" fill="#fbf8f6"/><image href="${esc(personDataUrl)}" x="0" y="0" width="360" height="640" preserveAspectRatio="xMidYMid meet"/>${trainPath(dress.train, base)}${face}<path d="${necklinePath(dress.neckline)}" fill="${fill}" stroke="${shadow}" stroke-width="2"/>${upperExtras(dress.topStyle, base, shadow)}<path d="${skirtPath[dress.silhouette]}" fill="${fill}" stroke="${shadow}" stroke-width="2"/>${dress.waistline === "basque" ? '<path d="M148 252L180 274L212 252" fill="none" stroke="#cdbfb7" stroke-width="4"/>' : dress.waistline === "empire" ? '<path d="M151 216H209" stroke="#cdbfb7" stroke-width="4"/>' : dress.waistline === "drop" ? '<path d="M150 288H210" stroke="#cdbfb7" stroke-width="4"/>' : '<path d="M148 258H212" stroke="#cdbfb7" stroke-width="3"/>'}${detailOverlays(dress, base)}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-label="${esc(dress.label)} 드레스 미리보기"><defs><clipPath id="face-${id}"><ellipse cx="180" cy="70" rx="43" ry="49"/></clipPath>${pat}</defs><rect width="360" height="640" fill="#fbf8f6"/><image href="${esc(personDataUrl)}" x="0" y="0" width="360" height="640" preserveAspectRatio="xMidYMid meet"/>${face}<path d="${necklinePath(dress.neckline)}" fill="${fill}" stroke="${shadow}" stroke-width="2"/>${upperExtras(dress.topStyle, base, shadow)}<path d="${skirtPath[dress.silhouette]}" fill="${fill}" stroke="${shadow}" stroke-width="2"/></svg>`;
 }
 
 export async function dressSvgToJpeg(
@@ -156,7 +125,12 @@ export async function dressSvgToJpeg(
   height = 1280,
 ): Promise<Uint8Array> {
   const personDataUrl = await loadDressPersonBase();
-  const svg = dressSvgMarkup(dress, personDataUrl, faceDataUrl, includeFace);
+  const svg = dressSvgMarkup(
+    dressForPresentation(dress),
+    personDataUrl,
+    faceDataUrl,
+    includeFace,
+  );
   const blob = new Blob([svg], { type: "image/svg+xml" });
   const url = URL.createObjectURL(blob);
   try {

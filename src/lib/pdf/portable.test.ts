@@ -10,6 +10,8 @@ import {
   PORTABLE_PDF_FORMAT,
   PORTABLE_TOUR_FILE_NAME,
   SCHEMA_VERSION,
+  serializePortableBundle,
+  verifyPortableTourBytes,
 } from "./portable";
 import type { TourSnapshot } from "../../types/domain";
 const now = "2026-08-31T00:00:00.000Z";
@@ -141,5 +143,16 @@ describe("portable payload", () => {
       train: "chapel",
       details: ["backBow"],
     });
+  });
+  it("rejects a tampered raw tour attachment by hash", async () => {
+    const serialized = await serializePortableBundle(
+      buildPortableBundle(snapshot, false),
+    );
+    const tampered = new Uint8Array(serialized.tourBytes);
+    tampered[0] = tampered[0] ^ 1;
+
+    await expect(
+      verifyPortableTourBytes(serialized.manifest, tampered),
+    ).rejects.toThrow("해시가 일치하지 않아요");
   });
 });

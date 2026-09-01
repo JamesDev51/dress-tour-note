@@ -6,6 +6,7 @@ import {
   fabricOptions,
   necklineOptions,
   silhouetteOptions,
+  summarizeDress,
   topStyleOptions,
 } from "./options";
 
@@ -139,5 +140,14 @@ describe("dress presentation", () => {
   it("does not infer empire silhouette from a legacy empire waistline", () => {
     const dress = { ...legacyDress, silhouette: "unknown" as const };
     expect(dressForPresentation(dress).silhouette).toBe("unknown");
+  });
+
+  it("summarizes the mapped active fields and omits retired values", () => {
+    expect(summarizeDress(legacyDress)).toEqual([
+      "끈 있는 형태",
+      "무릎부터 크게 퍼짐",
+      "은은한 비즈",
+      "아이보리",
+    ]);
   });
 });

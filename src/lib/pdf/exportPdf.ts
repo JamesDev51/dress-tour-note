@@ -5,11 +5,7 @@ import { getTourSnapshot, patchTour } from "../../db/repositories";
 import type { Dress, Shop } from "../../types/domain";
 import type { ExportOptions, ExportProgress } from "../../types/portable";
 import { blobToDataUrl, toArrayBuffer } from "../image/processFace";
-import {
-  backStyleOptions,
-  optionLabel,
-  summarizeDress,
-} from "../dress/options";
+import { summarizeDress } from "../dress/options";
 import { dressSvgToJpeg } from "../renderer/dressSvg";
 import {
   buildPortableBundle,
@@ -258,48 +254,6 @@ export async function exportPortablePdf(
     );
     styleY -= 10;
 
-    if (dress.backStyle && dress.backStyle !== "unknown") {
-      page.drawText("BACK", {
-        x: styleX,
-        y: styleY,
-        size: 9,
-        font,
-        color: rgb(0.66, 0.37, 0.33),
-      });
-      styleY -= 22;
-      styleY = drawTextLines(
-        page,
-        font,
-        optionLabel(backStyleOptions, dress.backStyle),
-        styleX,
-        styleY,
-        9,
-        230,
-        16,
-      );
-      styleY -= 10;
-    }
-    if (dress.details.length) {
-      page.drawText("DETAIL", {
-        x: styleX,
-        y: styleY,
-        size: 9,
-        font,
-        color: rgb(0.66, 0.37, 0.33),
-      });
-      styleY -= 22;
-      styleY = drawTextLines(
-        page,
-        font,
-        dress.details.join(" · "),
-        styleX,
-        styleY,
-        9,
-        230,
-        16,
-      );
-      styleY -= 10;
-    }
     if (dress.quickTags.length) {
       page.drawText("평가", {
         x: styleX,
@@ -391,7 +345,8 @@ export async function exportPortablePdf(
     footer(page, font, pageIndex, totalPages, portable);
   }
 
-  let portableSerialized: Awaited<ReturnType<typeof serializePortableBundle>> | undefined;
+  let portableSerialized:
+    Awaited<ReturnType<typeof serializePortableBundle>> | undefined;
 
   if (portable) {
     onProgress?.({ step: "attach", percent: 90, label: "복원 데이터 첨부" });

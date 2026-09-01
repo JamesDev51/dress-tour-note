@@ -4,16 +4,15 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { DressPreview } from "../../components/DressPreview";
 import { db } from "../../db/database";
 import {
-  backStyleOptions,
   colorOptions,
+  dressForPresentation,
   fabricOptions,
   necklineOptions,
   optionLabel,
   silhouetteOptions,
   topStyleOptions,
-  trainOptions,
 } from "../../lib/dress/options";
-import type { Dress, LocalAsset } from "../../types/domain";
+import type { Dress } from "../../types/domain";
 
 export function ComparePage() {
   const { tourId = "" } = useParams();
@@ -50,7 +49,8 @@ export function ComparePage() {
         </div>
       </main>
     );
-  const [left, right] = data.dresses;
+  const visibleDresses = data.dresses.map(dressForPresentation);
+  const [left, right] = visibleDresses;
   const shopName = (d: Dress) =>
     data.shops.find((s) => s.id === d.shopId)?.name || "드레스샵";
   return (
@@ -72,15 +72,12 @@ export function ComparePage() {
       </header>
       <section className="mt-6 px-3">
         <div className="grid grid-cols-2 gap-2">
-          {data.dresses.map((d) => (
+          {visibleDresses.map((d) => (
             <div
               key={d.id}
               className="min-w-0 rounded-3xl border border-stone-100 bg-white p-2"
             >
-              <DressPreview
-                dress={d}
-                faceAsset={data.face as LocalAsset | undefined}
-              />
+              <DressPreview dress={d} faceAsset={data.face} />
               <div className="px-1 pb-2 pt-3">
                 <div className="flex items-center gap-1 text-[11px] text-stone-400">
                   <span className="truncate">{shopName(d)}</span>
@@ -122,16 +119,6 @@ export function ComparePage() {
             label="색상"
             left={optionLabel(colorOptions, left.color)}
             right={optionLabel(colorOptions, right.color)}
-          />
-          <CompareRow
-            label="뒤 길이"
-            left={optionLabel(trainOptions, left.train)}
-            right={optionLabel(trainOptions, right.train)}
-          />
-          <CompareRow
-            label="뒤태"
-            left={optionLabel(backStyleOptions, left.backStyle ?? "unknown")}
-            right={optionLabel(backStyleOptions, right.backStyle ?? "unknown")}
           />
           <CompareRow
             label="별점"
