@@ -1,0 +1,64 @@
+name: Production deployment smoke test
+
+on:
+  push:
+    branches: [test/production-smoke-20260901]
+
+permissions:
+  contents: read
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout test harness
+        uses: actions/checkout@v4
+
+      - name: Resolve the live production alias
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidates=(
+            "https://dress-tour-note.vercel.app"
+            "https://dress-tour-note-minseokjeongjames-4193s-projects.vercel.app"
+          )
+          for candidate in "${candidates[@]}"; do
+            echo "Probing ${candidate}"
+            code=$(curl --location --silent --show-error --max-time 30 \
+              --output /tmp/gudress-home.html --write-out '%{http_code}' "${candidate}/" || true)
+            if [ "$code" = "200" ] && grep -q '그드레스' /tmp/gudress-home.html; then
+              echo "PRODUCTION_URL=${candidate}" >> "$GITHUB_ENV"
+              echo "Resolved production URL: ${candidate}"
+              exit 0
+            fi
+            echo "Candidate returned HTTP ${code}"
+          done
+          echo "Could not resolve a public production alias."
+          exit 1
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run real production user journeys
+        run: npx playwright test --config=playwright.production.config.ts
+
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-smoke-evidence
+          path: |
+            test-results
+            playwright-production-report
+          if-no-files-found: ignore
+          retention-days: 7
