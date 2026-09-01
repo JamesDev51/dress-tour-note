@@ -4,4 +4,3 @@ coverage
 .vite
 *.local
 .DS_Store
-/public/assets/options.svg
