@@ -16,6 +16,7 @@ import {
   PORTABLE_MANIFEST_FILE_NAME,
   serializePortableBundle,
 } from "./portable";
+import { appendPortableTrailer } from "./portableTrailer";
 
 const A4: [number, number] = [595.28, 841.89];
 const margin = 42;
@@ -389,6 +390,8 @@ export async function exportPortablePdf(
     }
     footer(page, font, pageIndex, totalPages, portable);
   }
+
+  let portableSerialized: Awaited<ReturnType<typeof serializePortableBundle>> | undefined;
 
   if (portable) {
     onProgress?.({ step: "attach", percent: 90, label: "복원 데이터 첨부" });
