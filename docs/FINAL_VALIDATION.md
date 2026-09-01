@@ -1,3 +1,5 @@
 # Final validation
 
-The release candidate is validated with deterministic production-build checks: dependency audit, strict type checking, unit and PDF round-trip tests, a Vite/PWA build, 320 px and 390 px mobile journeys, generated WebP artwork loading, service-worker registration, client-side PDF export/import, immediate-save navigation, comparison, and invalid-file handling.
+The illustrated release has one generated WebP atlas covering 57 concrete dress options plus the explicit `기억 안 남` state. It is loaded through `OptionArtwork`, precached for offline use, and paired with semantic Korean labels.
+
+The production quality gate runs locked dependency installation, high-severity security audit, formatting verification, strict TypeScript, unit and integration tests, PDF round-trip tests, Vite/PWA production build, and mobile Chromium end-to-end journeys.

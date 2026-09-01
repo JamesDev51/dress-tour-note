@@ -9,15 +9,19 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
-        run: npm install
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
       - name: Security audit
         run: npm audit --audit-level=high
+      - name: Format check
+        run: npm run format:check
       - name: Typecheck
         run: npm run typecheck
       - name: Unit and integration tests
@@ -28,13 +32,15 @@ jobs:
   e2e:
     needs: verify
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
-        run: npm install
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Production build
