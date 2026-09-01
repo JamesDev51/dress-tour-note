@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from "vite";
+import type { ManifestTransform } from "workbox-build";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -20,6 +21,11 @@ const siteMetadataPlugin: Plugin = {
       .replaceAll("%PUBLIC_OG_IMAGE%", publicOgImage);
   },
 };
+const sortPrecacheManifest: ManifestTransform = (entries) => ({
+  manifest: [...entries].sort((left, right) =>
+    left.url < right.url ? -1 : left.url > right.url ? 1 : 0,
+  ),
+});
 
 export default defineConfig({
   plugins: [
@@ -28,39 +34,7 @@ export default defineConfig({
     siteMetadataPlugin,
     VitePWA({
       registerType: "prompt",
-      includeAssets: [
-        "assets/options/top/strapless.webp",
-        "assets/options/top/offShoulder.webp",
-        "assets/options/top/strap.webp",
-        "assets/options/top/halter.webp",
-        "assets/options/top/shortSleeve.webp",
-        "assets/options/top/longSleeve.webp",
-        "assets/options/neckline/straight.webp",
-        "assets/options/neckline/sweetheart.webp",
-        "assets/options/neckline/v.webp",
-        "assets/options/neckline/square.webp",
-        "assets/options/neckline/scoop.webp",
-        "assets/options/neckline/asymmetric.webp",
-        "assets/options/silhouette/aLine.webp",
-        "assets/options/silhouette/ballGown.webp",
-        "assets/options/silhouette/mermaid.webp",
-        "assets/options/silhouette/empire.webp",
-        "assets/options/fabric/mikadoSatin.webp",
-        "assets/options/fabric/lace.webp",
-        "assets/options/fabric/organzaChiffon.webp",
-        "assets/options/fabric/subtleBeaded.webp",
-        "assets/options/fabric/ornateBeaded.webp",
-        "assets/options/fabric/floral3D.webp",
-        "assets/options/color/pureWhite.webp",
-        "assets/options/color/ivory.webp",
-        "assets/options/color/champagne.webp",
-        "og/dress-note-share.jpg",
-        "favicon.svg",
-        "icons/favicon-32.png",
-        "icons/apple-touch-icon.png",
-        "icons/icon-192.png",
-        "icons/icon-512.png",
-      ],
+      includeManifestIcons: false,
       manifest: {
         name: "드레스노트 - 드레스투어 기록",
         short_name: "드레스노트",
@@ -95,10 +69,8 @@ export default defineConfig({
       workbox: {
         clientsClaim: true,
         navigateFallback: "/index.html",
-        globPatterns: [
-          "**/*.{js,css,html,svg,png,woff2}",
-          "assets/dress-person-base-*.webp",
-        ],
+        globPatterns: ["**/*.{js,css,html,svg,png,jpg,webp,woff2}"],
+        manifestTransforms: [sortPrecacheManifest],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
       },

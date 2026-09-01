@@ -66,7 +66,38 @@ export const quickTagOptions: Option<QuickTag>[] = [
   "동행인 픽",
 ].map((id) => ({ id: id as QuickTag, label: id }));
 
-const presentationTopStyle: Record<TopStyle, TopStyle> = {
+export type PresentedTopStyle = Exclude<
+  TopStyle,
+  "spaghetti" | "wideStrap" | "oneShoulder"
+>;
+export type PresentedNeckline = Exclude<Neckline, "high" | "illusion">;
+export type PresentedSilhouette = Exclude<
+  Silhouette,
+  "fitAndFlare" | "sheath" | "teaLength"
+>;
+export type PresentedFabric = Exclude<Fabric, "tulle" | "glitterBeaded">;
+export type PresentedDress = Omit<
+  Dress,
+  | "topStyle"
+  | "neckline"
+  | "silhouette"
+  | "waistline"
+  | "backStyle"
+  | "fabric"
+  | "train"
+  | "details"
+> & {
+  topStyle: PresentedTopStyle;
+  neckline: PresentedNeckline;
+  silhouette: PresentedSilhouette;
+  waistline: "unknown";
+  backStyle: "unknown";
+  fabric: PresentedFabric;
+  train: "unknown";
+  details: [];
+};
+
+const presentationTopStyle: Record<TopStyle, PresentedTopStyle> = {
   unknown: "unknown",
   strapless: "strapless",
   offShoulder: "offShoulder",
@@ -78,7 +109,7 @@ const presentationTopStyle: Record<TopStyle, TopStyle> = {
   shortSleeve: "shortSleeve",
   longSleeve: "longSleeve",
 };
-const presentationNeckline: Record<Neckline, Neckline> = {
+const presentationNeckline: Record<Neckline, PresentedNeckline> = {
   unknown: "unknown",
   straight: "straight",
   sweetheart: "sweetheart",
@@ -89,7 +120,7 @@ const presentationNeckline: Record<Neckline, Neckline> = {
   illusion: "unknown",
   asymmetric: "asymmetric",
 };
-const presentationSilhouette: Record<Silhouette, Silhouette> = {
+const presentationSilhouette: Record<Silhouette, PresentedSilhouette> = {
   unknown: "unknown",
   aLine: "aLine",
   ballGown: "ballGown",
@@ -99,7 +130,7 @@ const presentationSilhouette: Record<Silhouette, Silhouette> = {
   sheath: "unknown",
   teaLength: "unknown",
 };
-const presentationFabric: Record<Fabric, Fabric> = {
+const presentationFabric: Record<Fabric, PresentedFabric> = {
   unknown: "unknown",
   mikadoSatin: "mikadoSatin",
   lace: "lace",
@@ -111,7 +142,7 @@ const presentationFabric: Record<Fabric, Fabric> = {
   floral3D: "floral3D",
 };
 
-export function dressForPresentation(dress: Dress): Dress {
+export function dressForPresentation(dress: Dress): PresentedDress {
   return {
     ...dress,
     topStyle: presentationTopStyle[dress.topStyle],

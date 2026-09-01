@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { dressForPresentation } from "../../lib/dress/options";
 import type { Dress } from "../../types/domain";
 import { dressSvgMarkup } from "./dressSvg";
 
@@ -66,5 +67,25 @@ describe("dress SVG person composition", () => {
     expect(svg).not.toContain("M148 252L180 274");
     expect(svg).not.toContain("M0 0C-18-18");
     expect(svg).not.toContain('<circle cx="180" cy="205"');
+  });
+
+  it("projects legacy choices before renderer switches run", () => {
+    const legacyDress: Dress = {
+      ...dress,
+      topStyle: "spaghetti",
+      neckline: "high",
+      silhouette: "fitAndFlare",
+      fabric: "glitterBeaded",
+    };
+    const personDataUrl = "data:image/webp;base64,person-base";
+
+    expect(dressSvgMarkup(legacyDress, personDataUrl, undefined, false)).toBe(
+      dressSvgMarkup(
+        dressForPresentation(legacyDress),
+        personDataUrl,
+        undefined,
+        false,
+      ),
+    );
   });
 });
