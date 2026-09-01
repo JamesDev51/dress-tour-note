@@ -1,24 +1,18 @@
-import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
-const require = createRequire(import.meta.url);
 const tinyPng = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8Dwn4GBgYGJAQoAHQkCAWJ6+ygAAAAASUVORK5CYII=',
   'base64',
 );
-const axeSource = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
 async function expectNoSeriousAccessibilityViolations(page: Page) {
-  await page.addScriptTag({ content: axeSource });
-  const violations = await page.evaluate(async () => {
-    const result = await window.axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] },
-    });
-    return result.violations
-      .filter((item) => item.impact === 'serious' || item.impact === 'critical')
-      .map((item) => `${item.id}: ${item.help}`);
-  });
+  const result = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa'])
+    .analyze();
+  const violations = result.violations
+    .filter((item) => item.impact === 'serious' || item.impact === 'critical')
+    .map((item) => `${item.id}: ${item.help}`);
   expect(violations).toEqual([]);
 }
 
