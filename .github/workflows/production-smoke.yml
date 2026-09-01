@@ -16,11 +16,11 @@ jobs:
       - name: Checkout test harness
         uses: actions/checkout@v4
 
-      - name: Diagnose production alias
+      - name: Diagnose production domain
         shell: bash
         run: |
           set -euo pipefail
-          url="https://dress-tour-note-minseokjeongjames-4193s-projects.vercel.app"
+          url="https://dress-tour-note-three.vercel.app"
           headers=$(mktemp)
           curl --location --silent --show-error --max-time 30 --dump-header "$headers" --output /tmp/home.html "$url/"
           echo "=== response headers ==="
@@ -29,9 +29,8 @@ jobs:
           grep -Eio '<title>[^<]*</title>' /tmp/home.html | head -1 || true
           echo "=== marker scan ==="
           grep -Eio 'Vercel|Authentication|Log in|Sign in|그드레스|드레스투어|Dress Tour Note|<div id="root"></div>' /tmp/home.html | head -20 || true
-          echo "=== body prefix ==="
-          tr '\n' ' ' < /tmp/home.html | head -c 1200 || true
-          echo
+          echo "=== asset probe ==="
+          curl --silent --show-error --max-time 30 --head "$url/assets/option-atlas.webp" | grep -Ei '^(HTTP/|content-type:|content-length:|x-vercel-)' || true
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
@@ -47,7 +46,7 @@ jobs:
 
       - name: Run real production user journeys
         env:
-          PRODUCTION_URL: https://dress-tour-note-minseokjeongjames-4193s-projects.vercel.app
+          PRODUCTION_URL: https://dress-tour-note-three.vercel.app
         run: npx playwright test --config=playwright.production.config.ts
 
       - name: Upload failure evidence
