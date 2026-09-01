@@ -17,9 +17,9 @@
 ### P0
 
 - 투어/샵/드레스 CRUD, 순서 변경, 복제, 연쇄 삭제
-- 어깨/끈, 넥라인, 실루엣, 허리선, 소재, 색, 트레인, 디테일 조합
-- 상체 조합 호환성 자동 보정
-- SVG 실시간 미리보기
+- 어깨/끈, 넥라인, 실루엣, 소재, 색 조합
+- 기존 v1 값은 화면에서만 새 선택 체계로 매핑하고 원본은 보존
+- 래스터 인물 베이스 위에 SVG 드레스 조합을 겹치는 실시간 미리보기
 - 빠른 평가 태그, 별점, 후보 하트, 메모 autosave
 - JPEG/PNG/WebP 얼굴 업로드, 로컬 리사이즈/재인코딩, 위치/크기/회전 조절
 - IndexedDB 자동저장 및 새로고침/재실행 복구
@@ -34,7 +34,7 @@
 - 모바일에서 드레스 2벌 나란히 비교
 - Web Share API 네이티브 PDF 파일 공유 + 미지원 시 다운로드 fallback
 - 복원 데이터/얼굴을 넣지 않는 보기 전용 PDF
-- 뒤태 별도 기록
+- 기존 뒤태/트레인/디테일 값은 복원 데이터에 보존하되 새 화면에는 표시하지 않음
 - HEIC/HEIF 브라우저 내 변환 후 얼굴 입력
 - 크림/클린 테마, 고딕/명조 글꼴 로컬 설정
 
@@ -85,8 +85,8 @@ IndexedDB schema v1: `tours`, `shops`, `dresses`, `assets`, `meta`. 사용자 �
 
 ## 드레스 옵션 추가
 
-`src/types/domain.ts` union → `src/lib/dress/options.ts` 라벨/호환성 → 필요 시 `src/lib/renderer/dressSvg.ts` 렌더링 → portable schema 테스트 순서로 함께 수정합니다. v1에 추가된 `backStyle`은 과거 v1 PDF와의 호환성을 위해 optional 필드입니다.
+`src/types/domain.ts` union → `src/lib/dress/options.ts` 라벨/프레젠테이션 매핑 → 필요 시 `src/lib/renderer/dressSvg.ts` 렌더링 → portable schema 테스트 순서로 함께 수정합니다. v1에 추가된 `backStyle`은 과거 v1 PDF와의 호환성을 위해 optional 필드입니다. `dressForPresentation`은 원본을 변경하지 않습니다.
 
 ## 배포
 
-Vercel Framework Preset은 Vite, Build Command는 `npm run build`, Output Directory는 `dist`, 환경변수는 없습니다. `vercel.json`이 SPA rewrite와 보안 헤더를 적용합니다.
+Vercel Framework Preset은 Vite, Install Command는 `npm ci`, Build Command는 `npm run build`, Output Directory는 `dist`입니다. Production 메타데이터에는 `VITE_PUBLIC_SITE_URL` 또는 Vercel production URL이 필요하며, `vercel.json`이 SPA rewrite와 보안 헤더를 적용합니다.

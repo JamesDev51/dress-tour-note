@@ -29,7 +29,7 @@ export function HomePage() {
       <BrandHeader />
       <section className="px-5 pt-7">
         <div className="rounded-[32px] bg-[#fff2ee] p-6">
-          <p className="mb-2 text-xs font-semibold text-[#a75e55]">
+          <p className="mb-2 text-xs font-semibold text-[#9f5149]">
             사진 촬영이 어려운 드레스투어
           </p>
           <h1 className="text-[28px] font-black leading-[1.2] tracking-[-0.04em]">
@@ -37,7 +37,7 @@ export function HomePage() {
             <br />
             모양으로 기록해요 👗
           </h1>
-          <p className="mt-3 text-sm leading-6 text-stone-500">
+          <p className="mt-3 text-sm leading-6 text-[#756d68]">
             드레스 특징을 그림 타일로 고르고, 투어가 끝나면 다른 폰에서도 다시
             여는 PDF로 저장해요.
           </p>

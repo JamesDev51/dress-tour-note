@@ -5,6 +5,34 @@ const tinyPng = Buffer.from(
   "base64",
 );
 
+const optionAssetPaths = [
+  ...[
+    "strapless",
+    "offShoulder",
+    "strap",
+    "halter",
+    "shortSleeve",
+    "longSleeve",
+  ].map((id) => `/assets/options/top/${id}.webp`),
+  ...["straight", "sweetheart", "v", "square", "scoop", "asymmetric"].map(
+    (id) => `/assets/options/neckline/${id}.webp`,
+  ),
+  ...["aLine", "ballGown", "mermaid", "empire"].map(
+    (id) => `/assets/options/silhouette/${id}.webp`,
+  ),
+  ...[
+    "mikadoSatin",
+    "lace",
+    "organzaChiffon",
+    "subtleBeaded",
+    "ornateBeaded",
+    "floral3D",
+  ].map((id) => `/assets/options/fabric/${id}.webp`),
+  ...["pureWhite", "ivory", "champagne"].map(
+    (id) => `/assets/options/color/${id}.webp`,
+  ),
+];
+
 async function createTour(
   page: Page,
   {
@@ -33,11 +61,6 @@ async function createTour(
   await page.getByRole("button", { name: /A라인/ }).click();
   await page.getByRole("button", { name: /레이스/ }).click();
   await page.getByRole("button", { name: /아이보리/ }).click();
-  await page.getByRole("button", { name: /보통 길이/ }).click();
-  await page
-    .getByRole("button", { name: "더 자세히 기록", exact: true })
-    .click();
-  await page.getByRole("button", { name: /등 중앙 버튼/ }).click();
   await page
     .getByPlaceholder(/허리가 제일 얇아/)
     .fill("E2E 메모: 허리 라인이 가장 좋았음");
@@ -85,39 +108,41 @@ async function reviewToExport(page: Page) {
 }
 
 async function expectImportPreview(page: Page, title: string) {
-  await expect
-    .poll(
-      async () => {
-        if (await page.getByText(title, { exact: true }).count())
-          return "preview";
-        const alert = await page
-          .getByRole("alert")
-          .textContent()
-          .catch(() => null);
-        if (alert) return `alert: ${alert}`;
-        const status = await page
-          .getByRole("status")
-          .textContent()
-          .catch(() => null);
-        if (status) return `status: ${status}`;
-        if (
-          await page
-            .getByText("복원 데이터를 확인하는 중...", { exact: true })
-            .count()
-        )
-          return "loading";
-        return "waiting";
-      },
-      {
-        timeout: 60_000,
-        message:
-          "PDF import should render a preview instead of hanging or surfacing an error",
-      },
-    )
-    .toBe("preview");
+  await expect(page.getByText(title, { exact: true })).toBeVisible({
+    timeout: 60_000,
+  });
+}
+
+async function capturePdf(page: Page) {
+  await page.getByRole("button", { name: "저장", exact: true }).click();
+  await page.waitForFunction(() => Boolean(window.__dressNoteDownloadBlob));
+  const dataUrl = await page.evaluate(async () => {
+    const blob = window.__dressNoteDownloadBlob;
+    if (!blob) return null;
+    return new Promise<string | null>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () =>
+        resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => reject(reader.error ?? new Error("PDF 읽기 실패"));
+      reader.readAsDataURL(blob);
+    });
+  });
+  if (!dataUrl) throw new Error("PDF 다운로드 Blob이 없어요.");
+  await page.evaluate(() => {
+    window.__dressNoteDownloadBlob = undefined;
+  });
+  return Buffer.from(dataUrl.slice(dataUrl.indexOf(",") + 1), "base64");
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+    URL.createObjectURL = (object) => {
+      if (object instanceof Blob && object.type === "application/pdf")
+        window.__dressNoteDownloadBlob = object;
+      return originalCreateObjectURL(object);
+    };
+  });
   page.on("pageerror", (error) => console.log(`[pageerror] ${error.message}`));
   page.on("console", (message) => {
     if (message.type() === "error")
@@ -144,7 +169,6 @@ test("mobile core flow autosaves, reloads and compares two dresses", async ({
   await expect(page.getByText("두 벌을")).toBeVisible();
   await expect(page.getByText("오프숄더")).toBeVisible();
   await expect(page.getByText("끈 없음")).toBeVisible();
-  await expect(page.getByText("등 중앙 버튼")).toBeVisible();
 });
 
 test("portable PDF downloads, imports as a copy, and restores face data", async ({
@@ -159,15 +183,14 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
   await expect(page.getByText("PDF가 준비됐어요.")).toBeVisible({
     timeout: 40_000,
   });
-  const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "저장", exact: true }).click();
-  const download = await downloadPromise;
-  const path = await download.path();
-  expect(path).toBeTruthy();
+  const pdfBytes = await capturePdf(page);
   await page.goto("/");
   await page.getByRole("link", { name: "PDF 불러오기", exact: true }).click();
-  await page.locator('input[type="file"]').setInputFiles(path!);
-  await page.waitForTimeout(2_500);
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "gudress-copy.pdf",
+    mimeType: "application/pdf",
+    buffer: pdfBytes,
+  });
   await expectImportPreview(page, "E2E 드레스투어");
   await expect(page.getByText("이 기기에 같은 투어가 있어요")).toBeVisible();
   await page
@@ -182,7 +205,7 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
     .getByRole("button", { name: /Dress 01/ })
     .first()
     .click();
-  await expect(page.locator(".dress-preview image")).toHaveCount(1);
+  await expect(page.locator(".dress-preview image")).toHaveCount(2);
   await expect(page.getByPlaceholder(/허리가 제일 얇아/)).toHaveValue(
     "E2E 메모: 허리 라인이 가장 좋았음",
   );
@@ -202,13 +225,14 @@ test("view-only PDF cannot be restored", async ({ page }) => {
   await expect(page.getByText("PDF가 준비됐어요.")).toBeVisible({
     timeout: 40_000,
   });
-  const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "저장", exact: true }).click();
-  const download = await downloadPromise;
-  const path = await download.path();
+  const pdfBytes = await capturePdf(page);
   await page.goto("/");
   await page.getByRole("link", { name: "PDF 불러오기", exact: true }).click();
-  await page.locator('input[type="file"]').setInputFiles(path!);
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "gudress-view-only.pdf",
+    mimeType: "application/pdf",
+    buffer: pdfBytes,
+  });
   await expect(page.getByRole("alert")).toContainText(
     "복원 가능한 드레스노트 PDF가 아니에요.",
   );
@@ -228,7 +252,9 @@ test("direct editor URL survives a full reload", async ({ page }) => {
   );
 });
 
-test("app shell, generated artwork, and service worker load without external requests", async ({ page }) => {
+test("app shell, individual artwork, and service worker load without external requests", async ({
+  page,
+}) => {
   const external: string[] = [];
   page.on("request", (request) => {
     const url = new URL(request.url());
@@ -246,10 +272,32 @@ test("app shell, generated artwork, and service worker load without external req
   if (!(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))))
     await page.reload();
   await expect
-    .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
+    .poll(() =>
+      page.evaluate(() => Boolean(navigator.serviceWorker.controller)),
+    )
     .toBe(true);
-  const atlas = await page.request.get("/assets/option-atlas.webp");
-  expect(atlas.ok()).toBe(true);
-  expect(atlas.headers()["content-type"]).toContain("image/webp");
+  const assets = await Promise.all(
+    optionAssetPaths.map(async (path) => {
+      const response = await page.request.get(path);
+      return {
+        path,
+        ok: response.ok(),
+        contentType: response.headers()["content-type"],
+        bytes: (await response.body()).byteLength,
+      };
+    }),
+  );
+  expect(
+    assets.every(
+      (asset) => asset.ok && asset.contentType?.includes("image/webp"),
+    ),
+  ).toBe(true);
+  await page.context().setOffline(true);
+  const offlineAssets = await page.evaluate(async (paths) => {
+    const responses = await Promise.all(paths.map((path) => fetch(path)));
+    return responses.map((response) => response.ok);
+  }, optionAssetPaths);
+  await page.context().setOffline(false);
+  expect(offlineAssets.every(Boolean)).toBe(true);
   expect(external).toEqual([]);
 });

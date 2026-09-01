@@ -84,13 +84,12 @@ export function useDressEditorDraft({
     [dressId],
   );
 
-  const updateTransform = (patch: Partial<FaceTransform>) =>
-    setTransform((current) => {
-      const next = { ...current, ...patch };
-      hasFace.current = true;
-      latestTransform.current = next;
-      return next;
-    });
+  const updateTransform = (patch: Partial<FaceTransform>) => {
+    const next = { ...latestTransform.current, ...patch };
+    hasFace.current = true;
+    latestTransform.current = next;
+    setTransform(next);
+  };
   const flushTransform = () => {
     void patchDress(dressId, { faceTransform: latestTransform.current });
   };

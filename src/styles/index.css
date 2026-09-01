@@ -1,7 +1,31 @@
-@import "@fontsource/noto-sans-kr/korean-400.css";
-@import "@fontsource/noto-sans-kr/korean-700.css";
-@import "@fontsource/noto-serif-kr/korean-400.css";
-@import "@fontsource/noto-serif-kr/korean-700.css";
+@font-face {
+  font-family: "Noto Sans KR";
+  font-style: normal;
+  font-display: optional;
+  font-weight: 400;
+  src: url("../assets/noto-sans-kr-ui-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans KR";
+  font-style: normal;
+  font-display: optional;
+  font-weight: 700;
+  src: url("../assets/noto-sans-kr-ui-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Serif KR";
+  font-style: normal;
+  font-display: optional;
+  font-weight: 400;
+  src: url("../assets/noto-serif-kr-ui-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Serif KR";
+  font-style: normal;
+  font-display: optional;
+  font-weight: 700;
+  src: url("../assets/noto-serif-kr-ui-700.woff2") format("woff2");
+}
 @import "tailwindcss";
 
 :root {
@@ -90,4 +114,7 @@ input[type="range"] {
 }
 
 /* Subtle copy still meets mobile contrast requirements on cream and white surfaces. */
-.app-shell .text-stone-300,.app-shell .text-stone-400{color:#6f6662}
+.app-shell .text-stone-300,
+.app-shell .text-stone-400 {
+  color: #6f6662;
+}

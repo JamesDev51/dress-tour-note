@@ -95,7 +95,10 @@ export default defineConfig({
       workbox: {
         clientsClaim: true,
         navigateFallback: "/index.html",
-        globPatterns: ["**/*.{js,css,html,svg,png,webp,woff2}"],
+        globPatterns: [
+          "**/*.{js,css,html,svg,png,woff2}",
+          "assets/dress-person-base-*.webp",
+        ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
       },
