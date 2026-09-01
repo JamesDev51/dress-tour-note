@@ -1,104 +1,74 @@
-import type { CSSProperties, HTMLAttributes } from "react";
+import { useState, type CSSProperties, type HTMLAttributes } from "react";
+import type {
+  DressColor,
+  Fabric,
+  Neckline,
+  Silhouette,
+  TopStyle,
+} from "../types/domain";
 
 export type OptionArtworkCategory =
-  | "top"
-  | "neckline"
-  | "silhouette"
-  | "fabric"
-  | "color"
-  | "train"
-  | "waistline"
-  | "back"
-  | "detail";
+  "top" | "neckline" | "silhouette" | "fabric" | "color";
 
-type AtlasCell = { col: number; row: number };
-
-const ATLAS_COLUMNS = 8;
-const ATLAS_ROWS = 10;
-const ATLAS_URL = "/assets/option-atlas.webp";
-
-const CELLS: Record<OptionArtworkCategory, Record<string, AtlasCell>> = {
-  top: {
-    strapless: { col: 0, row: 0 },
-    offShoulder: { col: 1, row: 0 },
-    spaghetti: { col: 2, row: 0 },
-    wideStrap: { col: 3, row: 0 },
-    halter: { col: 4, row: 0 },
-    oneShoulder: { col: 5, row: 0 },
-    shortSleeve: { col: 6, row: 0 },
-    longSleeve: { col: 7, row: 0 },
-  },
-  neckline: {
-    straight: { col: 0, row: 1 },
-    sweetheart: { col: 1, row: 1 },
-    v: { col: 2, row: 1 },
-    square: { col: 3, row: 1 },
-    scoop: { col: 4, row: 1 },
-    high: { col: 5, row: 1 },
-    illusion: { col: 6, row: 1 },
-    asymmetric: { col: 7, row: 1 },
-  },
-  silhouette: {
-    aLine: { col: 0, row: 2 },
-    ballGown: { col: 1, row: 2 },
-    fitAndFlare: { col: 2, row: 2 },
-    mermaid: { col: 3, row: 2 },
-    sheath: { col: 4, row: 2 },
-    teaLength: { col: 5, row: 2 },
-  },
-  fabric: {
-    mikadoSatin: { col: 0, row: 3 },
-    lace: { col: 1, row: 3 },
-    tulle: { col: 2, row: 3 },
-    organzaChiffon: { col: 3, row: 3 },
-    glitterBeaded: { col: 4, row: 3 },
-    floral3D: { col: 5, row: 3 },
-  },
-  color: {
-    pureWhite: { col: 0, row: 4 },
-    ivory: { col: 1, row: 4 },
-    champagne: { col: 2, row: 4 },
-  },
-  train: {
-    none: { col: 0, row: 5 },
-    sweep: { col: 1, row: 5 },
-    chapel: { col: 2, row: 5 },
-    cathedral: { col: 3, row: 5 },
-  },
-  waistline: {
-    natural: { col: 0, row: 6 },
-    basque: { col: 1, row: 6 },
-    drop: { col: 2, row: 6 },
-    empire: { col: 3, row: 6 },
-  },
-  back: {
-    openBack: { col: 0, row: 7 },
-    vBack: { col: 1, row: 7 },
-    buttonBack: { col: 2, row: 7 },
-    corsetBack: { col: 3, row: 7 },
-    illusionBack: { col: 4, row: 7 },
-    bowBack: { col: 5, row: 7 },
-  },
-  detail: {
-    corset: { col: 0, row: 8 },
-    draping: { col: 1, row: 8 },
-    waistBow: { col: 2, row: 8 },
-    backBow: { col: 3, row: 8 },
-    pearl: { col: 4, row: 8 },
-    sequin: { col: 5, row: 8 },
-    floral: { col: 6, row: 8 },
-    slit: { col: 7, row: 8 },
-    sheer: { col: 0, row: 9 },
-    detachableSleeve: { col: 1, row: 9 },
-    overskirt: { col: 2, row: 9 },
-    buttons: { col: 3, row: 9 },
-  },
+type ArtworkIds = {
+  top: Exclude<TopStyle, "unknown" | "spaghetti" | "wideStrap" | "oneShoulder">;
+  neckline: Exclude<Neckline, "unknown" | "high" | "illusion">;
+  silhouette: Exclude<
+    Silhouette,
+    "unknown" | "fitAndFlare" | "sheath" | "teaLength"
+  >;
+  fabric: Exclude<Fabric, "unknown" | "tulle" | "glitterBeaded">;
+  color: Exclude<DressColor, "unknown">;
 };
 
-function position(cell: AtlasCell) {
-  const x = (cell.col / (ATLAS_COLUMNS - 1)) * 100;
-  const y = (cell.row / (ATLAS_ROWS - 1)) * 100;
-  return `${x}% ${y}%`;
+type ArtworkSourceMap = {
+  readonly [Category in OptionArtworkCategory]: Readonly<
+    Record<ArtworkIds[Category], string>
+  >;
+};
+
+const ARTWORK_SRC = {
+  top: {
+    strapless: "/assets/options/top/strapless.webp",
+    offShoulder: "/assets/options/top/offShoulder.webp",
+    strap: "/assets/options/top/strap.webp",
+    halter: "/assets/options/top/halter.webp",
+    shortSleeve: "/assets/options/top/shortSleeve.webp",
+    longSleeve: "/assets/options/top/longSleeve.webp",
+  },
+  neckline: {
+    straight: "/assets/options/neckline/straight.webp",
+    sweetheart: "/assets/options/neckline/sweetheart.webp",
+    v: "/assets/options/neckline/v.webp",
+    square: "/assets/options/neckline/square.webp",
+    scoop: "/assets/options/neckline/scoop.webp",
+    asymmetric: "/assets/options/neckline/asymmetric.webp",
+  },
+  silhouette: {
+    aLine: "/assets/options/silhouette/aLine.webp",
+    ballGown: "/assets/options/silhouette/ballGown.webp",
+    mermaid: "/assets/options/silhouette/mermaid.webp",
+    empire: "/assets/options/silhouette/empire.webp",
+  },
+  fabric: {
+    mikadoSatin: "/assets/options/fabric/mikadoSatin.webp",
+    lace: "/assets/options/fabric/lace.webp",
+    organzaChiffon: "/assets/options/fabric/organzaChiffon.webp",
+    subtleBeaded: "/assets/options/fabric/subtleBeaded.webp",
+    ornateBeaded: "/assets/options/fabric/ornateBeaded.webp",
+    floral3D: "/assets/options/fabric/floral3D.webp",
+  },
+  color: {
+    pureWhite: "/assets/options/color/pureWhite.webp",
+    ivory: "/assets/options/color/ivory.webp",
+    champagne: "/assets/options/color/champagne.webp",
+  },
+} satisfies ArtworkSourceMap;
+
+function sourceFor(category: OptionArtworkCategory, id: string) {
+  return Object.entries(ARTWORK_SRC[category]).find(
+    ([candidate]) => candidate === id,
+  )?.[1];
 }
 
 export function OptionArtwork({
@@ -113,9 +83,10 @@ export function OptionArtwork({
   className?: string;
   style?: CSSProperties;
 } & Omit<HTMLAttributes<HTMLSpanElement>, "id">) {
-  const cell = id === "unknown" ? undefined : CELLS[category][id];
+  const [imageError, setImageError] = useState(false);
+  const source = sourceFor(category, id);
 
-  if (!cell) {
+  if (!source || id === "unknown") {
     return (
       <span
         aria-hidden="true"
@@ -134,15 +105,26 @@ export function OptionArtwork({
     <span
       aria-hidden="true"
       data-option-art={`${category}-${id}`}
-      data-option-art-kind="generated-image"
-      className={`block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat ${className}`}
-      style={{
-        backgroundImage: `url(${ATLAS_URL})`,
-        backgroundSize: `${ATLAS_COLUMNS * 100}% ${ATLAS_ROWS * 100}%`,
-        backgroundPosition: position(cell),
-        ...style,
-      }}
+      data-option-art-kind={imageError ? "image-error" : "generated-image"}
+      className={`grid aspect-square h-full w-full place-items-center overflow-hidden rounded-xl bg-[#fffdfa] ${className}`}
+      style={style}
       {...props}
-    />
+    >
+      {imageError ? (
+        <span className="px-2 text-center text-[11px] font-semibold leading-tight text-stone-400">
+          이미지를 불러오지 못했어요.
+        </span>
+      ) : (
+        <img
+          src={source}
+          alt=""
+          aria-hidden="true"
+          width={512}
+          height={512}
+          className="block h-full w-full object-cover"
+          onError={() => setImageError(true)}
+        />
+      )}
+    </span>
   );
 }
