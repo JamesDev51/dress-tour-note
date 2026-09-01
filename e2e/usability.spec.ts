@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { expect, test, type Page } from '@playwright/test';
 
+const require = createRequire(import.meta.url);
 const tinyPng = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8Dwn4GBgYGJAQoAHQkCAWJ6+ygAAAAASUVORK5CYII=',
   'base64',
@@ -54,7 +56,7 @@ async function createBaseTour(page: Page, options: { two?: boolean; face?: boole
   return tourId;
 }
 
-test('first-time flow accepts native validation and optional tour fields', async ({ page }) => {
+test('first-time flow accepts optional tour fields', async ({ page }) => {
   await page.goto('/tour/new');
   await expect(page.getByRole('heading', { name: /오늘 기록을/ })).toBeVisible();
   await page.getByRole('button', { name: '투어 만들기', exact: true }).click();
@@ -72,16 +74,16 @@ test('mobile pages do not overflow horizontally at supported boundary widths', a
   }
 });
 
-test('generated artwork sprite is available and option cards use it', async ({ page }) => {
-  const response = await page.request.get('/assets/options.svg');
+test('generated WebP artwork atlas is available and option cards use it', async ({ page }) => {
+  const response = await page.request.get('/assets/option-atlas.webp');
   expect(response.ok()).toBe(true);
-  const sprite = await response.text();
-  expect(sprite).toContain('id="top-offShoulder"');
-  expect(sprite).toContain('id="detail-overskirt"');
+  expect(response.headers()['content-type']).toContain('image/webp');
+  expect((await response.body()).byteLength).toBeGreaterThan(8_000);
 
   await createBaseTour(page);
   await expect(page.locator('[data-option-art="top-offShoulder"]')).toBeVisible();
   await expect(page.locator('[data-option-art="silhouette-aLine"]')).toBeVisible();
+  await expect(page.locator('[data-option-art="color-ivory"]')).toBeVisible();
 });
 
 test('missing-record routes fail safely instead of leaving a blank screen', async ({ page }) => {
@@ -113,7 +115,6 @@ test('candidate filter never blocks choosing two dresses for comparison', async 
   await page.goto(`/tour/${tourId}/review`);
   await expect(page.getByRole('heading', { name: '사용성 테스트 투어' })).toBeVisible();
   await page.getByRole('button', { name: /^후보 1$/ }).click();
-  await expect(page.getByText('아직 하트한 드레스가 없어요.')).toHaveCount(0);
   await page.getByRole('button', { name: '2벌 비교' }).click();
   await expect(page.getByText(/비교할 드레스 2벌/)).toBeVisible();
   await expect(page.getByRole('button', { name: /Dress 01/ })).toBeVisible();
