@@ -257,8 +257,8 @@ test("first loaded app works offline and makes no external network requests", as
   });
   await context.setOffline(true);
   const cached = await page.evaluate(async () =>
-    Boolean(await caches.match("/")) &&
-    Boolean(await caches.match("/assets/option-atlas.webp")),
+    Boolean(await caches.match("/index.html", { ignoreSearch: true })) &&
+    Boolean(await caches.match("/assets/option-atlas.webp", { ignoreSearch: true })),
   );
   expect(cached).toBe(true);
   expect(external).toEqual([]);
