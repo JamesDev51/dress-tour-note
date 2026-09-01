@@ -1,10 +1,116 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { FileUp, Plus, ShieldCheck, Trash2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BrandHeader } from '../../components/MobileShell';
-import { db } from '../../db/database';
-import { deleteTour } from '../../db/repositories';
-import { useUIStore } from '../../stores/uiStore';
+import { useLiveQuery } from "dexie-react-hooks";
+import { FileUp, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { BrandHeader } from "../../components/MobileShell";
+import { db } from "../../db/database";
+import { deleteTour } from "../../db/repositories";
+import { useUIStore } from "../../stores/uiStore";
 
-export function HomePage(){const nav=useNavigate();const toast=useUIStore(s=>s.showToast);const recent=useLiveQuery(async()=>{const tours=await db.tours.orderBy('updatedAt').reverse().limit(5).toArray();return Promise.all(tours.map(async t=>({...t,shopCount:await db.shops.where('tourId').equals(t.id).count(),dressCount:await db.dresses.where('tourId').equals(t.id).count()})))},[])??[];
-return <main className="min-h-dvh pb-10"><BrandHeader/><section className="px-5 pt-7"><div className="rounded-[32px] bg-[#fff2ee] p-6"><p className="mb-2 text-xs font-semibold text-[#a75e55]">사진 촬영이 어려운 드레스투어</p><h1 className="text-[28px] font-black leading-[1.2] tracking-[-0.04em]">그림 대신<br/>모양으로 기록해요 👗</h1><p className="mt-3 text-sm leading-6 text-stone-500">드레스 특징을 사진 타일로 고르고, 투어가 끝나면 다른 폰에서도 다시 여는 PDF로 저장해요.</p></div><div className="mt-5 grid gap-3"><Link to="/tour/new" className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-stone-900 px-4 font-bold text-white"><Plus size={19}/>새 투어 시작</Link><Link to="/import" className="flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 font-bold"><FileUp size={18}/>PDF 불러오기</Link></div></section><section className="mt-9 px-5"><div className="mb-3 flex items-center justify-between"><h2 className="font-bold">최근 기록</h2><span className="text-xs text-stone-400">최대 5개</span></div>{recent.length===0?<div className="rounded-2xl border border-dashed border-stone-200 p-6 text-center text-sm text-stone-400">아직 저장된 드레스투어가 없어요.</div>:<div className="space-y-3">{recent.map(t=><div key={t.id} className="rounded-2xl border border-stone-100 bg-white p-4 shadow-[0_5px_22px_rgba(70,50,45,.05)]"><button className="w-full text-left" onClick={()=>nav(`/tour/${t.id}`)}><div className="font-bold">{t.title}</div><div className="mt-1 text-xs text-stone-400">{t.tourDate||'날짜 없음'} · 샵 {t.shopCount} · 드레스 {t.dressCount}</div><div className="mt-2 text-[11px] text-stone-300">{new Date(t.updatedAt).toLocaleString('ko-KR')} 저장</div></button><button aria-label={`${t.title} 삭제`} className="mt-3 inline-flex h-9 items-center gap-1 text-xs text-stone-400" onClick={async()=>{if(confirm(`'${t.title}' 기록을 삭제할까요?`)){await deleteTour(t.id);toast('투어를 삭제했어요.')}}}><Trash2 size={14}/>삭제</button></div>)}</div>}</section><div className="mx-5 mt-8 flex gap-2 rounded-2xl bg-stone-50 p-4 text-xs leading-5 text-stone-500"><ShieldCheck size={18} className="shrink-0 text-[#a75e55]"/><span>입력한 내용과 사진은 서버로 보내지 않고 이 기기에만 저장합니다.</span></div></main>}
+export function HomePage() {
+  const nav = useNavigate();
+  const toast = useUIStore((s) => s.showToast);
+  const recent =
+    useLiveQuery(async () => {
+      const tours = await db.tours
+        .orderBy("updatedAt")
+        .reverse()
+        .limit(5)
+        .toArray();
+      return Promise.all(
+        tours.map(async (t) => ({
+          ...t,
+          shopCount: await db.shops.where("tourId").equals(t.id).count(),
+          dressCount: await db.dresses.where("tourId").equals(t.id).count(),
+        })),
+      );
+    }, []) ?? [];
+  return (
+    <main className="min-h-dvh pb-10">
+      <BrandHeader />
+      <section className="px-5 pt-7">
+        <div className="rounded-[32px] bg-[#fff2ee] p-6">
+          <p className="mb-2 text-xs font-semibold text-[#a75e55]">
+            사진 촬영이 어려운 드레스투어
+          </p>
+          <h1 className="text-[28px] font-black leading-[1.2] tracking-[-0.04em]">
+            그림 대신
+            <br />
+            모양으로 기록해요 👗
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-stone-500">
+            드레스 특징을 그림 타일로 고르고, 투어가 끝나면 다른 폰에서도 다시
+            여는 PDF로 저장해요.
+          </p>
+        </div>
+        <div className="mt-5 grid gap-3">
+          <Link
+            to="/tour/new"
+            className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-stone-900 px-4 font-bold text-white"
+          >
+            <Plus size={19} />새 투어 시작
+          </Link>
+          <Link
+            to="/import"
+            className="flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 font-bold"
+          >
+            <FileUp size={18} />
+            PDF 불러오기
+          </Link>
+        </div>
+      </section>
+      <section className="mt-9 px-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-bold">최근 기록</h2>
+          <span className="text-xs text-stone-400">최대 5개</span>
+        </div>
+        {recent.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-stone-200 p-6 text-center text-sm text-stone-400">
+            아직 저장된 드레스투어가 없어요.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {recent.map((t) => (
+              <div
+                key={t.id}
+                className="rounded-2xl border border-stone-100 bg-white p-4 shadow-[0_5px_22px_rgba(70,50,45,.05)]"
+              >
+                <button
+                  className="w-full text-left"
+                  onClick={() => nav(`/tour/${t.id}`)}
+                >
+                  <div className="font-bold">{t.title}</div>
+                  <div className="mt-1 text-xs text-stone-400">
+                    {t.tourDate || "날짜 없음"} · 샵 {t.shopCount} · 드레스{" "}
+                    {t.dressCount}
+                  </div>
+                  <div className="mt-2 text-[11px] text-stone-300">
+                    {new Date(t.updatedAt).toLocaleString("ko-KR")} 저장
+                  </div>
+                </button>
+                <button
+                  aria-label={`${t.title} 삭제`}
+                  className="mt-3 inline-flex h-9 items-center gap-1 text-xs text-stone-400"
+                  onClick={async () => {
+                    if (confirm(`'${t.title}' 기록을 삭제할까요?`)) {
+                      await deleteTour(t.id);
+                      toast("투어를 삭제했어요.");
+                    }
+                  }}
+                >
+                  <Trash2 size={14} />
+                  삭제
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+      <div className="mx-5 mt-8 flex gap-2 rounded-2xl bg-stone-50 p-4 text-xs leading-5 text-stone-500">
+        <ShieldCheck size={18} className="shrink-0 text-[#a75e55]" />
+        <span>
+          입력한 내용과 사진은 서버로 보내지 않고 이 기기에만 저장합니다.
+        </span>
+      </div>
+    </main>
+  );
+}
