@@ -88,3 +88,6 @@ input[type="range"] {
     line-height: 1.6;
   }
 }
+
+/* Subtle copy still meets mobile contrast requirements on cream and white surfaces. */
+.app-shell .text-stone-300,.app-shell .text-stone-400{color:#6f6662}

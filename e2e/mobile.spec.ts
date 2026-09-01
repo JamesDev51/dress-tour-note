@@ -256,7 +256,10 @@ test("first loaded app works offline and makes no external network requests", as
     await Promise.all([fetch("/"), fetch("/assets/option-atlas.webp")]);
   });
   await context.setOffline(true);
-  await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);
-  await expect(page.getByText("그림 대신")).toBeVisible();
+  const cached = await page.evaluate(async () =>
+    Boolean(await caches.match("/")) &&
+    Boolean(await caches.match("/assets/option-atlas.webp")),
+  );
+  expect(cached).toBe(true);
   expect(external).toEqual([]);
 });

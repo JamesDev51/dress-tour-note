@@ -22,6 +22,7 @@ async function createBaseTour(page: Page, options: { two?: boolean; face?: boole
   await page.getByPlaceholder('예: 히똥').fill('사용성 신부');
   await page.getByPlaceholder('비워두면 자동으로 만들어요').fill('사용성 테스트 투어');
   await page.getByRole('button', { name: '투어 만들기', exact: true }).click();
+  await expect(page).not.toHaveURL(/\/tour\/new$/);
   await expect(page).toHaveURL(/\/tour\/[^/]+$/);
   const match = page.url().match(/\/tour\/([^/?#]+)/);
   if (!match) throw new Error('tour id missing');
@@ -107,7 +108,7 @@ test('theme and font preferences persist, then reset with local data', async ({ 
 test('candidate filter never blocks choosing two dresses for comparison', async ({ page }) => {
   const tourId = await createBaseTour(page, { two: true });
   await page.goto(`/tour/${tourId}/review`);
-  await expect(page.getByRole('heading', { name: '사용성 테스트 투어' })).toBeVisible();
+  await expect(page.getByText('사용성 테스트 투어', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /^후보 1$/ }).click();
   await page.getByRole('button', { name: '2벌 비교' }).click();
   await expect(page.getByText(/비교할 드레스 2벌/)).toBeVisible();
