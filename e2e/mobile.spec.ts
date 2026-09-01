@@ -167,6 +167,7 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
   await page.goto("/");
   await page.getByRole("link", { name: "PDF 불러오기", exact: true }).click();
   await page.locator('input[type="file"]').setInputFiles(path!);
+  await page.waitForTimeout(2_500);
   await expectImportPreview(page, "E2E 드레스투어");
   await expect(page.getByText("이 기기에 같은 투어가 있어요")).toBeVisible();
   await page
@@ -256,10 +257,13 @@ test("first loaded app works offline and makes no external network requests", as
     await Promise.all([fetch("/"), fetch("/assets/option-atlas.webp")]);
   });
   await context.setOffline(true);
-  const cached = await page.evaluate(async () => {
-    const names = await caches.keys();
-    return names.some((name) => name.includes("workbox-precache"));
+  const offlineFetchesWork = await page.evaluate(async () => {
+    const [home, atlas] = await Promise.all([
+      fetch("/"),
+      fetch("/assets/option-atlas.webp"),
+    ]);
+    return home.ok && atlas.ok;
   });
-  expect(cached).toBe(true);
+  expect(offlineFetchesWork).toBe(true);
   expect(external).toEqual([]);
 });
