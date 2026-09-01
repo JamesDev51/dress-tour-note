@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { db } from "../../db/database";
+import { appendRecoveryTrailer } from "../../lib/pdf/recoveryTrailer";
 import type { Dress, Tour } from "../../types/domain";
 import type { ExportProgress, PdfExportMode } from "../../types/portable";
 import { useUIStore } from "../../stores/uiStore";
@@ -222,15 +223,17 @@ export function ExportPage() {
               setBusy(true);
               try {
                 const mod = await import("../../lib/pdf/exportPdf");
-                const out = await mod.exportPortablePdf(
+                const shouldIncludeFace =
+                  mode === "portable" && includeFace && data.hasFace;
+                const raw = await mod.exportPortablePdf(
                   tourId,
-                  {
-                    includeFace:
-                      mode === "portable" && includeFace && data.hasFace,
-                    mode,
-                  },
+                  { includeFace: shouldIncludeFace, mode },
                   setProgress,
                 );
+                const out =
+                  mode === "portable"
+                    ? await appendRecoveryTrailer(raw, tourId, shouldIncludeFace)
+                    : raw;
                 setBlob(out);
               } catch (e) {
                 toast(
