@@ -1,8 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "",
+  "installCommand": "",
+  "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/tour/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/import",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/privacy",
       "destination": "/index.html"
     }
   ],
@@ -28,9 +40,5 @@
         }
       ]
     }
-  ],
-  "framework": null,
-  "buildCommand": "",
-  "installCommand": "",
-  "outputDirectory": "dist"
+  ]
 }
