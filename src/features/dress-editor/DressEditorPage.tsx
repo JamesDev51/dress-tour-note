@@ -141,12 +141,12 @@ export function DressEditorPage() {
   const updateTransform = (patch: Partial<FaceTransform>) =>
     setTransform((current) => {
       const next = { ...current, ...patch };
+      hasFace.current = true;
       latestTransform.current = next;
       return next;
     });
   const flushTransform = () => {
-    if (hasFace.current)
-      void patchDress(dressId, { faceTransform: latestTransform.current });
+    void patchDress(dressId, { faceTransform: latestTransform.current });
   };
   const singleSection = <T extends string>(
     category: OptionArtworkCategory,
@@ -179,7 +179,14 @@ export function DressEditorPage() {
         <div className="flex items-center gap-3">
           <button
             className="grid h-10 w-10 place-items-center rounded-full bg-stone-50"
-            onClick={() => nav(`/tour/${tourId}/shop/${d.shopId}`)}
+            onClick={async () => {
+              await patchDress(dressId, {
+                memo: latestMemo.current,
+                label: latestLabel.current.trim() || d.label,
+                ...(data.face ? { faceTransform: latestTransform.current } : {}),
+              });
+              nav(`/tour/${tourId}/shop/${d.shopId}`);
+            }}
             aria-label="뒤로"
           >
             <ArrowLeft size={19} />
