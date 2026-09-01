@@ -11,21 +11,29 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect live HTML and static asset
+      - name: Inspect every likely production alias
         shell: bash
         run: |
           set -euo pipefail
-          base='https://dress-tour-note-minseokjeongjames-4193s-projects.vercel.app'
-          curl -sS -L -D /tmp/home.headers "$base/" -o /tmp/home.html
-          curl -sS -L -D /tmp/asset.headers "$base/assets/option-atlas.webp" -o /tmp/asset.bin
-          echo 'HOME STATUS/TYPE:'
-          grep -Ei '^(HTTP/|content-type:|x-vercel-|location:)' /tmp/home.headers || true
-          echo 'HOME TITLE:'
-          grep -Eio '<title>[^<]*</title>' /tmp/home.html | head -1 || true
-          echo 'HOME MARKERS:'
-          grep -Eio 'Vercel|Authentication|Log in|Sign in|Dress Tour Note|그드레스|드레스투어|id="root"' /tmp/home.html | sort -u || true
-          echo 'ASSET STATUS/TYPE:'
-          grep -Ei '^(HTTP/|content-type:|x-vercel-|location:)' /tmp/asset.headers || true
-          echo "ASSET BYTES: $(wc -c < /tmp/asset.bin)"
-          echo 'ASSET MAGIC:'
-          od -An -tx1 -N12 /tmp/asset.bin | tr -s ' '
+          candidates=(
+            'https://dress-tour-note-minseokjeongjames-4193s-projects.vercel.app'
+            'https://dress-tour-note-git-master-minseokjeongjames-4193s-projects.vercel.app'
+            'https://dress-tour-note.vercel.app'
+          )
+          for base in "${candidates[@]}"; do
+            echo "=== $base ==="
+            headers=$(mktemp)
+            body=$(mktemp)
+            code=$(curl -sS -L --max-time 30 -D "$headers" -o "$body" -w '%{http_code}' "$base/" || true)
+            echo "FINAL HTTP $code"
+            grep -Ei '^(HTTP/|content-type:|location:|x-vercel-)' "$headers" | tail -12 || true
+            title=$(grep -Eio '<title>[^<]*</title>' "$body" | head -1 || true)
+            echo "TITLE: ${title:-none}"
+            echo "APP_ROOT_MARKER: $(grep -c 'id="root"' "$body" || true)"
+            aheaders=$(mktemp)
+            abody=$(mktemp)
+            acode=$(curl -sS -L --max-time 30 -D "$aheaders" -o "$abody" -w '%{http_code}' "$base/assets/option-atlas.webp" || true)
+            atype=$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{v=$0} END{sub(/^[^:]+:[[:space:]]*/,"",v); sub(/\r$/,"",v); print v}' "$aheaders")
+            magic=$(od -An -tx1 -N4 "$abody" | tr -d ' \n')
+            echo "ATLAS: HTTP $acode TYPE=${atype:-none} MAGIC=$magic BYTES=$(wc -c < "$abody")"
+          done
