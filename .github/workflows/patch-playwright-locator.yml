@@ -1,0 +1,27 @@
+name: Patch Playwright locator
+on:
+  push:
+    branches: [fix/user-test-polish]
+    paths: [.patch-playwright-locator]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/user-test-polish
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('e2e/usability.spec.ts')
+          s=p.read_text().replace("page.getByDisplayValue('드레스 투어')", "page.locator('input[value=\"드레스 투어\"]')")
+          p.write_text(s)
+          PY
+          rm -f .patch-playwright-locator .github/workflows/patch-playwright-locator.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "test: use Playwright input locator"
+          git push origin HEAD:fix/user-test-polish
