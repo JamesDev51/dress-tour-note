@@ -19,7 +19,7 @@ export function DressFeedbackSection({
   return (
     <>
       <section className="mt-8">
-        <h2 className="mb-3 text-[15px] font-bold">입어봤을 때 어땠나요?</h2>
+        <h2 className="mb-3 text-xl font-black">입어봤을 때 어땠나요?</h2>
         <div className="flex flex-wrap gap-2">
           {quickTagOptions.map((option) => (
             <button
@@ -53,14 +53,14 @@ export function DressFeedbackSection({
         </div>
       </section>
       <section className="mt-8">
-        <h2 className="mb-3 text-[15px] font-bold">특이사항</h2>
+        <h2 className="mb-3 text-xl font-black">특이사항</h2>
         <textarea
           maxLength={1000}
           value={memo}
           onChange={(event) => onMemoChange(event.target.value)}
           onBlur={onMemoBlur}
           placeholder="예: 허리가 제일 얇아 보였음, 치마 볼륨은 조금 아쉬움"
-          className="min-h-32 w-full resize-none rounded-2xl border border-stone-200 bg-white p-4 text-sm leading-6 outline-none focus:border-[#b96e63]"
+          className="min-h-32 w-full resize-none rounded-2xl border border-stone-200 bg-white p-4 text-sm leading-6 focus:border-[#b96e63]"
         />
         <div className="mt-1 text-right text-[11px] text-stone-300">
           {memo.length}/1000

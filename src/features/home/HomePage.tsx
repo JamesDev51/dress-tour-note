@@ -89,7 +89,7 @@ export function HomePage() {
                 </button>
                 <button
                   aria-label={`${t.title} 삭제`}
-                  className="mt-3 inline-flex h-9 items-center gap-1 text-xs text-stone-400"
+                  className="mt-3 inline-flex min-h-11 min-w-11 items-center justify-center gap-1 text-xs text-stone-400"
                   onClick={async () => {
                     if (confirm(`'${t.title}' 기록을 삭제할까요?`)) {
                       await deleteTour(t.id);

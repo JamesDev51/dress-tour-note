@@ -96,7 +96,7 @@ export function TourDashboardPage() {
             void patchTour(tourId, { title: e.target.value });
             setSave("saved");
           }}
-          className="mt-7 w-full bg-transparent text-3xl font-black tracking-[-.04em] outline-none"
+          className="mt-7 w-full bg-transparent text-3xl font-black tracking-[-.04em]"
         />
         <div className="mt-2 flex items-center gap-2 text-xs text-stone-400">
           <span>{data.tour.tourDate || "날짜 없음"}</span>
@@ -117,14 +117,14 @@ export function TourDashboardPage() {
           </button>
         </div>
         {adding && (
-          <div className="mb-4 rounded-2xl border border-[#eadbd6] bg-white p-3">
+          <div className="mb-4 rounded-2xl border border-stone-200 bg-white p-3">
             <input
               autoFocus
               maxLength={50}
               value={shopName}
               onChange={(e) => setShopName(e.target.value)}
               placeholder="드레스샵 이름"
-              className="h-12 w-full rounded-xl bg-stone-50 px-3 outline-none"
+              className="h-12 w-full rounded-xl bg-stone-50 px-3"
             />
             <p className="mt-2 text-xs text-stone-400">
               샵 이름을 입력하면 기록을 시작할 수 있어요.

@@ -24,7 +24,7 @@ export function DressOptionSection<T extends string>({
 }: DressOptionSectionProps<T>) {
   return (
     <section className="mt-8">
-      <h2 className="mb-3 text-[15px] font-bold">{title}</h2>
+      <h2 className="mb-3 text-xl font-black">{title}</h2>
       <div className="grid grid-cols-2 gap-2">
         {options.map((option) => (
           <OptionTile

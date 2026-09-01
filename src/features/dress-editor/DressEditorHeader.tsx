@@ -29,7 +29,7 @@ export function DressEditorHeader({
         <input
           aria-label="드레스 이름"
           maxLength={50}
-          className="min-h-11 min-w-0 flex-1 bg-transparent font-bold outline-none"
+          className="min-h-11 min-w-0 flex-1 bg-transparent font-bold"
           value={label}
           onChange={(event) => onLabelChange(event.target.value)}
           onBlur={() => void onLabelBlur()}

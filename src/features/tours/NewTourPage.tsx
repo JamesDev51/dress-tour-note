@@ -41,7 +41,7 @@ export function NewTourPage() {
             value={brideName}
             onChange={(e) => setBride(e.target.value)}
             placeholder="예: 히똥"
-            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 outline-none focus:border-[#bd7469]"
+            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 focus:border-[#b96e63]"
           />
         </label>
         <label className="block text-sm font-semibold">
@@ -50,7 +50,7 @@ export function NewTourPage() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 outline-none focus:border-[#bd7469]"
+            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 focus:border-[#b96e63]"
           />
         </label>
         <label className="block text-sm font-semibold">
@@ -60,7 +60,7 @@ export function NewTourPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="비워두면 자동으로 만들어요"
-            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 outline-none focus:border-[#bd7469]"
+            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 focus:border-[#b96e63]"
           />
         </label>
         {error && (

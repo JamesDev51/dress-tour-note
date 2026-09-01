@@ -82,14 +82,14 @@ export function ShopPage() {
           maxLength={50}
           value={data.shop.name}
           onChange={(e) => void patchShop(shopId, { name: e.target.value })}
-          className="mt-7 w-full bg-transparent text-3xl font-black tracking-[-.04em] outline-none"
+          className="mt-7 w-full bg-transparent text-3xl font-black tracking-[-.04em]"
         />
         <textarea
           maxLength={1000}
           value={data.shop.memo || ""}
           onChange={(e) => void patchShop(shopId, { memo: e.target.value })}
           placeholder="샵 상담 메모 (선택)"
-          className="mt-3 min-h-16 w-full resize-none rounded-2xl bg-stone-50 p-3 text-sm outline-none"
+          className="mt-3 min-h-16 w-full resize-none rounded-2xl bg-stone-50 p-3 text-sm"
         />
       </header>
       <section className="mt-7 px-5">
@@ -161,7 +161,7 @@ export function ShopPage() {
                   <button
                     disabled={i === 0}
                     aria-label={`${d.label} 위로 이동`}
-                    className="grid h-9 w-9 place-items-center text-stone-400 disabled:opacity-20"
+                    className="grid h-11 w-11 place-items-center text-stone-400 disabled:opacity-20"
                     onClick={() => move(i, -1)}
                   >
                     <ArrowUp size={15} />
@@ -169,14 +169,14 @@ export function ShopPage() {
                   <button
                     disabled={i === data.dresses.length - 1}
                     aria-label={`${d.label} 아래로 이동`}
-                    className="grid h-9 w-9 place-items-center text-stone-400 disabled:opacity-20"
+                    className="grid h-11 w-11 place-items-center text-stone-400 disabled:opacity-20"
                     onClick={() => move(i, 1)}
                   >
                     <ArrowDown size={15} />
                   </button>
                   <button
                     aria-label={`${d.label} 복제`}
-                    className="grid h-9 w-9 place-items-center text-stone-400"
+                    className="grid h-11 w-11 place-items-center text-stone-400"
                     onClick={async () => {
                       try {
                         const id = await duplicateDress(d.id);
@@ -195,14 +195,14 @@ export function ShopPage() {
                   </button>
                   <button
                     aria-label={`${d.label} 빠른 편집`}
-                    className="grid h-9 w-9 place-items-center text-stone-400"
+                    className="grid h-11 w-11 place-items-center text-stone-400"
                     onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
                   >
                     <Pencil size={15} />
                   </button>
                   <button
                     aria-label={`${d.label} 삭제`}
-                    className="ml-auto grid h-9 w-9 place-items-center text-stone-300"
+                    className="ml-auto grid h-11 w-11 place-items-center text-stone-300"
                     onClick={async () => {
                       if (confirm(`${d.label}을 삭제할까요?`)) {
                         await deleteDress(d.id);

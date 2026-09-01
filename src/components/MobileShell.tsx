@@ -52,7 +52,7 @@ export function BrandHeader() {
       </Link>
       <Link
         to="/privacy"
-        className="inline-flex min-h-11 items-center text-xs text-stone-400"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center text-xs text-stone-400"
       >
         설정
       </Link>

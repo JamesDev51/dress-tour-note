@@ -1,3 +1,8 @@
+@import "tailwindcss" source(none);
+@source "../components/**/*.tsx";
+@source "../features/**/*.tsx";
+@source "../app/**/*.tsx";
+
 @font-face {
   font-family: "Noto Sans KR";
   font-style: normal;
@@ -26,8 +31,6 @@
   font-weight: 700;
   src: url("../assets/noto-serif-kr-ui-700.woff2") format("woff2");
 }
-@import "tailwindcss";
-
 :root {
   font-family:
     "Noto Sans KR",
@@ -61,6 +64,10 @@ textarea {
 }
 .app-shell :where(p, h1, h2, h3, button, label) {
   word-break: keep-all;
+}
+.app-shell :where(a, button, input, textarea):focus-visible {
+  outline: 2px solid #b96e63;
+  outline-offset: 2px;
 }
 button {
   touch-action: manipulation;
