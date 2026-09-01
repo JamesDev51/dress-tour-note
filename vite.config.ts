@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "prompt",
-      includeAssets: ["assets/options.svg", "icons/icon.svg"],
+      includeAssets: ["assets/option-atlas.webp", "icons/icon.svg"],
       manifest: {
         name: "그드레스 - 드레스투어 노트",
         short_name: "그드레스",
@@ -32,7 +32,7 @@ export default defineConfig({
       workbox: {
         clientsClaim: true,
         navigateFallback: "/index.html",
-        globPatterns: ["**/*.{js,css,html,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,html,svg,webp,woff2}"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
       },
