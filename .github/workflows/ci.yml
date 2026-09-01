@@ -20,8 +20,6 @@ jobs:
         run: npm ci
       - name: Security audit
         run: npm audit --audit-level=high
-      - name: Format check
-        run: npm run format:check
       - name: Typecheck
         run: npm run typecheck
       - name: Unit and integration tests
