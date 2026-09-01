@@ -55,7 +55,7 @@ test('first-time flow accepts optional tour fields', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /오늘 기록을/ })).toBeVisible();
   await page.getByRole('button', { name: '투어 만들기', exact: true }).click();
   await expect(page).toHaveURL(/\/tour\/[^/]+$/);
-  await expect(page.getByDisplayValue('드레스 투어')).toBeVisible();
+  await expect(page.locator('input[value="드레스 투어"]')).toBeVisible();
   await expectNoSeriousAccessibilityViolations(page);
 });
 
