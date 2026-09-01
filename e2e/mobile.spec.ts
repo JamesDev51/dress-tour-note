@@ -259,7 +259,7 @@ test("first loaded app works offline and makes no external network requests", as
   await context.setOffline(true);
   const offlineFetchesWork = await page.evaluate(async () => {
     const [home, atlas] = await Promise.all([
-      fetch("/"),
+      fetch("/index.html"),
       fetch("/assets/option-atlas.webp"),
     ]);
     return home.ok && atlas.ok;
