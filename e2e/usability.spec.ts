@@ -5,7 +5,10 @@ const tinyPng = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8Dwn4GBgYGJAQoAHQkCAWJ6+ygAAAAASUVORK5CYII=',
   'base64',
 );
-const axeSource = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
+const axeSource = readFileSync(
+  new URL('../node_modules/axe-core/axe.min.js', import.meta.url),
+  'utf8',
+);
 
 async function expectNoSeriousAccessibilityViolations(page: Page) {
   await page.addScriptTag({ content: axeSource });
@@ -72,16 +75,28 @@ test('mobile pages do not overflow horizontally at supported boundary widths', a
   }
 });
 
-test('generated artwork sprite is available and option cards use it', async ({ page }) => {
-  const response = await page.request.get('/assets/options.svg');
-  expect(response.ok()).toBe(true);
-  const sprite = await response.text();
-  expect(sprite).toContain('id="top-offShoulder"');
-  expect(sprite).toContain('id="detail-overskirt"');
+test('generated image atlas and PWA icons are available and option cards use them', async ({ page }) => {
+  const atlas = await page.request.get('/assets/option-atlas.webp');
+  expect(atlas.ok()).toBe(true);
+  expect((await atlas.body()).byteLength).toBeGreaterThan(20_000);
+  expect(atlas.headers()['content-type']).toContain('image/webp');
+
+  for (const icon of ['/icons/icon-192.png', '/icons/icon-512.png']) {
+    const response = await page.request.get(icon);
+    expect(response.ok()).toBe(true);
+    expect(response.headers()['content-type']).toContain('image/png');
+  }
 
   await createBaseTour(page);
-  await expect(page.locator('[data-option-art="top-offShoulder"]')).toBeVisible();
-  await expect(page.locator('[data-option-art="silhouette-aLine"]')).toBeVisible();
+  const shoulder = page.locator('[data-option-art="top-offShoulder"]');
+  const silhouette = page.locator('[data-option-art="silhouette-aLine"]');
+  await expect(shoulder).toBeVisible();
+  await expect(silhouette).toBeVisible();
+  await expect(shoulder).toHaveAttribute('data-option-art-kind', 'generated-image');
+  await expect(silhouette).toHaveAttribute('data-option-art-kind', 'generated-image');
+  expect(await shoulder.evaluate((node) => (node as HTMLElement).style.backgroundImage)).toContain(
+    'option-atlas.webp',
+  );
 });
 
 test('missing-record routes fail safely instead of leaving a blank screen', async ({ page }) => {
