@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { OptionArtwork, type OptionArtworkCategory } from "./OptionArtwork";
 
 const cases: Array<[OptionArtworkCategory, string]> = [
@@ -13,6 +13,8 @@ const cases: Array<[OptionArtworkCategory, string]> = [
   ["back", "buttonBack"],
   ["detail", "overskirt"],
 ];
+
+afterEach(cleanup);
 
 describe("OptionArtwork", () => {
   it.each(cases)("renders %s/%s from the generated image atlas", (category, id) => {
