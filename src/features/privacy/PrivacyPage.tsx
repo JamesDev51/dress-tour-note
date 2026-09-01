@@ -38,6 +38,7 @@ export function PrivacyPage() {
     <main className="min-h-dvh px-5 pb-12 pt-[calc(18px+env(safe-area-inset-top))]">
       <p className="mb-4 text-sm font-black tracking-[-0.04em]">드레스노트</p>
       <button
+        aria-label="뒤로"
         className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
         onClick={() => nav(-1)}
       >
@@ -105,7 +106,7 @@ export function PrivacyPage() {
       </div>
       <div className="mt-8 rounded-3xl border border-red-100 bg-red-50 p-5">
         <h2 className="font-bold text-red-800">이 기기의 기록 전체 삭제</h2>
-        <p className="mt-2 text-sm leading-6 text-red-600">
+        <p className="mt-2 text-sm leading-6 text-red-700">
           앱의 IndexedDB, 화면 설정, 오프라인 캐시를 지웁니다. 이미 저장한 PDF
           파일은 삭제되지 않습니다.
         </p>
