@@ -38,13 +38,13 @@ export function DressFeedbackSection({
             </button>
           ))}
         </div>
-        <div className="mt-4 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-1">
           <span className="text-sm text-stone-500">별점</span>
           {RATINGS.map((rating) => (
             <button
               key={rating}
               aria-label={`${rating}점`}
-              className={`grid h-11 w-11 place-items-center text-xl ${rating <= (dress.rating ?? 0) ? "text-amber-400" : "text-stone-200"}`}
+              className={`grid h-11 w-11 shrink-0 place-items-center text-xl ${rating <= (dress.rating ?? 0) ? "text-amber-400" : "text-stone-200"}`}
               onClick={() => void onPatch({ rating })}
             >
               ★
