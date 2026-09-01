@@ -1,0 +1,1 @@
+Generated image asset atlas. Source image was created with ChatGPT image generation in this project conversation, then cropped and packed locally into a deterministic 8-column by 10-row atlas for mobile option cards.
