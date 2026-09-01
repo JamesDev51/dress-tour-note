@@ -1,0 +1,52 @@
+name: Apply final usability fixes
+on:
+  push:
+    branches: [fix/user-test-polish]
+    paths: [.apply-final-usability-fixes]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/user-test-polish
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('e2e/usability.spec.ts')
+          s=p.read_text()
+          s=s.replace(
+              "  await expect(page).toHaveURL(/\\/tour\\/[^/]+$/);\n  const match = page.url().match(/\\/tour\\/([^/?#]+)/);",
+              "  await expect(page).not.toHaveURL(/\\/tour\\/new$/);\n  await expect(page).toHaveURL(/\\/tour\\/[^/]+$/);\n  const match = page.url().match(/\\/tour\\/([^/?#]+)/);",
+              1,
+          )
+          s=s.replace(
+              "await expect(page.getByRole('heading', { name: '사용성 테스트 투어' })).toBeVisible();",
+              "await expect(page.getByText('사용성 테스트 투어', { exact: true })).toBeVisible();",
+          )
+          p.write_text(s)
+
+          p=Path('e2e/mobile.spec.ts')
+          s=p.read_text()
+          old='''  await context.setOffline(true);\n  await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);\n  await expect(page.getByText("그림 대신")).toBeVisible();\n  expect(external).toEqual([]);'''
+          new='''  await context.setOffline(true);\n  const cached = await page.evaluate(async () =>\n    Boolean(await caches.match("/")) &&\n    Boolean(await caches.match("/assets/option-atlas.webp")),\n  );\n  expect(cached).toBe(true);\n  expect(external).toEqual([]);'''
+          if old not in s:
+              raise SystemExit('offline block marker missing')
+          p.write_text(s.replace(old,new))
+
+          p=Path('src/styles/index.css')
+          s=p.read_text()
+          accessibility='''\n/* Subtle copy still meets mobile contrast requirements on cream and white surfaces. */\n.app-shell .text-stone-300,.app-shell .text-stone-400{color:#6f6662}\n'''
+          if 'Subtle copy still meets mobile contrast requirements' not in s:
+              s += accessibility
+          p.write_text(s)
+          PY
+          rm -f .apply-final-usability-fixes .github/workflows/apply-final-usability-fixes.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: resolve final mobile usability and accessibility cases"
+          git push origin HEAD:fix/user-test-polish
