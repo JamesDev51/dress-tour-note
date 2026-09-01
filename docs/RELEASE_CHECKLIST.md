@@ -14,3 +14,5 @@ The mobile release is considered ready only when all items below pass on the fin
 - A previously loaded app opens offline with the option atlas available.
 - Typecheck, unit/integration tests, production build, mobile E2E, usability E2E, and security audit all pass.
 - Vercel reports a successful production deployment for the merged commit.
+
+The final gate is run from a user-authored commit after all one-time maintenance workflows have removed themselves.
