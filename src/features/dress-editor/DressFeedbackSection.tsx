@@ -25,7 +25,7 @@ export function DressFeedbackSection({
             <button
               key={option.id}
               aria-pressed={dress.quickTags.includes(option.id)}
-              className={`min-h-11 rounded-full border px-4 text-sm ${dress.quickTags.includes(option.id) ? "border-[#b96e63] bg-[#fff2ee] text-[#a75e55]" : "border-stone-200 bg-white text-stone-500"}`}
+              className={`min-h-11 rounded-full border px-4 text-sm ${dress.quickTags.includes(option.id) ? "border-[#b96e63] bg-[#fff2ee] text-[#8b5750]" : "border-stone-200 bg-white text-stone-500"}`}
               onClick={() =>
                 void onPatch({
                   quickTags: dress.quickTags.includes(option.id)
@@ -44,7 +44,7 @@ export function DressFeedbackSection({
             <button
               key={rating}
               aria-label={`${rating}점`}
-              className={`grid h-10 w-10 place-items-center text-xl ${rating <= (dress.rating ?? 0) ? "text-amber-400" : "text-stone-200"}`}
+              className={`grid h-11 w-11 place-items-center text-xl ${rating <= (dress.rating ?? 0) ? "text-amber-400" : "text-stone-200"}`}
               onClick={() => void onPatch({ rating })}
             >
               ★

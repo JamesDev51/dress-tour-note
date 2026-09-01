@@ -99,7 +99,7 @@ export function ShopPage() {
             <span className="text-stone-300">{data.dresses.length}</span>
           </h2>
           <button
-            className="inline-flex h-10 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#a75e55]"
+            className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#8b5750]"
             onClick={() => void createDress()}
           >
             <Plus size={16} />

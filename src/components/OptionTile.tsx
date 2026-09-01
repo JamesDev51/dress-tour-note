@@ -32,14 +32,14 @@ export function OptionTile({
           <Check size={13} />
         </span>
       )}
-      <div className="mb-2 grid h-[78px] place-items-center overflow-hidden rounded-xl bg-[#faf7f5] px-1 text-[#8d6c65]">
+      <div className="mb-2 grid aspect-square w-full place-items-center overflow-hidden rounded-xl bg-[#faf7f5] text-[#8b5750]">
         {icon ?? <span className="text-2xl">?</span>}
       </div>
       <div className="text-[12px] font-semibold leading-[1.35] text-stone-800">
         {label}
       </div>
       {technical && (
-        <div className="mt-1 text-[9px] leading-tight text-stone-400">
+        <div className="mt-1 text-[10px] leading-tight text-stone-400">
           {technical}
         </div>
       )}

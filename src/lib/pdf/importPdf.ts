@@ -104,7 +104,8 @@ function extractAttachments(pdf: PDFDocument): PdfAttachmentEntry[] {
           try {
             const nameObject = nameArray.lookup(index);
             const hintedName =
-              nameObject instanceof PDFHexString || nameObject instanceof PDFString
+              nameObject instanceof PDFHexString ||
+              nameObject instanceof PDFString
                 ? nameObject.decodeText()
                 : undefined;
             pushAttachment(
@@ -128,11 +129,7 @@ function extractAttachments(pdf: PDFDocument): PdfAttachmentEntry[] {
     const associatedFiles = pdf.catalog.lookup(associatedFilesKey, PDFArray);
     for (let index = 0; index < associatedFiles.size(); index += 1) {
       try {
-        pushAttachment(
-          entries,
-          seen,
-          associatedFiles.lookup(index, PDFDict),
-        );
+        pushAttachment(entries, seen, associatedFiles.lookup(index, PDFDict));
       } catch {
         // Keep any valid attachments already collected from the other catalog location.
       }
@@ -227,7 +224,8 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
   }
 
   const entries = extractAttachments(pdf);
-  if (!entries.length) throw new Error("복원 가능한 드레스노트 PDF가 아니에요.");
+  if (!entries.length)
+    throw new Error("복원 가능한 드레스노트 PDF가 아니에요.");
 
   let payload: PortableTourV1;
   let integrityVerified = false;

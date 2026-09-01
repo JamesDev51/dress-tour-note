@@ -1,12 +1,15 @@
-import type { PortableSerializedFiles, PortableTourV1 } from '../../types/portable';
+import type {
+  PortableSerializedFiles,
+  PortableTourV1,
+} from "../../types/portable";
 import {
   parsePortableManifest,
   verifyPortableFaceBytes,
   verifyPortableTourBytes,
-} from './portable';
+} from "./portable";
 
-const START_MARKER = new TextEncoder().encode('\n%GUDRESS-PORTABLE-V1\n');
-const END_MARKER = new TextEncoder().encode('\n%GUDRESS-END\n');
+const START_MARKER = new TextEncoder().encode("\n%GUDRESS-PORTABLE-V1\n");
+const END_MARKER = new TextEncoder().encode("\n%GUDRESS-END\n");
 
 type TrailerEnvelope = {
   version: 1;
@@ -16,10 +19,12 @@ type TrailerEnvelope = {
 };
 
 function bytesToBase64(bytes: Uint8Array) {
-  let binary = '';
+  let binary = "";
   const chunkSize = 0x8000;
   for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    binary += String.fromCharCode(
+      ...bytes.subarray(offset, offset + chunkSize),
+    );
   }
   return btoa(binary);
 }
@@ -34,7 +39,11 @@ function base64ToBytes(value: string) {
 }
 
 function lastIndexOfBytes(haystack: Uint8Array, needle: Uint8Array) {
-  outer: for (let index = haystack.length - needle.length; index >= 0; index -= 1) {
+  outer: for (
+    let index = haystack.length - needle.length;
+    index >= 0;
+    index -= 1
+  ) {
     for (let offset = 0; offset < needle.length; offset += 1) {
       if (haystack[index + offset] !== needle[offset]) continue outer;
     }
@@ -44,7 +53,9 @@ function lastIndexOfBytes(haystack: Uint8Array, needle: Uint8Array) {
 }
 
 function concatBytes(...parts: Uint8Array[]) {
-  const output = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
+  const output = new Uint8Array(
+    parts.reduce((total, part) => total + part.length, 0),
+  );
   let offset = 0;
   for (const part of parts) {
     output.set(part, offset);
@@ -81,19 +92,24 @@ export async function inspectPortableTrailer(bytes: Uint8Array): Promise<
   const start = lastIndexOfBytes(bytes, START_MARKER);
   if (start < 0) return undefined;
   const payloadStart = start + START_MARKER.length;
-  const endRelative = lastIndexOfBytes(bytes.subarray(payloadStart), END_MARKER);
-  if (endRelative < 0) throw new Error('PDF의 빠른 복원 데이터가 손상됐어요.');
+  const endRelative = lastIndexOfBytes(
+    bytes.subarray(payloadStart),
+    END_MARKER,
+  );
+  if (endRelative < 0) throw new Error("PDF의 빠른 복원 데이터가 손상됐어요.");
 
   let envelope: TrailerEnvelope;
   try {
     envelope = JSON.parse(
-      new TextDecoder().decode(bytes.subarray(payloadStart, payloadStart + endRelative)),
+      new TextDecoder().decode(
+        bytes.subarray(payloadStart, payloadStart + endRelative),
+      ),
     ) as TrailerEnvelope;
   } catch {
-    throw new Error('PDF의 빠른 복원 데이터를 읽을 수 없어요.');
+    throw new Error("PDF의 빠른 복원 데이터를 읽을 수 없어요.");
   }
   if (envelope.version !== 1 || !envelope.tourBase64) {
-    throw new Error('지원하지 않는 드레스노트 PDF 버전이에요.');
+    throw new Error("지원하지 않는 드레스노트 PDF 버전이에요.");
   }
 
   const manifest = parsePortableManifest(envelope.manifest);
@@ -104,7 +120,7 @@ export async function inspectPortableTrailer(bytes: Uint8Array): Promise<
 
   if (manifest.faceAttachment) {
     if (!envelope.faceBase64) {
-      faceWarning = '얼굴 파일이 없어 드레스 기록만 복원할 수 있어요.';
+      faceWarning = "얼굴 파일이 없어 드레스 기록만 복원할 수 있어요.";
     } else {
       const faceBytes = base64ToBytes(envelope.faceBase64);
       try {
@@ -112,7 +128,7 @@ export async function inspectPortableTrailer(bytes: Uint8Array): Promise<
         const faceReference = payload.assets[0];
         if (faceReference) assetBytes.set(faceReference.id, faceBytes);
       } catch {
-        faceWarning = '얼굴 파일 검증에 실패해 드레스 기록만 복원할 수 있어요.';
+        faceWarning = "얼굴 파일 검증에 실패해 드레스 기록만 복원할 수 있어요.";
       }
     }
   }

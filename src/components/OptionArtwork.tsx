@@ -92,7 +92,7 @@ export function OptionArtwork({
         aria-hidden="true"
         data-option-art={`${category}-${id}`}
         data-option-art-kind="unknown"
-        className={`grid aspect-square h-full place-items-center rounded-xl bg-[#f7f2ef] text-xl font-semibold text-stone-300 ${className}`}
+        className={`grid aspect-square h-full place-items-center rounded-xl bg-[#faf7f5] text-xl font-semibold text-stone-300 ${className}`}
         style={style}
         {...props}
       >
@@ -111,7 +111,7 @@ export function OptionArtwork({
       {...props}
     >
       {imageError ? (
-        <span className="px-2 text-center text-[11px] font-semibold leading-tight text-stone-400">
+        <span className="px-2 text-center text-xs font-semibold leading-5 text-stone-400">
           이미지를 불러오지 못했어요.
         </span>
       ) : (

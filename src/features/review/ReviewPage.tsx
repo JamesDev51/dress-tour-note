@@ -64,7 +64,7 @@ export function ReviewPage() {
           </button>
           {data.dresses.length >= 2 && (
             <button
-              className={`inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ${selecting ? "bg-[#fff2ee] text-[#a75e55]" : "bg-stone-50 text-stone-600"}`}
+              className={`inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ${selecting ? "bg-[#fff2ee] text-[#8b5750]" : "bg-stone-50 text-stone-600"}`}
               onClick={() => {
                 const next = !selecting;
                 setSelecting(next);
@@ -157,7 +157,7 @@ export function ReviewPage() {
                               {d.quickTags.slice(0, 3).map((t) => (
                                 <span
                                   key={t}
-                                  className="rounded-full bg-[#fff2ee] px-2 py-1 text-[10px] text-[#a75e55]"
+                                  className="rounded-full bg-[#fff2ee] px-2 py-1 text-[10px] text-[#8b5750]"
                                 >
                                   {t}
                                 </span>

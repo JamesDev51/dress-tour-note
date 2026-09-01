@@ -59,6 +59,9 @@ textarea {
   font: inherit;
   scroll-margin-block: 96px 128px;
 }
+.app-shell :where(p, h1, h2, h3, button, label) {
+  word-break: keep-all;
+}
 button {
   touch-action: manipulation;
 }
@@ -68,7 +71,7 @@ button {
   height: 100%;
 }
 input[type="range"] {
-  min-height: 36px;
+  min-height: 44px;
 }
 ::selection {
   background: #f1d5ce;

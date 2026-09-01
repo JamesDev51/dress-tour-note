@@ -110,7 +110,7 @@ export function TourDashboardPage() {
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-bold">드레스샵</h2>
           <button
-            className="inline-flex h-10 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#a75e55]"
+            className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#8b5750]"
             onClick={() => setAdding((v) => !v)}
           >
             <Plus size={16} />샵 추가
@@ -171,7 +171,7 @@ export function TourDashboardPage() {
                   className="flex w-full items-center gap-3 text-left"
                   onClick={() => nav(`/tour/${tourId}/shop/${s.id}`)}
                 >
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#fff2ee] text-sm font-black text-[#a75e55]">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#fff2ee] text-sm font-black text-[#8b5750]">
                     {i + 1}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -186,7 +186,7 @@ export function TourDashboardPage() {
                   <button
                     aria-label={`${s.name} 위로 이동`}
                     disabled={i === 0}
-                    className="grid h-9 w-10 place-items-center rounded-lg text-stone-400 disabled:opacity-20"
+                    className="grid h-11 w-11 place-items-center rounded-lg text-stone-400 disabled:opacity-20"
                     onClick={() => move(i, -1)}
                   >
                     <ArrowUp size={15} />
@@ -194,14 +194,14 @@ export function TourDashboardPage() {
                   <button
                     aria-label={`${s.name} 아래로 이동`}
                     disabled={i === data.shops.length - 1}
-                    className="grid h-9 w-10 place-items-center rounded-lg text-stone-400 disabled:opacity-20"
+                    className="grid h-11 w-11 place-items-center rounded-lg text-stone-400 disabled:opacity-20"
                     onClick={() => move(i, 1)}
                   >
                     <ArrowDown size={15} />
                   </button>
                   <button
                     aria-label={`${s.name} 삭제`}
-                    className="ml-auto grid h-9 w-10 place-items-center rounded-lg text-stone-300"
+                    className="ml-auto grid h-11 w-11 place-items-center rounded-lg text-stone-300"
                     onClick={async () => {
                       if (
                         confirm(

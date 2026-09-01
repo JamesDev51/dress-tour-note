@@ -50,7 +50,10 @@ export function BrandHeader() {
       <Link to="/" className="font-black tracking-[-0.04em]">
         드레스노트
       </Link>
-      <Link to="/privacy" className="text-xs text-stone-400">
+      <Link
+        to="/privacy"
+        className="inline-flex min-h-11 items-center text-xs text-stone-400"
+      >
         설정
       </Link>
     </header>

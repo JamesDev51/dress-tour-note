@@ -50,7 +50,7 @@ export function ImportPage() {
         드레스노트에서 내보낸 복원 가능한 PDF만 읽습니다. 일반 PDF는 분석하지
         않아요.
       </p>
-      <label className="mt-7 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-stone-250 bg-white text-center">
+      <label className="mt-7 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-stone-200 bg-white text-center">
         <FileUp size={26} className="text-[#b96e63]" />
         <div className="mt-3 font-semibold">
           {file ? file.name : "PDF 파일 선택"}
@@ -79,8 +79,8 @@ export function ImportPage() {
           <TriangleAlert size={18} className="mt-0.5 shrink-0" />
           <div>
             <div className="font-semibold">이 PDF를 불러올 수 없어요.</div>
-            <p className="mt-1 text-xs leading-5">{error}</p>
-            <p className="mt-2 text-xs leading-5 text-red-500">
+            <p className="mt-1 text-sm leading-6">{error}</p>
+            <p className="mt-2 text-sm leading-6 text-red-500">
               드레스노트에서 ‘복원 가능한 PDF’로 저장한 원본 파일을 다시 선택해
               주세요.
             </p>
@@ -100,7 +100,7 @@ export function ImportPage() {
             {new Date(preview.payload.exportedAt).toLocaleString("ko-KR")}
           </div>
           {preview.faceWarning && (
-            <div className="mt-4 flex gap-2 rounded-2xl bg-amber-50 p-3 text-xs leading-5 text-amber-700">
+            <div className="mt-4 flex gap-2 rounded-2xl bg-amber-50 p-3 text-sm leading-6 text-amber-700">
               <TriangleAlert size={17} className="shrink-0" />
               {preview.faceWarning}
             </div>
@@ -137,7 +137,7 @@ export function ImportPage() {
           )}
         </section>
       )}
-      <div className="mt-5 flex gap-2 rounded-2xl bg-[#fff2ee] p-4 text-xs leading-5 text-[#8b5750]">
+      <div className="mt-5 flex gap-2 rounded-2xl bg-[#fff2ee] p-4 text-sm leading-6 text-[#8b5750]">
         <ShieldCheck className="shrink-0" size={18} />
         <span>파일을 읽는 과정도 이 기기 안에서만 처리합니다.</span>
       </div>

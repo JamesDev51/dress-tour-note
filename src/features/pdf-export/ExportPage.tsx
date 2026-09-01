@@ -132,7 +132,7 @@ export function ExportPage() {
             복원 가능한 PDF{" "}
             <span className="ml-1 text-xs text-[#a75e55]">추천</span>
           </div>
-          <p className="mt-1 text-xs leading-5 text-stone-400">
+          <p className="mt-1 text-sm leading-6 text-stone-400">
             사람이 보는 결과표 + 다른 기기에서 다시 편집할 원본 데이터를 한
             파일에 담아요.
           </p>
@@ -146,7 +146,7 @@ export function ExportPage() {
           }}
         >
           <div className="font-bold">보기 전용 PDF</div>
-          <p className="mt-1 text-xs leading-5 text-stone-400">
+          <p className="mt-1 text-sm leading-6 text-stone-400">
             다른 사람에게 보여주기 위한 파일. 복원 데이터와 얼굴 사진을 넣지
             않아요.
           </p>
@@ -179,14 +179,14 @@ export function ExportPage() {
           />
           <div>
             <div className="font-semibold">얼굴 사진도 PDF에 포함</div>
-            <p className="mt-1 text-xs leading-5 text-stone-400">
+            <p className="mt-1 text-sm leading-6 text-stone-400">
               끄면 보이는 페이지뿐 아니라 PDF 내부 복원 데이터에서도 얼굴
               바이트를 완전히 제외합니다.
             </p>
           </div>
         </label>
       )}
-      <div className="mt-5 flex gap-2 rounded-2xl bg-[#fff2ee] p-4 text-xs leading-5 text-[#8b5750]">
+      <div className="mt-5 flex gap-2 rounded-2xl bg-[#fff2ee] p-4 text-sm leading-6 text-[#8b5750]">
         <ShieldCheck className="shrink-0" size={18} />
         <span>
           PDF 생성과 공유 준비는 브라우저 안에서만 진행됩니다. 서버로 사진이나

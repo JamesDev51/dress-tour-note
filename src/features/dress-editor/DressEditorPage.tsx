@@ -141,7 +141,7 @@ export function DressEditorPage() {
           <DressPreview
             dress={{ ...d, faceTransform: transform }}
             faceAsset={data.face}
-            className="mx-auto aspect-[9/13] max-h-[42dvh] w-auto"
+            className="mx-auto aspect-[9/16] max-h-[42dvh] w-auto"
           />
         </div>
         <DressOptionSection

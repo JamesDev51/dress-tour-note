@@ -105,7 +105,7 @@ export function PrivacyPage() {
       </div>
       <div className="mt-8 rounded-3xl border border-red-100 bg-red-50 p-5">
         <h2 className="font-bold text-red-800">이 기기의 기록 전체 삭제</h2>
-        <p className="mt-2 text-xs leading-5 text-red-600">
+        <p className="mt-2 text-sm leading-6 text-red-600">
           앱의 IndexedDB, 화면 설정, 오프라인 캐시를 지웁니다. 이미 저장한 PDF
           파일은 삭제되지 않습니다.
         </p>
@@ -173,7 +173,7 @@ function Info({
       </div>
       <div>
         <div className="font-bold">{title}</div>
-        <p className="mt-1 text-xs leading-5 text-stone-400">{children}</p>
+        <p className="mt-1 text-sm leading-6 text-stone-400">{children}</p>
       </div>
     </div>
   );
