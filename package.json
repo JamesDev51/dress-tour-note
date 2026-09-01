@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
     "@fontsource/noto-sans-kr": "^5.2.6",
@@ -45,6 +46,9 @@
     "fake-indexeddb": "^6.0.1",
     "jsdom": "^26.1.0",
     "prettier": "^3.6.2",
+    "react-doctor": "^0.9.12",
+    "react-grab": "^0.2.0",
+    "react-scan": "^0.5.7",
     "tailwindcss": "4.3.3",
     "typescript": "^5.9.2",
     "vite": "8.2.2",
