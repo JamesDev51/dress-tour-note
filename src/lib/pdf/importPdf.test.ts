@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { PDFDocument } from 'pdf-lib';
 import { describe, expect, it } from 'vitest';
 import type { TourSnapshot } from '../../types/domain';
