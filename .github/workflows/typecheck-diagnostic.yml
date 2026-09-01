@@ -1,0 +1,38 @@
+name: Test diagnostic
+
+on:
+  push:
+    branches: [feat/generated-assets-final]
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Capture unit test diagnostics
+        shell: bash
+        run: |
+          set +e
+          npm test > /tmp/test.log 2>&1
+          CODE=$?
+          echo '## Unit/integration diagnostics' >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/test.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CODE" -ne 0 ]; then
+            cp /tmp/test.log TEST_ERRORS.txt
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add TEST_ERRORS.txt
+            git commit -m 'ci: capture unit test errors'
+            git push origin HEAD:feat/generated-assets-final
+          fi
+          exit 0
