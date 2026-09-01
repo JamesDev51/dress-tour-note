@@ -58,12 +58,12 @@ function snapshot(): TourSnapshot {
   };
 }
 
+function bytesToArrayBuffer(bytes: Uint8Array) {
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+}
+
 function fileFrom(bytes: Uint8Array, name = 'gudress.pdf') {
-  const arrayBuffer = bytes.buffer.slice(
-    bytes.byteOffset,
-    bytes.byteOffset + bytes.byteLength,
-  ) as ArrayBuffer;
-  return new File([arrayBuffer], name, { type: 'application/pdf' });
+  return new File([bytesToArrayBuffer(bytes)], name, { type: 'application/pdf' });
 }
 
 async function makePortablePdf(source: TourSnapshot, includeFace: boolean) {
@@ -72,16 +72,20 @@ async function makePortablePdf(source: TourSnapshot, includeFace: boolean) {
   );
   const pdf = await PDFDocument.create();
   pdf.addPage([300, 300]);
-  await pdf.attach(serialized.manifestBytes, PORTABLE_MANIFEST_FILE_NAME, {
+  await pdf.attach(bytesToArrayBuffer(serialized.manifestBytes), PORTABLE_MANIFEST_FILE_NAME, {
     mimeType: 'application/json',
   });
-  await pdf.attach(serialized.tourBytes, serialized.manifest.tourAttachment, {
-    mimeType: 'application/json',
-  });
+  await pdf.attach(
+    bytesToArrayBuffer(serialized.tourBytes),
+    serialized.manifest.tourAttachment,
+    { mimeType: 'application/json' },
+  );
   if (serialized.faceBytes && serialized.manifest.faceAttachment) {
-    await pdf.attach(serialized.faceBytes, serialized.manifest.faceAttachment, {
-      mimeType: 'image/webp',
-    });
+    await pdf.attach(
+      bytesToArrayBuffer(serialized.faceBytes),
+      serialized.manifest.faceAttachment,
+      { mimeType: 'image/webp' },
+    );
   }
   return fileFrom(await pdf.save());
 }
@@ -97,7 +101,7 @@ describe('inspectPortablePdf', () => {
   it('round-trips the optional local face attachment', async () => {
     const source = snapshot();
     const faceBytes = new TextEncoder().encode('test-face-bytes');
-    const faceBlob = new Blob([faceBytes], { type: 'image/webp' });
+    const faceBlob = new Blob([bytesToArrayBuffer(faceBytes)], { type: 'image/webp' });
     source.tour.faceAssetId = 'face-roundtrip';
     source.dresses[0].faceTransform = { x: 0.25, y: -0.1, scale: 1.3, rotation: 2 };
     source.assets.push({
