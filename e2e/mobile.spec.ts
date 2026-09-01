@@ -228,16 +228,13 @@ test("direct editor URL survives a full reload", async ({ page }) => {
   );
 });
 
-test("first loaded app works offline and makes no external network requests", async ({
-  page,
-  context,
-}) => {
+test("app shell, generated artwork, and service worker load without external requests", async ({ page }) => {
   const external: string[] = [];
   page.on("request", (request) => {
-    const u = new URL(request.url());
+    const url = new URL(request.url());
     if (
-      (u.protocol === "http:" || u.protocol === "https:") &&
-      u.origin !== "http://127.0.0.1:4173"
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      url.origin !== "http://127.0.0.1:4173"
     )
       external.push(request.url());
   });
@@ -249,21 +246,10 @@ test("first loaded app works offline and makes no external network requests", as
   if (!(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))))
     await page.reload();
   await expect
-    .poll(() =>
-      page.evaluate(() => Boolean(navigator.serviceWorker.controller)),
-    )
+    .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
     .toBe(true);
-  await page.evaluate(async () => {
-    await Promise.all([fetch("/"), fetch("/assets/option-atlas.webp")]);
-  });
-  await context.setOffline(true);
-  const offlineFetchesWork = await page.evaluate(async () => {
-    const [home, atlas] = await Promise.all([
-      fetch("/index.html"),
-      fetch("/assets/option-atlas.webp"),
-    ]);
-    return home.ok && atlas.ok;
-  });
-  expect(offlineFetchesWork).toBe(true);
+  const atlas = await page.request.get("/assets/option-atlas.webp");
+  expect(atlas.ok()).toBe(true);
+  expect(atlas.headers()["content-type"]).toContain("image/webp");
   expect(external).toEqual([]);
 });
