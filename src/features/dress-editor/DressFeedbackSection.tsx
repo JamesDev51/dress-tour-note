@@ -25,7 +25,7 @@ export function DressFeedbackSection({
             <button
               key={option.id}
               aria-pressed={dress.quickTags.includes(option.id)}
-              className={`min-h-11 rounded-full border px-4 text-sm ${dress.quickTags.includes(option.id) ? "border-[#b96e63] bg-[#fff2ee] text-[#8b5750]" : "border-stone-200 bg-white text-stone-500"}`}
+              className={`min-h-11 rounded-full border px-4 text-sm ${dress.quickTags.includes(option.id) ? "border-accent bg-accent-soft text-accent-copy" : "border-stone-200 bg-white text-stone-500"}`}
               onClick={() =>
                 void onPatch({
                   quickTags: dress.quickTags.includes(option.id)
@@ -60,7 +60,7 @@ export function DressFeedbackSection({
           onChange={(event) => onMemoChange(event.target.value)}
           onBlur={onMemoBlur}
           placeholder="예: 허리가 제일 얇아 보였음, 치마 볼륨은 조금 아쉬움"
-          className="min-h-32 w-full resize-none rounded-2xl border border-stone-200 bg-white p-4 text-sm leading-6 focus:border-[#b96e63]"
+          className="min-h-32 w-full resize-none rounded-2xl border border-stone-200 bg-white p-4 text-sm leading-6 focus:border-accent"
         />
         <div className="mt-1 text-right text-[11px] text-stone-300">
           {memo.length}/1000

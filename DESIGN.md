@@ -28,6 +28,13 @@ This document extracts the existing visual system before the option-asset and se
 | Selection tint      | `--color-selection`                       | `#f1d5ce`                        | Text selection                                                                     |
 | Error surface/copy  | `--color-error-surface` / `--color-error` | Tailwind `red-50` / `red-700`    | Destructive and import errors                                                      |
 
+The executable source for these semantic tokens is the `:root` `--ds-*` map in
+`src/styles/index.css`; its `@theme inline` bridge exposes the palette and
+component radii as Tailwind utilities such as `bg-accent-soft`, `text-error`,
+`rounded-card`, and `rounded-preview`. The spacing and typography scales remain
+Tailwind's existing 4px-based utilities, with the documented body and section
+sizes available as `text-body` and `text-section` when a semantic name is useful.
+
 ### Rules
 
 - The palette is warm and low-saturation. Blush is the single interactive accent; it is not used as decorative noise.

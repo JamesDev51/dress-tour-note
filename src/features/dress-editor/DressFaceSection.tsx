@@ -20,7 +20,7 @@ export function DressFaceSection({
   onReset: () => void;
 }) {
   return (
-    <section className="mt-8 rounded-3xl border border-stone-100 bg-[#faf7f5] p-4">
+    <section className="mt-8 rounded-card border border-stone-100 bg-artwork-surface p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="font-bold">내 얼굴로 느낌 보기</h2>
@@ -42,13 +42,13 @@ export function DressFaceSection({
         )}
       </div>
       {!face ? (
-        <label className="mt-4 flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white font-semibold shadow-sm">
+        <label className="mt-4 flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white font-semibold shadow-sm focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
           <ImagePlus size={18} />
           얼굴 사진 추가
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-            className="hidden"
+            className="sr-only"
             onChange={async (event) => {
               const file = event.target.files?.[0];
               if (file) await onUpload(file);

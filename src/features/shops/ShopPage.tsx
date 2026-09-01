@@ -99,7 +99,7 @@ export function ShopPage() {
             <span className="text-stone-300">{data.dresses.length}</span>
           </h2>
           <button
-            className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#8b5750]"
+            className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-accent-soft px-3 text-sm font-semibold text-accent-copy"
             onClick={() => void createDress()}
           >
             <Plus size={16} />
@@ -135,8 +135,8 @@ export function ShopPage() {
                       {d.isFavorite && (
                         <Heart
                           size={15}
-                          fill="#b96e63"
-                          className="text-[#b96e63]"
+                          fill="currentColor"
+                          className="text-accent"
                         />
                       )}
                     </div>
@@ -218,7 +218,7 @@ export function ShopPage() {
           </div>
         )}
       </section>
-      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         <button
           className="h-14 w-full rounded-2xl bg-stone-900 font-bold text-white"
           onClick={() => void createDress()}

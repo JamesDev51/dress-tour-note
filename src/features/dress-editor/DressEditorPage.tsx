@@ -137,7 +137,7 @@ export function DressEditorPage() {
         onToggleFavorite={() => immediate({ isFavorite: !d.isFavorite })}
       />
       <div className="px-5 pt-4">
-        <div className="sticky top-[72px] z-10 rounded-[32px] bg-[#fffdfa] pb-3">
+        <div className="sticky top-[72px] z-10 rounded-hero bg-shell pb-3">
           <DressPreview
             dress={{ ...d, faceTransform: transform }}
             faceAsset={data.face}

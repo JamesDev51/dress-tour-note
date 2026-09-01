@@ -92,7 +92,7 @@ export function OptionArtwork({
         aria-hidden="true"
         data-option-art={`${category}-${id}`}
         data-option-art-kind="unknown"
-        className={`grid aspect-square h-full place-items-center rounded-xl bg-[#faf7f5] text-xl font-semibold text-stone-300 ${className}`}
+        className={`grid aspect-square h-full place-items-center rounded-xl bg-artwork-surface text-xl font-semibold text-stone-300 ${className}`}
         style={style}
         {...props}
       >
@@ -106,7 +106,7 @@ export function OptionArtwork({
       aria-hidden="true"
       data-option-art={`${category}-${id}`}
       data-option-art-kind={imageError ? "image-error" : "generated-image"}
-      className={`grid aspect-square h-full w-full place-items-center overflow-hidden rounded-xl bg-[#fffdfa] ${className}`}
+      className={`grid aspect-square h-full w-full place-items-center overflow-hidden rounded-xl bg-shell ${className}`}
       style={style}
       {...props}
     >

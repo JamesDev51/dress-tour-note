@@ -114,7 +114,7 @@ export function ExportPage() {
       >
         <ArrowLeft />
       </button>
-      <p className="mt-8 text-xs font-semibold text-[#a75e55]">PDF EXPORT</p>
+      <p className="mt-8 text-xs font-semibold text-accent-dark">PDF EXPORT</p>
       <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
         저장할 PDF를
         <br />
@@ -122,7 +122,7 @@ export function ExportPage() {
       </h1>
       <div className="mt-7 grid gap-2">
         <button
-          className={`rounded-3xl border p-4 text-left ${mode === "portable" ? "border-[#b96e63] bg-[#fff2ee]" : "border-stone-200 bg-white"}`}
+          className={`rounded-3xl border p-4 text-left ${mode === "portable" ? "border-accent bg-accent-soft" : "border-stone-200 bg-white"}`}
           onClick={() => {
             setMode("portable");
             reset();
@@ -130,7 +130,7 @@ export function ExportPage() {
         >
           <div className="font-bold">
             복원 가능한 PDF{" "}
-            <span className="ml-1 text-xs text-[#a75e55]">추천</span>
+            <span className="ml-1 text-xs text-accent-dark">추천</span>
           </div>
           <p className="mt-1 text-sm leading-6 text-stone-400">
             사람이 보는 결과표 + 다른 기기에서 다시 편집할 원본 데이터를 한
@@ -138,7 +138,7 @@ export function ExportPage() {
           </p>
         </button>
         <button
-          className={`rounded-3xl border p-4 text-left ${mode === "viewOnly" ? "border-[#b96e63] bg-[#fff2ee]" : "border-stone-200 bg-white"}`}
+          className={`rounded-3xl border p-4 text-left ${mode === "viewOnly" ? "border-accent bg-accent-soft" : "border-stone-200 bg-white"}`}
           onClick={() => {
             setMode("viewOnly");
             setIncludeFace(false);
@@ -152,7 +152,7 @@ export function ExportPage() {
           </p>
         </button>
       </div>
-      <div className="mt-5 rounded-3xl bg-[#faf7f5] p-5">
+      <div className="mt-5 rounded-card bg-artwork-surface p-5">
         <div className="font-bold">{data.tour.title}</div>
         <div className="mt-2 text-sm text-stone-400">
           샵 {data.shopCount} · 드레스 {data.dresses.length} · 후보{" "}
@@ -170,7 +170,7 @@ export function ExportPage() {
         <label className="mt-5 flex items-start gap-3 rounded-3xl border border-stone-100 bg-white p-4">
           <input
             type="checkbox"
-            className="mt-1 h-5 w-5 accent-[#b96e63]"
+            className="mt-1 h-5 w-5 accent-accent"
             checked={includeFace}
             onChange={(e) => {
               setIncludeFace(e.target.checked);
@@ -186,7 +186,7 @@ export function ExportPage() {
           </div>
         </label>
       )}
-      <div className="mt-5 flex gap-2 rounded-2xl bg-[#fff2ee] p-4 text-sm leading-6 text-[#8b5750]">
+      <div className="mt-5 flex gap-2 rounded-2xl bg-accent-soft p-4 text-sm leading-6 text-accent-copy">
         <ShieldCheck className="shrink-0" size={18} />
         <span>
           PDF 생성과 공유 준비는 브라우저 안에서만 진행됩니다. 서버로 사진이나
@@ -201,7 +201,7 @@ export function ExportPage() {
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-100">
             <div
-              className="h-full rounded-full bg-[#b96e63] transition-all"
+              className="h-full rounded-full bg-accent transition-all"
               style={{ width: `${progress.percent}%` }}
             />
           </div>
@@ -213,7 +213,7 @@ export function ExportPage() {
           PDF가 준비됐어요.
         </div>
       )}
-      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         {!blob ? (
           <button
             disabled={busy || !data.dresses.length}

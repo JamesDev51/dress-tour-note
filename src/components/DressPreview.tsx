@@ -56,7 +56,7 @@ export function DressPreview({
     return (
       <div
         role="alert"
-        className={`grid min-h-24 place-items-center rounded-[28px] bg-[#fbf8f6] px-4 text-center text-sm text-red-700 ${className}`}
+        className={`grid min-h-24 place-items-center rounded-preview bg-preview-surface px-4 text-center text-sm text-red-700 ${className}`}
       >
         {personError}
       </div>
@@ -65,14 +65,14 @@ export function DressPreview({
     return (
       <div
         role="status"
-        className={`grid min-h-24 place-items-center rounded-[28px] bg-[#fbf8f6] px-4 text-center text-sm text-stone-500 ${className}`}
+        className={`grid min-h-24 place-items-center rounded-preview bg-preview-surface px-4 text-center text-sm text-stone-500 ${className}`}
       >
         미리보기를 준비하는 중...
       </div>
     );
   return (
     <div
-      className={`dress-preview overflow-hidden rounded-[28px] border border-stone-200 bg-[#fbf8f6] ${className}`}
+      className={`dress-preview overflow-hidden rounded-preview border border-stone-200 bg-preview-surface ${className}`}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

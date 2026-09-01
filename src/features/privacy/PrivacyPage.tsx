@@ -44,7 +44,7 @@ export function PrivacyPage() {
       >
         <ArrowLeft />
       </button>
-      <p className="mt-8 text-xs font-semibold text-[#a75e55]">
+      <p className="mt-8 text-xs font-semibold text-accent-dark">
         SETTINGS & PRIVACY
       </p>
       <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
@@ -54,7 +54,7 @@ export function PrivacyPage() {
       </h1>
       <section className="mt-7 rounded-3xl border border-stone-100 bg-white p-5">
         <div className="flex items-center gap-2 font-bold">
-          <Palette size={18} className="text-[#a75e55]" />
+          <Palette size={18} className="text-accent-dark" />
           화면 테마
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -72,7 +72,7 @@ export function PrivacyPage() {
           />
         </div>
         <div className="mt-6 flex items-center gap-2 font-bold">
-          <Type size={18} className="text-[#a75e55]" />
+          <Type size={18} className="text-accent-dark" />
           글꼴
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -104,14 +104,14 @@ export function PrivacyPage() {
           수 있습니다.
         </Info>
       </div>
-      <div className="mt-8 rounded-3xl border border-red-100 bg-red-50 p-5">
-        <h2 className="font-bold text-red-800">이 기기의 기록 전체 삭제</h2>
-        <p className="mt-2 text-sm leading-6 text-red-700">
+      <div className="mt-8 rounded-card border border-red-100 bg-error-surface p-5">
+        <h2 className="font-bold text-error">이 기기의 기록 전체 삭제</h2>
+        <p className="mt-2 text-sm leading-6 text-error">
           앱의 IndexedDB, 화면 설정, 오프라인 캐시를 지웁니다. 이미 저장한 PDF
           파일은 삭제되지 않습니다.
         </p>
         <button
-          className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-red-600 font-bold text-white"
+          className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-error font-bold text-white"
           onClick={async () => {
             if (
               !confirm(
@@ -151,7 +151,7 @@ function Choice({
     <button
       aria-pressed={selected}
       onClick={onClick}
-      className={`min-h-20 rounded-2xl border p-3 text-left ${selected ? "border-[#b96e63] bg-[#fff2ee]" : "border-stone-200 bg-stone-50"}`}
+      className={`min-h-20 rounded-2xl border p-3 text-left ${selected ? "border-accent bg-accent-soft" : "border-stone-200 bg-stone-50"}`}
     >
       <div className={`font-bold ${serif ? "font-serif" : ""}`}>{title}</div>
       <div className="mt-1 text-[11px] text-stone-400">{subtitle}</div>
@@ -168,8 +168,8 @@ function Info({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-3 rounded-3xl bg-[#faf7f5] p-4">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#a75e55]">
+    <div className="flex gap-3 rounded-card bg-artwork-surface p-4">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-accent-dark">
         {icon}
       </div>
       <div>

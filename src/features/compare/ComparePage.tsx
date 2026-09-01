@@ -63,7 +63,7 @@ export function ComparePage() {
         >
           <ArrowLeft />
         </button>
-        <p className="mt-7 text-xs font-semibold text-[#a75e55]">COMPARE</p>
+        <p className="mt-7 text-xs font-semibold text-accent-dark">COMPARE</p>
         <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
           두 벌을
           <br />
@@ -83,7 +83,7 @@ export function ComparePage() {
                   <span className="truncate">{shopName(d)}</span>
                   {d.isFavorite && (
                     <Heart
-                      className="shrink-0 text-[#b96e63]"
+                      className="shrink-0 text-accent"
                       size={12}
                       fill="currentColor"
                     />

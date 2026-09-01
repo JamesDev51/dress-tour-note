@@ -34,7 +34,7 @@ export function MobileShell() {
         <div className="fixed left-1/2 top-3 z-50 flex w-[min(92vw,440px)] -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3 text-sm shadow-lg">
           <span>새 버전이 있어요.</span>
           <button
-            className="font-semibold text-[#a85f55]"
+            className="font-semibold text-accent-dark"
             onClick={() => updateSW?.()}
           >
             저장 후 업데이트
@@ -47,7 +47,10 @@ export function MobileShell() {
 export function BrandHeader() {
   return (
     <header className="flex items-center justify-between px-5 pb-3 pt-[calc(18px+env(safe-area-inset-top))]">
-      <Link to="/" className="font-black tracking-[-0.04em]">
+      <Link
+        to="/"
+        className="inline-flex min-h-11 min-w-11 items-center font-black tracking-[-0.04em]"
+      >
         드레스노트
       </Link>
       <Link

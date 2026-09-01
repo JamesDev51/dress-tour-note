@@ -28,8 +28,8 @@ export function HomePage() {
     <main className="min-h-dvh pb-10">
       <BrandHeader />
       <section className="px-5 pt-7">
-        <div className="rounded-[32px] bg-[#fff2ee] p-6">
-          <p className="mb-2 text-xs font-semibold text-[#8b5750]">
+        <div className="rounded-hero bg-accent-soft p-6">
+          <p className="mb-2 text-xs font-semibold text-accent-copy">
             사진 촬영이 어려운 드레스투어
           </p>
           <h1 className="text-[28px] font-black leading-[1.2] tracking-[-0.04em]">
@@ -106,7 +106,7 @@ export function HomePage() {
         )}
       </section>
       <div className="mx-5 mt-8 flex gap-2 rounded-2xl bg-stone-50 p-4 text-sm leading-6 text-stone-500">
-        <ShieldCheck size={18} className="shrink-0 text-[#a75e55]" />
+        <ShieldCheck size={18} className="shrink-0 text-accent-dark" />
         <span>
           입력한 내용과 사진은 서버로 보내지 않고 이 기기에만 저장합니다.
         </span>

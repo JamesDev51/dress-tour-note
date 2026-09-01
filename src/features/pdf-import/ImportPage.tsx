@@ -40,7 +40,7 @@ export function ImportPage() {
       >
         <ArrowLeft />
       </button>
-      <p className="mt-8 text-xs font-semibold text-[#a75e55]">IMPORT PDF</p>
+      <p className="mt-8 text-xs font-semibold text-accent-dark">IMPORT PDF</p>
       <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
         다른 폰의 기록을
         <br />
@@ -50,8 +50,8 @@ export function ImportPage() {
         드레스노트에서 내보낸 복원 가능한 PDF만 읽습니다. 일반 PDF는 분석하지
         않아요.
       </p>
-      <label className="mt-7 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-stone-200 bg-white text-center">
-        <FileUp size={26} className="text-[#b96e63]" />
+      <label className="mt-7 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-stone-200 bg-white text-center focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+        <FileUp size={26} className="text-accent" />
         <div className="mt-3 font-semibold">
           {file ? file.name : "PDF 파일 선택"}
         </div>
@@ -59,7 +59,7 @@ export function ImportPage() {
         <input
           type="file"
           accept="application/pdf,.pdf"
-          className="hidden"
+          className="sr-only"
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) void inspect(f);
@@ -88,7 +88,7 @@ export function ImportPage() {
         </div>
       )}
       {preview && (
-        <section className="mt-6 rounded-3xl bg-[#faf7f5] p-5">
+        <section className="mt-6 rounded-card bg-artwork-surface p-5">
           <h2 className="text-xl font-black">{preview.payload.tour.title}</h2>
           <div className="mt-2 text-sm text-stone-400">
             {preview.payload.tour.tourDate || "날짜 없음"} · 샵{" "}
@@ -111,7 +111,7 @@ export function ImportPage() {
                 이 기기에 같은 투어가 있어요
               </div>
               <label
-                className={`mb-2 flex min-h-12 items-center gap-3 rounded-2xl border px-4 ${strategy === "copy" ? "border-[#b96e63] bg-[#fff2ee]" : "border-stone-200 bg-white"}`}
+                className={`mb-2 flex min-h-12 items-center gap-3 rounded-2xl border px-4 ${strategy === "copy" ? "border-accent bg-accent-soft" : "border-stone-200 bg-white"}`}
               >
                 <input
                   type="radio"
@@ -123,7 +123,7 @@ export function ImportPage() {
                 <span className="ml-auto text-xs text-stone-400">추천</span>
               </label>
               <label
-                className={`flex min-h-12 items-center gap-3 rounded-2xl border px-4 ${strategy === "overwrite" ? "border-[#b96e63] bg-[#fff2ee]" : "border-stone-200 bg-white"}`}
+                className={`flex min-h-12 items-center gap-3 rounded-2xl border px-4 ${strategy === "overwrite" ? "border-accent bg-accent-soft" : "border-stone-200 bg-white"}`}
               >
                 <input
                   type="radio"
@@ -137,11 +137,11 @@ export function ImportPage() {
           )}
         </section>
       )}
-      <div className="mt-5 flex gap-2 rounded-2xl bg-[#fff2ee] p-4 text-sm leading-6 text-[#8b5750]">
+      <div className="mt-5 flex gap-2 rounded-2xl bg-accent-soft p-4 text-sm leading-6 text-accent-copy">
         <ShieldCheck className="shrink-0" size={18} />
         <span>파일을 읽는 과정도 이 기기 안에서만 처리합니다.</span>
       </div>
-      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         <button
           disabled={!file || !preview || busy}
           className="h-14 w-full rounded-2xl bg-stone-900 font-bold text-white disabled:bg-stone-200"

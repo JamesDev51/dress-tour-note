@@ -110,7 +110,7 @@ export function TourDashboardPage() {
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-bold">드레스샵</h2>
           <button
-            className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#8b5750]"
+            className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-accent-soft px-3 text-sm font-semibold text-accent-copy"
             onClick={() => setAdding((v) => !v)}
           >
             <Plus size={16} />샵 추가
@@ -171,7 +171,7 @@ export function TourDashboardPage() {
                   className="flex w-full items-center gap-3 text-left"
                   onClick={() => nav(`/tour/${tourId}/shop/${s.id}`)}
                 >
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#fff2ee] text-sm font-black text-[#8b5750]">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-accent-soft text-sm font-black text-accent-copy">
                     {i + 1}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -221,7 +221,7 @@ export function TourDashboardPage() {
           </div>
         )}
       </section>
-      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         <Link
           to={`/tour/${tourId}/review`}
           className={`flex h-14 items-center justify-center rounded-2xl font-bold ${data.total ? "bg-stone-900 text-white" : "pointer-events-none bg-stone-100 text-stone-300"}`}

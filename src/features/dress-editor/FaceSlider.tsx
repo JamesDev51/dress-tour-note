@@ -29,7 +29,7 @@ export function FaceSlider({
         onPointerUp={onCommit}
         onKeyUp={onCommit}
         onBlur={onCommit}
-        className="accent-[#b96e63]"
+        className="accent-accent"
       />
       <span className="text-right text-[10px] text-stone-400">
         {value.toFixed(step < 1 ? 2 : 0)}

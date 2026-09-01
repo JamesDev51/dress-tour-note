@@ -64,7 +64,7 @@ export function ReviewPage() {
           </button>
           {data.dresses.length >= 2 && (
             <button
-              className={`inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ${selecting ? "bg-[#fff2ee] text-[#8b5750]" : "bg-stone-50 text-stone-600"}`}
+              className={`inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ${selecting ? "bg-accent-soft text-accent-copy" : "bg-stone-50 text-stone-600"}`}
               onClick={() => {
                 const next = !selecting;
                 setSelecting(next);
@@ -77,12 +77,12 @@ export function ReviewPage() {
             </button>
           )}
         </div>
-        <p className="mt-7 text-xs font-semibold text-[#a75e55]">RESULT</p>
+        <p className="mt-7 text-xs font-semibold text-accent-dark">RESULT</p>
         <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
           {data.tour.title}
         </h1>
         {selecting ? (
-          <div className="mt-4 rounded-2xl bg-[#fff2ee] px-4 py-3 text-sm text-[#8b5750]">
+          <div className="mt-4 rounded-2xl bg-accent-soft px-4 py-3 text-sm text-accent-copy">
             비교할 드레스 2벌을 눌러주세요. <b>{compareIds.length}/2</b>
           </div>
         ) : (
@@ -121,7 +121,7 @@ export function ReviewPage() {
                       <button
                         key={d.id}
                         aria-pressed={selecting ? selected : undefined}
-                        className={`relative flex w-full gap-3 rounded-3xl border bg-white p-3 text-left shadow-[0_6px_24px_rgba(60,45,40,.05)] ${selected ? "border-[#b96e63] ring-2 ring-[#b96e63]/15" : "border-stone-100"}`}
+                        className={`relative flex w-full gap-3 rounded-3xl border bg-white p-3 text-left shadow-[0_6px_24px_rgba(60,45,40,.05)] ${selected ? "border-accent ring-2 ring-accent/15" : "border-stone-100"}`}
                         onClick={() =>
                           selecting
                             ? toggle(d.id)
@@ -130,7 +130,7 @@ export function ReviewPage() {
                       >
                         {selecting && (
                           <span
-                            className={`absolute right-3 top-3 z-10 grid h-7 w-7 place-items-center rounded-full border ${selected ? "border-[#b96e63] bg-[#b96e63] text-white" : "border-stone-200 bg-white text-transparent"}`}
+                            className={`absolute right-3 top-3 z-10 grid h-7 w-7 place-items-center rounded-full border ${selected ? "border-accent bg-accent text-white" : "border-stone-200 bg-white text-transparent"}`}
                           >
                             <Check size={15} />
                           </span>
@@ -144,8 +144,8 @@ export function ReviewPage() {
                             {d.isFavorite && (
                               <Heart
                                 size={14}
-                                fill="#b96e63"
-                                className="text-[#b96e63]"
+                                fill="currentColor"
+                                className="text-accent"
                               />
                             )}
                           </div>
@@ -157,7 +157,7 @@ export function ReviewPage() {
                               {d.quickTags.slice(0, 3).map((t) => (
                                 <span
                                   key={t}
-                                  className="rounded-full bg-[#fff2ee] px-2 py-1 text-[10px] text-[#8b5750]"
+                                  className="rounded-full bg-accent-soft px-2 py-1 text-[10px] text-accent-copy"
                                 >
                                   {t}
                                 </span>
@@ -179,7 +179,7 @@ export function ReviewPage() {
           })
         )}
       </section>
-      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         {selecting ? (
           <button
             disabled={compareIds.length !== 2}
