@@ -1,0 +1,55 @@
+name: Apply PDF trailer integration
+on:
+  push:
+    branches: [fix/user-test-polish]
+    paths: [.apply-pdf-trailer]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/user-test-polish
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('src/lib/pdf/exportPdf.ts')
+          s=p.read_text()
+          marker="} from './portable';\n"
+          if "from './portableTrailer'" not in s:
+              s=s.replace(marker, marker+"import { appendPortableTrailer } from './portableTrailer';\n")
+          s=s.replace(
+              "  if (portable) {\n    onProgress?.({ step: 'attach', percent: 90, label: '복원 데이터 첨부' });",
+              "  let portableSerialized: Awaited<ReturnType<typeof serializePortableBundle>> | undefined;\n  if (portable) {\n    onProgress?.({ step: 'attach', percent: 90, label: '복원 데이터 첨부' });",
+          )
+          s=s.replace(
+              "    const serialized = await serializePortableBundle(bundle);",
+              "    const serialized = await serializePortableBundle(bundle);\n    portableSerialized = serialized;",
+          )
+          s=s.replace(
+              "  const bytes = await pdf.save();",
+              "  const savedBytes = await pdf.save();\n  const bytes = portableSerialized\n    ? appendPortableTrailer(savedBytes, portableSerialized)\n    : savedBytes;",
+          )
+          p.write_text(s)
+
+          p=Path('src/lib/pdf/importPdf.ts')
+          s=p.read_text()
+          marker='} from "./portable";\n'
+          if 'from "./portableTrailer"' not in s:
+              s=s.replace(marker, marker+'import { inspectPortableTrailer } from "./portableTrailer";\n')
+          old='''  let pdf: PDFDocument;\n  try {\n    pdf = await PDFDocument.load(await file.arrayBuffer(), {'''
+          new='''  const fileBytes = new Uint8Array(await file.arrayBuffer());\n  const trailer = await inspectPortableTrailer(fileBytes);\n  if (trailer) {\n    const payload = trailer.payload;\n    return {\n      payload,\n      hasConflict: Boolean(await db.tours.get(payload.sourceTourId)),\n      faceIncluded: payload.includeFace && trailer.assetBytes.size > 0,\n      faceWarning: trailer.faceWarning,\n      shopCount: payload.shops.length,\n      dressCount: payload.dresses.length,\n      favoriteCount: payload.dresses.filter((dress) => dress.isFavorite).length,\n      assetBytes: trailer.assetBytes,\n      integrityVerified: trailer.integrityVerified,\n      legacyFormat: false,\n    };\n  }\n\n  let pdf: PDFDocument;\n  try {\n    pdf = await PDFDocument.load(fileBytes, {'''
+          if old not in s:
+              raise SystemExit('import replacement marker missing')
+          s=s.replace(old,new)
+          p.write_text(s)
+          PY
+          rm -f .apply-pdf-trailer .github/workflows/apply-pdf-trailer.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: integrate fast recoverable PDF trailer"
+          git push origin HEAD:fix/user-test-polish
