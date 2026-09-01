@@ -8,6 +8,7 @@ import {
   PDFRawStream,
   PDFStream,
   PDFString,
+  ParseSpeeds,
 } from "pdf-lib";
 import type { LocalAsset, TourSnapshot } from "../../types/domain";
 import type {
@@ -196,7 +197,12 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
 
   let pdf: PDFDocument;
   try {
-    pdf = await PDFDocument.load(await file.arrayBuffer());
+    pdf = await PDFDocument.load(await file.arrayBuffer(), {
+      ignoreEncryption: true,
+      updateMetadata: false,
+      parseSpeed: ParseSpeeds.Fastest,
+      throwOnInvalidObject: false,
+    });
   } catch {
     throw new Error("파일을 읽을 수 없어요. 원본 PDF를 다시 선택해 주세요.");
   }

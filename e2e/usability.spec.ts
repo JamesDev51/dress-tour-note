@@ -29,7 +29,7 @@ async function createBaseTour(page: Page, options: { two?: boolean; face?: boole
   await page.getByRole('button', { name: /샵 추가/ }).click();
   await page.getByPlaceholder('드레스샵 이름').fill('사용성 브라이덜');
   await page.getByRole('button', { name: '추가하기', exact: true }).click();
-  await page.getByRole('button', { name: /사용성 브라이덜/ }).click();
+  await page.getByRole('button', { name: '사용성 브라이덜 열기', exact: true }).click();
   await page.getByRole('button', { name: '드레스 추가', exact: true }).click();
   await page.getByRole('button', { name: /오프숄더/ }).click();
   await page.getByRole('button', { name: /하트형/ }).click();
@@ -55,7 +55,7 @@ test('first-time flow accepts optional tour fields', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /오늘 기록을/ })).toBeVisible();
   await page.getByRole('button', { name: '투어 만들기', exact: true }).click();
   await expect(page).toHaveURL(/\/tour\/[^/]+$/);
-  await expect(page.getByRole('heading', { name: '드레스 투어' })).toBeVisible();
+  await expect(page.getByDisplayValue('드레스 투어')).toBeVisible();
   await expectNoSeriousAccessibilityViolations(page);
 });
 
@@ -134,7 +134,7 @@ test('invalid import file returns an actionable error', async ({ page }) => {
     mimeType: 'application/pdf',
     buffer: Buffer.from('not a pdf'),
   });
-  await expect(page.getByRole('status')).toContainText('PDF 파일을 읽을 수 없어요.');
+  await expect(page.getByRole('status')).toContainText('PDF 파일이 아니에요.');
   await expect(page.getByText(/다시 선택/)).toBeVisible();
 });
 

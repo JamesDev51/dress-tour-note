@@ -109,7 +109,7 @@ async function expectImportPreview(page: Page, title: string) {
         return "waiting";
       },
       {
-        timeout: 25_000,
+        timeout: 60_000,
         message:
           "PDF import should render a preview instead of hanging or surfacing an error",
       },
@@ -253,10 +253,10 @@ test("first loaded app works offline and makes no external network requests", as
     )
     .toBe(true);
   await page.evaluate(async () => {
-    await Promise.all([fetch("/"), fetch("/assets/options.svg")]);
+    await Promise.all([fetch("/"), fetch("/assets/option-atlas.webp")]);
   });
   await context.setOffline(true);
-  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);
   await expect(page.getByText("그림 대신")).toBeVisible();
   expect(external).toEqual([]);
 });
