@@ -1,0 +1,1427 @@
+
+> dress-tour-note@1.0.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/runner/work/dress-tour-note/dress-tour-note[39m
+
+ [32m✓[39m src/lib/validation/schemas.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/lib/pdf/portable.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [31m❯[39m src/lib/pdf/importPdf.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 60[2mms[22m[39m
+[31m     [31m×[31m reads the manifest and tour attachment written by pdf-lib[39m[32m 14[2mms[22m[39m
+[31m     [31m×[31m round-trips the optional local face attachment[39m[32m 10[2mms[22m[39m
+[31m     [31m×[31m rejects a normal PDF without the recovery manifest[39m[32m 34[2mms[22m[39m
+ [32m✓[39m src/db/repositories.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [31m❯[39m src/components/OptionArtwork.test.tsx [2m([22m[2m11 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[32m 108[2mms[22m[39m
+     [32m✓[39m renders top/offShoulder from the generated image atlas[32m 35[2mms[22m[39m
+[31m     [31m×[31m renders neckline/sweetheart from the generated image atlas[39m[32m 12[2mms[22m[39m
+[31m     [31m×[31m renders silhouette/aLine from the generated image atlas[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m renders fabric/lace from the generated image atlas[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m renders color/ivory from the generated image atlas[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m renders train/chapel from the generated image atlas[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m renders waistline/basque from the generated image atlas[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m renders back/buttonBack from the generated image atlas[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m renders detail/overskirt from the generated image atlas[39m[32m 7[2mms[22m[39m
+     [32m✓[39m uses an explicit unknown state instead of pretending to remember a shape[32m 15[2mms[22m[39m
+[31m     [31m×[31m is decorative and hidden from assistive technology[39m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/preferences.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/dress/options.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 12 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mrenders neckline/sweetheart from the generated image atlas
+[31m[1mTestingLibraryElementError[22m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"top-offShoulder"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[31m
+[36m/>[31m
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"neckline-sweetheart"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[31m
+[36m/>[31m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"top-offShoulder"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"neckline-sweetheart"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m20:28[22m[39m
+    [90m 18|[39m   it.each(cases)("renders %s/%s from the generated image atlas", (cate…
+    [90m 19|[39m     render(<OptionArtwork category={category} id={id} data-testid="art…
+    [90m 20|[39m     [35mconst[39m artwork [33m=[39m screen[33m.[39m[34mgetByTestId[39m([32m"art"[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m 21|[39m     expect(artwork).toHaveAttribute("data-option-art", `${category}-${…
+    [90m 22|[39m     expect(artwork).toHaveAttribute("data-option-art-kind", "generated…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mrenders silhouette/aLine from the generated image atlas
+[31m[1mTestingLibraryElementError[22m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"top-offShoulder"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[31m
+[36m/>[31m
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"neckline-sweetheart"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[31m
+[36m/>[31m
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"silhouette-aLine"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[31m
+[36m/>[31m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"top-offShoulder"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"neckline-sweetheart"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"silhouette-aLine"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m20:28[22m[39m
+    [90m 18|[39m   it.each(cases)("renders %s/%s from the generated image atlas", (cate…
+    [90m 19|[39m     render(<OptionArtwork category={category} id={id} data-testid="art…
+    [90m 20|[39m     [35mconst[39m artwork [33m=[39m screen[33m.[39m[34mgetByTestId[39m([32m"art"[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m 21|[39m     expect(artwork).toHaveAttribute("data-option-art", `${category}-${…
+    [90m 22|[39m     expect(artwork).toHaveAttribute("data-option-art-kind", "generated…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mrenders fabric/lace from the generated image atlas
+[31m[1mTestingLibraryElementError[22m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"top-offShoulder"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[31m
+[36m/>[31m
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"neckline-sweetheart"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[31m
+[36m/>[31m
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"silhouette-aLine"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[31m
+[36m/>[31m
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33maria-hidden[31m=[32m"true"[31m
+  [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+  [33mdata-option-art[31m=[32m"fabric-lace"[31m
+  [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+  [33mdata-testid[31m=[32m"art"[31m
+  [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[31m
+[36m/>[31m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"top-offShoulder"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"neckline-sweetheart"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"silhouette-aLine"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<span[31m
+      [33maria-hidden[31m=[32m"true"[31m
+      [33mclass[31m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[31m
+      [33mdata-option-art[31m=[32m"fabric-lace"[31m
+      [33mdata-option-art-kind[31m=[32m"generated-image"[31m
+      [33mdata-testid[31m=[32m"art"[31m
+      [33mstyle[31m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[31m
+    [36m/>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m20:28[22m[39m
+    [90m 18|[39m   it.each(cases)("renders %s/%s from the generated image atlas", (cate…
+    [90m 19|[39m     render(<OptionArtwork category={category} id={id} data-testid="art…
+    [90m 20|[39m     [35mconst[39m artwork [33m=[39m screen[33m.[39m[34mgetByTestId[39m([32m"art"[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m 21|[39m     expect(artwork).toHaveAttribute("data-option-art", `${category}-${…
+    [90m 22|[39m     expect(artwork).toHaveAttribute("data-option-art-kind", "generated…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mrenders color/ivory from the generated image atlas
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"fabric-lace"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"color-ivory"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+[36m/>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"fabric-lace"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"color-ivory"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m20:28[22m[39m
+    [90m 18|[39m   it.each(cases)("renders %s/%s from the generated image atlas", (cate…
+    [90m 19|[39m     render(<OptionArtwork category={category} id={id} data-testid="art…
+    [90m 20|[39m     [35mconst[39m artwork [33m=[39m screen[33m.[39m[34mgetByTestId[39m([32m"art"[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m 21|[39m     expect(artwork).toHaveAttribute("data-option-art", `${category}-${…
+    [90m 22|[39m     expect(artwork).toHaveAttribute("data-option-art-kind", "generated…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mrenders train/chapel from the generated image atlas
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"fabric-lace"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"color-ivory"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"train-chapel"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+[36m/>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"fabric-lace"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"color-ivory"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"train-chapel"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m20:28[22m[39m
+    [90m 18|[39m   it.each(cases)("renders %s/%s from the generated image atlas", (cate…
+    [90m 19|[39m     render(<OptionArtwork category={category} id={id} data-testid="art…
+    [90m 20|[39m     [35mconst[39m artwork [33m=[39m screen[33m.[39m[34mgetByTestId[39m([32m"art"[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m 21|[39m     expect(artwork).toHaveAttribute("data-option-art", `${category}-${…
+    [90m 22|[39m     expect(artwork).toHaveAttribute("data-option-art-kind", "generated…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mrenders waistline/basque from the generated image atlas
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"fabric-lace"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"color-ivory"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"train-chapel"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"waistline-basque"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 66.66666666666666%;"[39m
+[36m/>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"fabric-lace"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"color-ivory"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"train-chapel"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"waistline-basque"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 66.66666666666666%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m20:28[22m[39m
+    [90m 18|[39m   it.each(cases)("renders %s/%s from the generated image atlas", (cate…
+    [90m 19|[39m     render(<OptionArtwork category={category} id={id} data-testid="art…
+    [90m 20|[39m     [35mconst[39m artwork [33m=[39m screen[33m.[39m[34mgetByTestId[39m([32m"art"[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m 21|[39m     expect(artwork).toHaveAttribute("data-option-art", `${category}-${…
+    [90m 22|[39m     expect(artwork).toHaveAttribute("data-option-art-kind", "generated…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mrenders back/buttonBack from the generated image atlas
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"fabric-lace"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"color-ivory"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"train-chapel"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"waistline-basque"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 66.66666666666666%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"back-buttonBack"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 77.77777777777779%;"[39m
+[36m/>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"fabric-lace"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"color-ivory"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"train-chapel"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"waistline-basque"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 66.66666666666666%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"back-buttonBack"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 77.77777777777779%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m20:28[22m[39m
+    [90m 18|[39m   it.each(cases)("renders %s/%s from the generated image atlas", (cate…
+    [90m 19|[39m     render(<OptionArtwork category={category} id={id} data-testid="art…
+    [90m 20|[39m     [35mconst[39m artwork [33m=[39m screen[33m.[39m[34mgetByTestId[39m([32m"art"[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m 21|[39m     expect(artwork).toHaveAttribute("data-option-art", `${category}-${…
+    [90m 22|[39m     expect(artwork).toHaveAttribute("data-option-art-kind", "generated…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mrenders detail/overskirt from the generated image atlas
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"fabric-lace"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"color-ivory"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"train-chapel"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"waistline-basque"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 66.66666666666666%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"back-buttonBack"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 77.77777777777779%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"detail-overskirt"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 100%;"[39m
+[36m/>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"fabric-lace"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"color-ivory"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"train-chapel"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"waistline-basque"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 66.66666666666666%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"back-buttonBack"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 77.77777777777779%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"detail-overskirt"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 100%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m20:28[22m[39m
+    [90m 18|[39m   it.each(cases)("renders %s/%s from the generated image atlas", (cate…
+    [90m 19|[39m     render(<OptionArtwork category={category} id={id} data-testid="art…
+    [90m 20|[39m     [35mconst[39m artwork [33m=[39m screen[33m.[39m[34mgetByTestId[39m([32m"art"[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m 21|[39m     expect(artwork).toHaveAttribute("data-option-art", `${category}-${…
+    [90m 22|[39m     expect(artwork).toHaveAttribute("data-option-art-kind", "generated…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/OptionArtwork.test.tsx[2m > [22mOptionArtwork[2m > [22mis decorative and hidden from assistive technology
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements by: [data-testid="art"]
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"fabric-lace"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"color-ivory"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"train-chapel"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"waistline-basque"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 66.66666666666666%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"back-buttonBack"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 77.77777777777779%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"detail-overskirt"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 100%;"[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+  [33mdata-option-art[39m=[32m"top-strapless"[39m
+  [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+  [33mdata-testid[39m=[32m"art"[39m
+  [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 0%;"[39m
+[36m/>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"top-offShoulder"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 0%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"neckline-sweetheart"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 11.11111111111111%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"silhouette-aLine"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 22.22222222222222%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"fabric-lace"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 33.33333333333333%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"color-ivory"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 44.44444444444444%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"train-chapel"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 55.55555555555556%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"waistline-basque"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 14.285714285714285% 66.66666666666666%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"back-buttonBack"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 77.77777777777779%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"detail-overskirt"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 28.57142857142857% 100%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"grid aspect-square h-full place-items-center rounded-xl bg-[#f7f2ef] text-xl font-semibold text-stone-300 "[39m
+      [33mdata-option-art[39m=[32m"top-unknown"[39m
+      [33mdata-option-art-kind[39m=[32m"unknown"[39m
+      [33mdata-testid[39m=[32m"unknown"[39m
+    [36m>[39m
+      [0m?[0m
+    [36m</span>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "[39m
+      [33mdata-option-art[39m=[32m"top-strapless"[39m
+      [33mdata-option-art-kind[39m=[32m"generated-image"[39m
+      [33mdata-testid[39m=[32m"art"[39m
+      [33mstyle[39m=[32m"background-image: url(\"/assets/option-atlas.webp\"); background-size: 800% 1000%; background-position: 0% 0%;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/OptionArtwork.test.tsx:[2m37:19[22m[39m
+    [90m 35|[39m   [34mit[39m([32m"is decorative and hidden from assistive technology"[39m[33m,[39m () [33m=>[39m {
+    [90m 36|[39m     render(<OptionArtwork category="top" id="strapless" data-testid="a…
+    [90m 37|[39m     expect(screen.getByTestId("art")).toHaveAttribute("aria-hidden", "…
+    [90m   |[39m                   [31m^[39m
+    [90m 38|[39m   })[33m;[39m
+    [90m 39|[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/lib/pdf/importPdf.test.ts[2m > [22minspectPortablePdf[2m > [22mreads the manifest and tour attachment written by pdf-lib
+[31m[1mTypeError[22m: `attachment` must be of type `string` or `Uint8Array` or `ArrayBuffer`, but was actually of type `NaN`[39m
+[90m [2m❯[22m Object.exports.assertIs node_modules/pdf-lib/src/utils/validators.ts:[2m156:8[22m[39m
+[90m [2m❯[22m PDFDocument.<anonymous> node_modules/pdf-lib/src/api/PDFDocument.ts:[2m881:4[22m[39m
+[90m [2m❯[22m step node_modules/tslib/tslib.js:[2m141:27[22m[39m
+[90m [2m❯[22m Object.next node_modules/tslib/tslib.js:[2m122:57[22m[39m
+[90m [2m❯[22m node_modules/tslib/tslib.js:[2m115:75[22m[39m
+[90m [2m❯[22m Object.__awaiter node_modules/tslib/tslib.js:[2m111:16[22m[39m
+[90m [2m❯[22m PDFDocument.attach node_modules/pdf-lib/cjs/api/PDFDocument.js:[2m805:24[22m[39m
+[36m [2m❯[22m makePortablePdf src/lib/pdf/importPdf.test.ts:[2m75:13[22m[39m
+    [90m 73|[39m   [35mconst[39m pdf [33m=[39m [35mawait[39m [33mPDFDocument[39m[33m.[39m[34mcreate[39m()[33m;[39m
+    [90m 74|[39m   pdf[33m.[39m[34maddPage[39m([[34m300[39m[33m,[39m [34m300[39m])[33m;[39m
+    [90m 75|[39m   await pdf.attach(serialized.manifestBytes, PORTABLE_MANIFEST_FILE_NA…
+    [90m   |[39m             [31m^[39m
+    [90m 76|[39m     mimeType[33m:[39m [32m'application/json'[39m[33m,[39m
+    [90m 77|[39m   })[33m;[39m
+[90m [2m❯[22m src/lib/pdf/importPdf.test.ts:[2m91:45[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/lib/pdf/importPdf.test.ts[2m > [22minspectPortablePdf[2m > [22mround-trips the optional local face attachment
+[31m[1mTypeError[22m: face.blob.arrayBuffer is not a function[39m
+[36m [2m❯[22m serializePortableBundle src/lib/pdf/portable.ts:[2m92:38[22m[39m
+    [90m 90|[39m   [35mconst[39m face [33m=[39m bundle[33m.[39massets[[34m0[39m][33m;[39m
+    [90m 91|[39m   [35mconst[39m faceBytes [33m=[39m face
+    [90m 92|[39m     [33m?[39m [35mnew[39m [33mUint8Array[39m([35mawait[39m face[33m.[39mblob[33m.[39m[34marrayBuffer[39m())
+    [90m   |[39m                                      [31m^[39m
+    [90m 93|[39m     [33m:[39m undefined[33m;[39m
+    [90m 94|[39m   [35mconst[39m faceSha256 [33m=[39m faceBytes [33m?[39m [35mawait[39m [34msha256Hex[39m(faceBytes) [33m:[39m [35mnull[39m[33m;[39m
+[90m [2m❯[22m makePortablePdf src/lib/pdf/importPdf.test.ts:[2m70:22[22m[39m
+[90m [2m❯[22m src/lib/pdf/importPdf.test.ts:[2m116:45[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/lib/pdf/importPdf.test.ts[2m > [22minspectPortablePdf[2m > [22mrejects a normal PDF without the recovery manifest
+[31m[1mAssertionError[22m: expected [Function] to throw error including '복원 가능한 그드레스 PDF가 아니에요.' but got 'file.slice(...).arrayBuffer is not a …'[39m
+
+Expected: [32m"복원 가능한 그드레스 PDF가 아니에요."[39m
+Received: [31m"file.slice(...).arrayBuffer is not a function"[39m
+
+[36m [2m❯[22m src/lib/pdf/importPdf.test.ts:[2m128:82[22m[39m
+    [90m126|[39m     [35mconst[39m pdf [33m=[39m [35mawait[39m [33mPDFDocument[39m[33m.[39m[34mcreate[39m()[33m;[39m
+    [90m127|[39m     pdf[33m.[39m[34maddPage[39m([[34m300[39m[33m,[39m [34m300[39m])[33m;[39m
+    [90m128|[39m     await expect(inspectPortablePdf(fileFrom(await pdf.save(), 'view-o…
+    [90m   |[39m                                                                                  [31m^[39m
+    [90m129|[39m       [32m'복원 가능한 그드레스 PDF가 아니에요.'[39m[33m,[39m
+    [90m130|[39m     )[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[31m12 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[90m (27)[39m
+[2m   Start at [22m 04:55:38
+[2m   Duration [22m 2.65s[2m (transform 407ms, setup 788ms, import 983ms, tests 271ms, environment 3.55s)[22m
+
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > renders neckline/sweetheart from the generated image atlas,line=20,column=28::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:20:28%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > renders silhouette/aLine from the generated image atlas,line=20,column=28::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="silhouette-aLine"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="silhouette-aLine"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:20:28%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > renders fabric/lace from the generated image atlas,line=20,column=28::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="silhouette-aLine"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="fabric-lace"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="silhouette-aLine"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="fabric-lace"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:20:28%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > renders color/ivory from the generated image atlas,line=20,column=28::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="silhouette-aLine"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="fabric-lace"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="color-ivory"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="silhouette-aLine"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="fabric-lace"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="color-ivory"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:20:28%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > renders train/chapel from the generated image atlas,line=20,column=28::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="silhouette-aLine"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="fabric-lace"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="color-ivory"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="train-chapel"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="silhouette-aLine"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="fabric-lace"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="color-ivory"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="train-chapel"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:20:28%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > renders waistline/basque from the generated image atlas,line=20,column=28::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="silhouette-aLine"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="fabric-lace"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="color-ivory"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="train-chapel"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="waistline-basque"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 66.66666666666666%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="silhouette-aLine"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="fabric-lace"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="color-ivory"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="train-chapel"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="waistline-basque"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 66.66666666666666%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:20:28%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > renders back/buttonBack from the generated image atlas,line=20,column=28::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="silhouette-aLine"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="fabric-lace"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="color-ivory"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="train-chapel"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="waistline-basque"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 66.66666666666666%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="back-buttonBack"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 77.77777777777779%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="silhouette-aLine"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="fabric-lace"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="color-ivory"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="train-chapel"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="waistline-basque"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 66.66666666666666%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="back-buttonBack"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 77.77777777777779%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:20:28%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > renders detail/overskirt from the generated image atlas,line=20,column=28::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="silhouette-aLine"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="fabric-lace"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="color-ivory"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="train-chapel"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="waistline-basque"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 66.66666666666666%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="back-buttonBack"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 77.77777777777779%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="detail-overskirt"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 100%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="silhouette-aLine"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="fabric-lace"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="color-ivory"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="train-chapel"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="waistline-basque"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 66.66666666666666%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="back-buttonBack"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 77.77777777777779%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="detail-overskirt"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 100%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:20:28%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/components/OptionArtwork.test.tsx,title=src/components/OptionArtwork.test.tsx > OptionArtwork > is decorative and hidden from assistive technology,line=37,column=19::TestingLibraryElementError: Found multiple elements by: [data-testid="art"]%0A%0AHere are the matching elements:%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-offShoulder"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="neckline-sweetheart"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="silhouette-aLine"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="fabric-lace"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="color-ivory"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="train-chapel"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="waistline-basque"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 66.66666666666666%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="back-buttonBack"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 77.77777777777779%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="detail-overskirt"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 100%25;"%0A/>%0A%0AIgnored nodes: comments, script, style%0A<span%0A  aria-hidden="true"%0A  class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A  data-option-art="top-strapless"%0A  data-option-art-kind="generated-image"%0A  data-testid="art"%0A  style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 0%25;"%0A/>%0A%0A(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).%0A%0AIgnored nodes: comments, script, style%0A<body>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-offShoulder"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 0%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="neckline-sweetheart"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 11.11111111111111%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="silhouette-aLine"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 22.22222222222222%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="fabric-lace"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 33.33333333333333%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="color-ivory"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 44.44444444444444%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="train-chapel"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 55.55555555555556%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="waistline-basque"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 14.285714285714285%25 66.66666666666666%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="back-buttonBack"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 77.77777777777779%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="detail-overskirt"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 28.57142857142857%25 100%25;"%0A    />%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="grid aspect-square h-full place-items-center rounded-xl bg-[#f7f2ef] text-xl font-semibold text-stone-300 "%0A      data-option-art="top-unknown"%0A      data-option-art-kind="unknown"%0A      data-testid="unknown"%0A    >%0A      ?%0A    </span>%0A  </div>%0A  <div>%0A    <span%0A      aria-hidden="true"%0A      class="block aspect-square h-full shrink-0 rounded-xl bg-[#fffdfa] bg-no-repeat "%0A      data-option-art="top-strapless"%0A      data-option-art-kind="generated-image"%0A      data-testid="art"%0A      style="background-image: url(\"/assets/option-atlas.webp\"); background-size: 800%25 1000%25; background-position: 0%25 0%25;"%0A    />%0A  </div>%0A</body>%0A ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19%0A ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35%0A ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13%0A ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19%0A ❯ src/components/OptionArtwork.test.tsx:37:19%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/lib/pdf/importPdf.test.ts,title=src/lib/pdf/importPdf.test.ts > inspectPortablePdf > reads the manifest and tour attachment written by pdf-lib,line=75,column=13::TypeError: `attachment` must be of type `string` or `Uint8Array` or `ArrayBuffer`, but was actually of type `NaN`%0A ❯ Object.exports.assertIs node_modules/pdf-lib/src/utils/validators.ts:156:8%0A ❯ PDFDocument.<anonymous> node_modules/pdf-lib/src/api/PDFDocument.ts:881:4%0A ❯ step node_modules/tslib/tslib.js:141:27%0A ❯ Object.next node_modules/tslib/tslib.js:122:57%0A ❯ node_modules/tslib/tslib.js:115:75%0A ❯ Object.__awaiter node_modules/tslib/tslib.js:111:16%0A ❯ PDFDocument.attach node_modules/pdf-lib/cjs/api/PDFDocument.js:805:24%0A ❯ makePortablePdf src/lib/pdf/importPdf.test.ts:75:13%0A ❯ src/lib/pdf/importPdf.test.ts:91:45%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/lib/pdf/portable.ts,title=src/lib/pdf/importPdf.test.ts > inspectPortablePdf > round-trips the optional local face attachment,line=92,column=38::TypeError: face.blob.arrayBuffer is not a function%0A ❯ serializePortableBundle src/lib/pdf/portable.ts:92:38%0A ❯ makePortablePdf src/lib/pdf/importPdf.test.ts:70:22%0A ❯ src/lib/pdf/importPdf.test.ts:116:45%0A%0A
+
+::error file=/home/runner/work/dress-tour-note/dress-tour-note/src/lib/pdf/importPdf.test.ts,title=src/lib/pdf/importPdf.test.ts > inspectPortablePdf > rejects a normal PDF without the recovery manifest,line=128,column=82::AssertionError: expected [Function] to throw error including '복원 가능한 그드레스 PDF가 아니에요.' but got 'file.slice(...).arrayBuffer is not a …'%0A%0AExpected: "복원 가능한 그드레스 PDF가 아니에요."%0AReceived: "file.slice(...).arrayBuffer is not a function"%0A%0A ❯ src/lib/pdf/importPdf.test.ts:128:82%0A%0A
