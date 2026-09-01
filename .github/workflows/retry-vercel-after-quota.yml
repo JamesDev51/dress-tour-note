@@ -1,0 +1,66 @@
+name: Retry Vercel after daily quota reset
+
+on:
+  schedule:
+    - cron: '5 7 2 9 *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  retry-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Guard the one-time retry window
+        id: guard
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$(date -u +%Y-%m-%d)" = "2026-09-02" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger one production deployment and remove this workflow
+        if: steps.guard.outputs.run == 'true'
+        id: trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/retry-vercel-after-quota.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "deploy: retry production after Vercel daily quota reset"
+          git push origin HEAD:master
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for Vercel deployment status
+        if: steps.guard.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_SHA: ${{ steps.trigger.outputs.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${DEPLOY_SHA}/status" --jq '.statuses[] | select(.context == "Vercel") | .state' | head -n1 || true)
+            echo "Vercel state: ${state:-waiting}"
+            if [ "$state" = "success" ]; then
+              exit 0
+            fi
+            if [ "$state" = "failure" ] || [ "$state" = "error" ]; then
+              exit 1
+            fi
+            sleep 20
+          done
+          echo "Timed out waiting for Vercel status."
+          exit 1
