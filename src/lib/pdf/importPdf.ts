@@ -28,6 +28,7 @@ import {
   verifyPortableFaceBytes,
   verifyPortableTourBytes,
 } from "./portable";
+import { inspectPortableTrailer } from "./portableTrailer";
 
 type PdfAttachment = { filename?: string; content: Uint8Array };
 type PdfAttachmentEntry = [string, PdfAttachment];
@@ -195,9 +196,27 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
   const head = new Uint8Array(await file.slice(0, 5).arrayBuffer());
   if (bytesToString(head) !== "%PDF-") throw new Error("PDF 파일이 아니에요.");
 
+  const fileBytes = new Uint8Array(await file.arrayBuffer());
+  const trailer = await inspectPortableTrailer(fileBytes);
+  if (trailer) {
+    const payload = trailer.payload;
+    return {
+      payload,
+      hasConflict: Boolean(await db.tours.get(payload.sourceTourId)),
+      faceIncluded: payload.includeFace && trailer.assetBytes.size > 0,
+      faceWarning: trailer.faceWarning,
+      shopCount: payload.shops.length,
+      dressCount: payload.dresses.length,
+      favoriteCount: payload.dresses.filter((dress) => dress.isFavorite).length,
+      assetBytes: trailer.assetBytes,
+      integrityVerified: trailer.integrityVerified,
+      legacyFormat: false,
+    };
+  }
+
   let pdf: PDFDocument;
   try {
-    pdf = await PDFDocument.load(await file.arrayBuffer(), {
+    pdf = await PDFDocument.load(fileBytes, {
       ignoreEncryption: true,
       updateMetadata: false,
       parseSpeed: ParseSpeeds.Fastest,

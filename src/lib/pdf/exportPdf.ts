@@ -393,6 +393,7 @@ export async function exportPortablePdf(
   if (portable) {
     onProgress?.({ step: "attach", percent: 90, label: "복원 데이터 첨부" });
     const serialized = await serializePortableBundle(bundle);
+    portableSerialized = serialized;
     await pdf.attach(serialized.manifestBytes, PORTABLE_MANIFEST_FILE_NAME, {
       mimeType: "application/json",
       description: "그드레스 복원 매니페스트",
@@ -425,7 +426,10 @@ export async function exportPortablePdf(
     });
   }
 
-  const bytes = await pdf.save();
+  const savedBytes = await pdf.save();
+  const bytes = portableSerialized
+    ? appendPortableTrailer(savedBytes, portableSerialized)
+    : savedBytes;
   await patchTour(tourId, { lastExportedAt: new Date().toISOString() });
   onProgress?.({ step: "done", percent: 100, label: "완료" });
   return new Blob([toArrayBuffer(bytes)], { type: "application/pdf" });
