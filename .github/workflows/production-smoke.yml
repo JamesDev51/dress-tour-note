@@ -21,22 +21,25 @@ jobs:
         run: |
           set -euo pipefail
           candidates=(
-            "https://dress-tour-note-git-master-minseokjeongjames-4193s-projects.vercel.app"
             "https://dress-tour-note-minseokjeongjames-4193s-projects.vercel.app"
+            "https://dress-tour-note-git-master-minseokjeongjames-4193s-projects.vercel.app"
             "https://dress-tour-note.vercel.app"
           )
           for candidate in "${candidates[@]}"; do
             echo "Probing ${candidate}"
+            headers=$(mktemp)
             code=$(curl --location --silent --show-error --max-time 30 \
-              --output /tmp/gudress-home.html --write-out '%{http_code}' "${candidate}/" || true)
-            echo "HTTP ${code} from ${candidate}"
-            if [ "$code" = "200" ] && [ -s /tmp/gudress-home.html ] && grep -q '<div id="root"></div>' /tmp/gudress-home.html; then
+              --dump-header "$headers" --output /tmp/gudress-home.html \
+              --write-out '%{http_code}' "${candidate}/" || true)
+            content_type=$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{value=$0} END{sub(/^[^:]+:[[:space:]]*/,"",value); sub(/\r$/,"",value); print value}' "$headers")
+            echo "HTTP ${code}; ${content_type:-unknown content type} from ${candidate}"
+            if [ "$code" = "200" ] && [ -s /tmp/gudress-home.html ] && [[ "$content_type" == text/html* ]]; then
               echo "PRODUCTION_URL=${candidate}" >> "$GITHUB_ENV"
               echo "Resolved production URL: ${candidate}"
               exit 0
             fi
           done
-          echo "No public production alias returned the application shell."
+          echo "No public production alias returned an HTML document."
           exit 1
 
       - name: Setup Node 22
