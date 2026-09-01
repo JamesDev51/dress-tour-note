@@ -79,4 +79,34 @@ describe("portable payload", () => {
         .backStyle,
     ).toBe("buttonBack");
   });
+  it("keeps legacy option IDs raw in portable v1 payloads", () => {
+    const source: TourSnapshot = {
+      ...snapshot,
+      dresses: [
+        {
+          ...snapshot.dresses[0],
+          topStyle: "spaghetti",
+          neckline: "high",
+          silhouette: "fitAndFlare",
+          waistline: "empire",
+          backStyle: "bowBack",
+          fabric: "glitterBeaded",
+          train: "chapel",
+          details: ["backBow"],
+        },
+      ],
+    };
+
+    const out = buildPortableBundle(source, false);
+    expect(out.payload.dresses[0]).toMatchObject({
+      topStyle: "spaghetti",
+      neckline: "high",
+      silhouette: "fitAndFlare",
+      waistline: "empire",
+      backStyle: "bowBack",
+      fabric: "glitterBeaded",
+      train: "chapel",
+      details: ["backBow"],
+    });
+  });
 });

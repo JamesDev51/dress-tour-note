@@ -22,10 +22,8 @@ export const topStyleOptions: Option<TopStyle>[] = [
   { id: "unknown", label: "기억 안 남" },
   { id: "strapless", label: "끈 없음", technical: "Strapless" },
   { id: "offShoulder", label: "오프숄더", technical: "Off-shoulder" },
-  { id: "spaghetti", label: "얇은 끈", technical: "Spaghetti strap" },
-  { id: "wideStrap", label: "넓은 끈", technical: "Wide strap" },
-  { id: "halter", label: "목에 거는 형태", technical: "Halter" },
-  { id: "oneShoulder", label: "한쪽 어깨", technical: "One-shoulder" },
+  { id: "strap", label: "끈 있는 형태", technical: "Strap" },
+  { id: "halter", label: "홀터넥", technical: "Halter" },
   { id: "shortSleeve", label: "짧은 소매", technical: "Short/Cap sleeve" },
   { id: "longSleeve", label: "긴 소매", technical: "Long sleeve" },
 ];
@@ -36,18 +34,14 @@ export const necklineOptions: Option<Neckline>[] = [
   { id: "v", label: "브이형", technical: "V-neck" },
   { id: "square", label: "네모형", technical: "Square" },
   { id: "scoop", label: "둥근형", technical: "Scoop" },
-  { id: "high", label: "목까지 올라옴", technical: "High neck" },
-  { id: "illusion", label: "시스루 목선", technical: "Illusion" },
   { id: "asymmetric", label: "사선형", technical: "Asymmetric" },
 ];
 export const silhouetteOptions: Option<Silhouette>[] = [
   { id: "unknown", label: "기억 안 남" },
   { id: "aLine", label: "A라인", technical: "A-line" },
   { id: "ballGown", label: "풍성한 벨라인", technical: "Ball gown" },
-  { id: "fitAndFlare", label: "허벅지부터 퍼짐", technical: "Fit-and-flare" },
   { id: "mermaid", label: "무릎부터 크게 퍼짐", technical: "Mermaid" },
-  { id: "sheath", label: "일자로 슬림", technical: "Sheath" },
-  { id: "teaLength", label: "발목 위 짧은 길이", technical: "Tea length" },
+  { id: "empire", label: "가슴 아래부터 퍼짐", technical: "Empire" },
 ];
 export const trainOptions: Option<Train>[] = [
   { id: "unknown", label: "기억 안 남" },
@@ -60,9 +54,9 @@ export const fabricOptions: Option<Fabric>[] = [
   { id: "unknown", label: "기억 안 남" },
   { id: "mikadoSatin", label: "매끈한 실크", technical: "Mikado/Satin" },
   { id: "lace", label: "레이스", technical: "Lace" },
-  { id: "tulle", label: "가벼운 망사", technical: "Tulle" },
   { id: "organzaChiffon", label: "하늘하늘", technical: "Organza/Chiffon" },
-  { id: "glitterBeaded", label: "반짝이·비즈", technical: "Glitter/Beaded" },
+  { id: "subtleBeaded", label: "은은한 비즈", technical: "Subtle beaded" },
+  { id: "ornateBeaded", label: "화려한 비즈", technical: "Ornate beaded" },
   { id: "floral3D", label: "입체 꽃", technical: "3D Floral" },
 ];
 export const colorOptions: Option<DressColor>[] = [
@@ -113,50 +107,66 @@ export const quickTagOptions: Option<QuickTag>[] = [
   "동행인 픽",
 ].map((id) => ({ id: id as QuickTag, label: id }));
 
-const compatible: Record<TopStyle, Neckline[]> = {
-  strapless: ["straight", "sweetheart"],
-  offShoulder: ["straight", "sweetheart", "v"],
-  spaghetti: ["sweetheart", "v", "square", "scoop"],
-  wideStrap: ["v", "square", "scoop"],
-  halter: ["v", "high"],
-  oneShoulder: ["asymmetric"],
-  shortSleeve: ["v", "square", "scoop", "high", "illusion"],
-  longSleeve: ["v", "square", "scoop", "high", "illusion"],
-  unknown: [
-    "unknown",
-    "straight",
-    "sweetheart",
-    "v",
-    "square",
-    "scoop",
-    "high",
-    "illusion",
-    "asymmetric",
-  ],
-};
-const fallback: Record<TopStyle, Neckline> = {
-  strapless: "sweetheart",
-  offShoulder: "sweetheart",
-  spaghetti: "v",
-  wideStrap: "square",
-  halter: "high",
-  oneShoulder: "asymmetric",
-  shortSleeve: "scoop",
-  longSleeve: "illusion",
+const presentationTopStyle: Record<TopStyle, TopStyle> = {
   unknown: "unknown",
+  strapless: "strapless",
+  offShoulder: "offShoulder",
+  strap: "strap",
+  spaghetti: "strap",
+  wideStrap: "strap",
+  halter: "halter",
+  oneShoulder: "unknown",
+  shortSleeve: "shortSleeve",
+  longSleeve: "longSleeve",
+};
+const presentationNeckline: Record<Neckline, Neckline> = {
+  unknown: "unknown",
+  straight: "straight",
+  sweetheart: "sweetheart",
+  v: "v",
+  square: "square",
+  scoop: "scoop",
+  high: "unknown",
+  illusion: "unknown",
+  asymmetric: "asymmetric",
+};
+const presentationSilhouette: Record<Silhouette, Silhouette> = {
+  unknown: "unknown",
+  aLine: "aLine",
+  ballGown: "ballGown",
+  empire: "empire",
+  fitAndFlare: "mermaid",
+  mermaid: "mermaid",
+  sheath: "unknown",
+  teaLength: "unknown",
+};
+const presentationFabric: Record<Fabric, Fabric> = {
+  unknown: "unknown",
+  mikadoSatin: "mikadoSatin",
+  lace: "lace",
+  subtleBeaded: "subtleBeaded",
+  ornateBeaded: "ornateBeaded",
+  tulle: "unknown",
+  organzaChiffon: "organzaChiffon",
+  glitterBeaded: "subtleBeaded",
+  floral3D: "floral3D",
 };
 
-export function isNecklineCompatible(topStyle: TopStyle, neckline: Neckline) {
-  return neckline === "unknown" || compatible[topStyle].includes(neckline);
+export function dressForPresentation(dress: Dress): Dress {
+  return {
+    ...dress,
+    topStyle: presentationTopStyle[dress.topStyle],
+    neckline: presentationNeckline[dress.neckline],
+    silhouette: presentationSilhouette[dress.silhouette],
+    waistline: "unknown",
+    backStyle: "unknown",
+    fabric: presentationFabric[dress.fabric],
+    train: "unknown",
+    details: [],
+    quickTags: [...dress.quickTags],
+  };
 }
-export function normalizeUpper(
-  topStyle: TopStyle,
-  neckline: Neckline,
-): { neckline: Neckline; changed: boolean } {
-  if (isNecklineCompatible(topStyle, neckline))
-    return { neckline, changed: false };
-  return { neckline: fallback[topStyle], changed: true };
-}
+
 export function optionLabel<T extends string>(
   options: Option<T>[],
   id: T | undefined,

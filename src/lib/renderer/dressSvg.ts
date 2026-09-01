@@ -14,6 +14,8 @@ const skirtPath: Record<Dress["silhouette"], string> = {
   aLine: "M148 250 L212 250 L295 590 L65 590 Z",
   ballGown:
     "M145 250 L215 250 C255 285 315 410 330 590 L30 590 C45 410 105 285 145 250 Z",
+  empire:
+    "M146 250 L214 250 C248 300 290 430 305 590 L55 590 C70 430 112 300 146 250 Z",
   fitAndFlare:
     "M148 250 L212 250 C205 330 220 390 275 590 L85 590 C140 390 155 330 148 250 Z",
   mermaid:

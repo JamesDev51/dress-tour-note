@@ -8,7 +8,6 @@ import type {
   TourSnapshot,
 } from "../types/domain";
 import { DEFAULT_FACE_TRANSFORM } from "../types/domain";
-import { normalizeUpper } from "../lib/dress/options";
 import { requestPersistentStorage } from "../lib/storage/persist";
 
 const now = () => new Date().toISOString();
@@ -152,18 +151,13 @@ export async function duplicateDress(dressId: Id) {
 export async function patchDress(dressId: Id, patch: Partial<Dress>) {
   const d = await db.dresses.get(dressId);
   if (!d) return;
-  const next = { ...patch } as Partial<Dress>;
-  const top = patch.topStyle ?? d.topStyle;
-  const neck = patch.neckline ?? d.neckline;
-  const normalized = normalizeUpper(top, neck);
-  next.neckline = normalized.neckline;
+  const next: Partial<Dress> = { ...patch };
   if (next.details && next.details.length > 4)
     next.details = next.details.slice(0, 4);
   await db.transaction("rw", db.dresses, db.tours, async () => {
     await db.dresses.update(dressId, { ...next, updatedAt: now() });
     await touchTour(d.tourId);
   });
-  return normalized.changed;
 }
 export async function reorderDresses(shopId: Id, orderedIds: Id[]) {
   const shop = await db.shops.get(shopId);

@@ -67,6 +67,28 @@ describe("portable schema compatibility", () => {
       "buttonBack",
     );
   });
+  it("accepts the four additive canonical IDs under schema v1", () => {
+    const value = base();
+    Object.assign(value.dresses[0], {
+      topStyle: "strap",
+      silhouette: "empire",
+      fabric: "subtleBeaded",
+    });
+    expect(portableTourV1Schema.parse(value).dresses[0]).toMatchObject({
+      topStyle: "strap",
+      silhouette: "empire",
+      fabric: "subtleBeaded",
+    });
+    Object.assign(value.dresses[0], { fabric: "ornateBeaded" });
+    expect(portableTourV1Schema.parse(value).dresses[0].fabric).toBe(
+      "ornateBeaded",
+    );
+  });
+  it("rejects an unknown option ID at the portable boundary", () => {
+    const value = base();
+    Object.assign(value.dresses[0], { topStyle: "not-a-canonical-choice" });
+    expect(() => portableTourV1Schema.parse(value)).toThrow();
+  });
   it("rejects cross-tour references", () => {
     const value = base();
     value.dresses[0].shopId = "missing";

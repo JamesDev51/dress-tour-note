@@ -28,7 +28,6 @@ import {
   colorOptions,
   detailOptions,
   fabricOptions,
-  isNecklineCompatible,
   necklineOptions,
   quickTagOptions,
   silhouetteOptions,
@@ -130,9 +129,8 @@ export function DressEditorPage() {
   const immediate = async (patch: Partial<Dress>, message?: string) => {
     setSave("saving");
     try {
-      const changed = await patchDress(dressId, patch);
+      await patchDress(dressId, patch);
       setSave("saved");
-      if (changed) toast("선택한 어깨 형태에 맞춰 가슴선을 바꿨어요.");
       if (message) toast(message);
     } catch {
       setSave("error");
@@ -183,7 +181,9 @@ export function DressEditorPage() {
               await patchDress(dressId, {
                 memo: latestMemo.current,
                 label: latestLabel.current.trim() || d.label,
-                ...(data.face ? { faceTransform: latestTransform.current } : {}),
+                ...(data.face
+                  ? { faceTransform: latestTransform.current }
+                  : {}),
               });
               nav(`/tour/${tourId}/shop/${d.shopId}`);
             }}
@@ -236,7 +236,6 @@ export function DressEditorPage() {
           necklineOptions,
           d.neckline,
           (id) => immediate({ neckline: id }),
-          (id) => id !== "unknown" && !isNecklineCompatible(d.topStyle, id),
         )}
         {singleSection(
           "silhouette",
