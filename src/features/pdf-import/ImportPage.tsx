@@ -47,7 +47,7 @@ export function ImportPage() {
         그대로 이어서 써요
       </h1>
       <p className="mt-3 text-sm leading-6 text-stone-400">
-        그드레스에서 내보낸 복원 가능한 PDF만 읽습니다. 일반 PDF는 분석하지
+        드레스노트에서 내보낸 복원 가능한 PDF만 읽습니다. 일반 PDF는 분석하지
         않아요.
       </p>
       <label className="mt-7 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-stone-250 bg-white text-center">
@@ -81,7 +81,7 @@ export function ImportPage() {
             <div className="font-semibold">이 PDF를 불러올 수 없어요.</div>
             <p className="mt-1 text-xs leading-5">{error}</p>
             <p className="mt-2 text-xs leading-5 text-red-500">
-              그드레스에서 ‘복원 가능한 PDF’로 저장한 원본 파일을 다시 선택해
+              드레스노트에서 ‘복원 가능한 PDF’로 저장한 원본 파일을 다시 선택해
               주세요.
             </p>
           </div>

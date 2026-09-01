@@ -132,7 +132,7 @@ describe('inspectPortablePdf', () => {
     const pdf = await PDFDocument.create();
     pdf.addPage([300, 300]);
     await expect(inspectPortablePdf(fileFrom(await pdf.save(), 'view-only.pdf'))).rejects.toThrow(
-      '복원 가능한 그드레스 PDF가 아니에요.',
+      '복원 가능한 드레스노트 PDF가 아니에요.',
     );
   });
 });

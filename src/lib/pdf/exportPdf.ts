@@ -72,8 +72,8 @@ function footer(
   });
   page.drawText(
     portable
-      ? "그드레스 · 이 PDF는 웹에서 다시 불러올 수 있습니다."
-      : "그드레스 · 보기 전용 PDF",
+      ? "드레스노트 · 이 PDF는 웹에서 다시 불러올 수 있습니다."
+      : "드레스노트 · 보기 전용 PDF",
     { x: margin, y: 24, size: 7, font, color: rgb(0.62, 0.59, 0.57) },
   );
 }
@@ -123,17 +123,17 @@ export async function exportPortablePdf(
     return response.arrayBuffer();
   });
   const font = await pdf.embedFont(fontBytes, { subset: true });
-  pdf.setTitle(`${snapshot.tour.title} - 그드레스`);
+  pdf.setTitle(`${snapshot.tour.title} - 드레스노트`);
   pdf.setSubject(
     portable ? "복원 가능한 드레스투어 기록" : "보기 전용 드레스투어 기록",
   );
-  pdf.setCreator("그드레스");
+  pdf.setCreator("드레스노트");
 
   const favorites = snapshot.dresses.filter((dress) => dress.isFavorite);
   const totalPages = 1 + snapshot.dresses.length + (favorites.length ? 1 : 0);
   let pageIndex = 1;
   let page = pdf.addPage(A4);
-  page.drawText("그드레스", {
+  page.drawText("드레스노트", {
     x: margin,
     y: 775,
     size: 13,
@@ -399,11 +399,11 @@ export async function exportPortablePdf(
     portableSerialized = serialized;
     await pdf.attach(serialized.manifestBytes, PORTABLE_MANIFEST_FILE_NAME, {
       mimeType: "application/json",
-      description: "그드레스 복원 매니페스트",
+      description: "드레스노트 복원 매니페스트",
     });
     await pdf.attach(serialized.tourBytes, serialized.manifest.tourAttachment, {
       mimeType: "application/json",
-      description: "그드레스 투어 원본 데이터",
+      description: "드레스노트 투어 원본 데이터",
     });
     if (serialized.faceBytes && serialized.manifest.faceAttachment) {
       const faceRef = bundle.payload.assets[0];

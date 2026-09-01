@@ -48,7 +48,7 @@ export function BrandHeader() {
   return (
     <header className="flex items-center justify-between px-5 pb-3 pt-[calc(18px+env(safe-area-inset-top))]">
       <Link to="/" className="font-black tracking-[-0.04em]">
-        그드레스
+        드레스노트
       </Link>
       <Link to="/privacy" className="text-xs text-stone-400">
         설정

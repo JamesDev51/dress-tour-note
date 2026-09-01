@@ -93,7 +93,7 @@ export async function inspectPortableTrailer(bytes: Uint8Array): Promise<
     throw new Error('PDF의 빠른 복원 데이터를 읽을 수 없어요.');
   }
   if (envelope.version !== 1 || !envelope.tourBase64) {
-    throw new Error('지원하지 않는 그드레스 PDF 버전이에요.');
+    throw new Error('지원하지 않는 드레스노트 PDF 버전이에요.');
   }
 
   const manifest = parsePortableManifest(envelope.manifest);

@@ -210,7 +210,7 @@ test("view-only PDF cannot be restored", async ({ page }) => {
   await page.getByRole("link", { name: "PDF 불러오기", exact: true }).click();
   await page.locator('input[type="file"]').setInputFiles(path!);
   await expect(page.getByRole("alert")).toContainText(
-    "복원 가능한 그드레스 PDF가 아니에요.",
+    "복원 가능한 드레스노트 PDF가 아니에요.",
   );
 });
 

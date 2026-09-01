@@ -36,6 +36,7 @@ export function PrivacyPage() {
   };
   return (
     <main className="min-h-dvh px-5 pb-12 pt-[calc(18px+env(safe-area-inset-top))]">
+      <p className="mb-4 text-sm font-black tracking-[-0.04em]">드레스노트</p>
       <button
         className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
         onClick={() => nav(-1)}
@@ -113,7 +114,7 @@ export function PrivacyPage() {
           onClick={async () => {
             if (
               !confirm(
-                "이 기기의 모든 그드레스 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.",
+                "이 기기의 모든 드레스노트 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.",
               )
             )
               return;

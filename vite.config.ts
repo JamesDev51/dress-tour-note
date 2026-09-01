@@ -18,8 +18,8 @@ export default defineConfig({
         "icons/icon-512.png",
       ],
       manifest: {
-        name: "그드레스 - 드레스투어 노트",
-        short_name: "그드레스",
+        name: "드레스노트 - 드레스투어 기록",
+        short_name: "드레스노트",
         description: "사진 대신 모양으로 기록하는 드레스투어 노트",
         theme_color: "#b96e63",
         background_color: "#fff8f5",

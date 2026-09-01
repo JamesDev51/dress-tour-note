@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { buildPortableBundle, parsePortablePayload } from "./portable";
+import {
+  buildPortableBundle,
+  LEGACY_PORTABLE_FILE_NAME,
+  parsePortablePayload,
+  PORTABLE_APP_ID,
+  PORTABLE_FACE_FILE_NAME,
+  PORTABLE_FORMAT,
+  PORTABLE_MANIFEST_FILE_NAME,
+  PORTABLE_PDF_FORMAT,
+  PORTABLE_TOUR_FILE_NAME,
+  SCHEMA_VERSION,
+} from "./portable";
 import type { TourSnapshot } from "../../types/domain";
 const now = "2026-08-31T00:00:00.000Z";
 const snapshot: TourSnapshot = {
@@ -62,6 +73,28 @@ const snapshot: TourSnapshot = {
   ],
 };
 describe("portable payload", () => {
+  it("keeps v1 compatibility identifiers unchanged", () => {
+    expect({
+      legacyFile: LEGACY_PORTABLE_FILE_NAME,
+      manifestFile: PORTABLE_MANIFEST_FILE_NAME,
+      tourFile: PORTABLE_TOUR_FILE_NAME,
+      faceFile: PORTABLE_FACE_FILE_NAME,
+      format: PORTABLE_FORMAT,
+      pdfFormat: PORTABLE_PDF_FORMAT,
+      appId: PORTABLE_APP_ID,
+      schemaVersion: SCHEMA_VERSION,
+    }).toEqual({
+      legacyFile: "gudress-data-v1.json",
+      manifestFile: "gudress-manifest.json",
+      tourFile: "gudress-tour.json",
+      faceFile: "gudress-face.webp",
+      format: "gudress-portable-tour",
+      pdfFormat: "gudress-portable-pdf",
+      appId: "kr.gudress.web",
+      schemaVersion: 1,
+    });
+  });
+
   it("face excluded removes every reference and byte candidate", () => {
     const out = buildPortableBundle(snapshot, false);
     expect(out.assets).toHaveLength(0);

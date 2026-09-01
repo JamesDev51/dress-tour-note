@@ -227,7 +227,7 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
   }
 
   const entries = extractAttachments(pdf);
-  if (!entries.length) throw new Error("복원 가능한 그드레스 PDF가 아니에요.");
+  if (!entries.length) throw new Error("복원 가능한 드레스노트 PDF가 아니에요.");
 
   let payload: PortableTourV1;
   let integrityVerified = false;
@@ -252,7 +252,7 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
       ) {
         throw error;
       }
-      throw new Error("지원하지 않거나 손상된 그드레스 PDF예요.");
+      throw new Error("지원하지 않거나 손상된 드레스노트 PDF예요.");
     }
 
     const tourEntry = findAttachment(entries, manifest.tourAttachment);
@@ -273,7 +273,7 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
     const legacyEntry =
       findAttachment(entries, LEGACY_PORTABLE_FILE_NAME) ??
       findAttachment(entries, PORTABLE_TOUR_FILE_NAME);
-    if (!legacyEntry) throw new Error("복원 가능한 그드레스 PDF가 아니에요.");
+    if (!legacyEntry) throw new Error("복원 가능한 드레스노트 PDF가 아니에요.");
 
     let raw: unknown;
     try {
@@ -286,7 +286,7 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
       ) {
         throw error;
       }
-      throw new Error("지원하지 않거나 손상된 그드레스 PDF예요.");
+      throw new Error("지원하지 않거나 손상된 드레스노트 PDF예요.");
     }
     const assets = await collectAssetBytes(payload, entries);
     assetBytes = assets.assetBytes;
