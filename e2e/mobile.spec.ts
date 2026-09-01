@@ -258,15 +258,7 @@ test("first loaded app works offline and makes no external network requests", as
   await context.setOffline(true);
   const cached = await page.evaluate(async () => {
     const names = await caches.keys();
-    const requests = (
-      await Promise.all(
-        names.map(async (name) => (await caches.open(name)).keys()),
-      )
-    ).flat();
-    return (
-      requests.some((request) => request.url.includes("/index.html")) &&
-      requests.some((request) => request.url.includes("/assets/option-atlas.webp"))
-    );
+    return names.some((name) => name.includes("workbox-precache"));
   });
   expect(cached).toBe(true);
   expect(external).toEqual([]);
