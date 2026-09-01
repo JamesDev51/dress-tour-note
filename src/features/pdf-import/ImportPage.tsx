@@ -18,8 +18,11 @@ export function ImportPage() {
     setError(undefined);
     setBusy(true);
     try {
-      const mod = await import("../../lib/pdf/importPdf");
-      const p = await mod.inspectPortablePdf(f);
+      const recovery = await import("../../lib/pdf/recoveryTrailer");
+      const fastPreview = await recovery.inspectRecoveryTrailer(f);
+      const p =
+        fastPreview ??
+        (await (await import("../../lib/pdf/importPdf")).inspectPortablePdf(f));
       setPreview(p);
       setStrategy(p.hasConflict ? "copy" : "overwrite");
     } catch (e) {
