@@ -72,17 +72,19 @@ async function makePortablePdf(source: TourSnapshot, includeFace: boolean) {
   );
   const pdf = await PDFDocument.create();
   pdf.addPage([300, 300]);
-  await pdf.attach(bytesToArrayBuffer(serialized.manifestBytes), PORTABLE_MANIFEST_FILE_NAME, {
-    mimeType: 'application/json',
-  });
   await pdf.attach(
-    bytesToArrayBuffer(serialized.tourBytes),
+    new TextDecoder().decode(serialized.manifestBytes),
+    PORTABLE_MANIFEST_FILE_NAME,
+    { mimeType: 'application/json' },
+  );
+  await pdf.attach(
+    new TextDecoder().decode(serialized.tourBytes),
     serialized.manifest.tourAttachment,
     { mimeType: 'application/json' },
   );
   if (serialized.faceBytes && serialized.manifest.faceAttachment) {
     await pdf.attach(
-      bytesToArrayBuffer(serialized.faceBytes),
+      new TextDecoder().decode(serialized.faceBytes),
       serialized.manifest.faceAttachment,
       { mimeType: 'image/webp' },
     );
