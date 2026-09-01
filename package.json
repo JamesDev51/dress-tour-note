@@ -15,10 +15,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "assets": "node scripts/generate-option-assets.mjs",
-    "predev": "npm run assets",
-    "prebuild": "npm run assets"
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@fontsource/noto-sans-kr": "^5.2.6",
