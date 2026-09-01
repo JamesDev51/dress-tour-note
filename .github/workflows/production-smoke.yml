@@ -12,20 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      PRODUCTION_URL: https://dress-tour-note-minseokjeongjames-4193s-projects.vercel.app
+      PRODUCTION_URL: https://dress-tour-note-git-master-minseokjeongjames-4193s-projects.vercel.app
     steps:
       - name: Checkout test harness
         uses: actions/checkout@v4
 
-      - name: Confirm the live production alias
+      - name: Confirm the live deployment alias
         shell: bash
         run: |
           set -euo pipefail
           code=$(curl --location --silent --show-error --max-time 30 \
             --output /tmp/gudress-home.html --write-out '%{http_code}' "${PRODUCTION_URL}/")
+          echo "HTTP ${code} from ${PRODUCTION_URL}"
           test "$code" = "200"
           test -s /tmp/gudress-home.html
-          echo "Confirmed production URL: ${PRODUCTION_URL}"
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
@@ -39,7 +39,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run real production user journeys
+      - name: Run real deployment user journeys
         run: npx playwright test --config=playwright.production.config.ts
 
       - name: Upload failure evidence
