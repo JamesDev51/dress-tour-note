@@ -5,6 +5,7 @@ import {
   loadDressPersonBase,
 } from "../lib/image/dressPerson";
 import { blobToDataUrl } from "../lib/image/processFace";
+import { loadDressFabricTexture } from "../lib/image/dressFabric";
 import { dressForPresentation } from "../lib/dress/options";
 import { dressSvgMarkup } from "../lib/renderer/dressSvg";
 
@@ -20,6 +21,7 @@ export function DressPreview({
   const [person, setPerson] = useState<string>();
   const [personError, setPersonError] = useState<string>();
   const [face, setFace] = useState<string>();
+  const [fabricTexture, setFabricTexture] = useState<string>();
   useEffect(() => {
     let active = true;
     loadDressPersonBase()
@@ -28,11 +30,11 @@ export function DressPreview({
       })
       .catch((error: unknown) => {
         if (!active) return;
-        if (error instanceof DressPersonBaseLoadError) {
-          setPersonError(error.message);
-          return;
-        }
-        setPersonError("인물 베이스 이미지를 불러오지 못했어요.");
+        setPersonError(
+          error instanceof DressPersonBaseLoadError
+            ? error.message
+            : "인물 베이스 이미지를 불러오지 못했어요.",
+        );
       });
     return () => {
       active = false;
@@ -48,15 +50,32 @@ export function DressPreview({
     };
   }, [faceAsset]);
   const presentedDress = useMemo(() => dressForPresentation(dress), [dress]);
+  useEffect(() => {
+    let active = true;
+    setFabricTexture(undefined);
+    loadDressFabricTexture(presentedDress.fabric)
+      .then((texture) => {
+        if (active) setFabricTexture(texture);
+      })
+      .catch(() => {
+        if (active) setFabricTexture(undefined);
+      });
+    return () => {
+      active = false;
+    };
+  }, [presentedDress.fabric]);
   const svg = useMemo(
-    () => (person ? dressSvgMarkup(presentedDress, person, face, true) : ""),
-    [face, person, presentedDress],
+    () =>
+      person
+        ? dressSvgMarkup(presentedDress, person, face, true, fabricTexture)
+        : "",
+    [fabricTexture, face, person, presentedDress],
   );
   if (personError)
     return (
       <div
         role="alert"
-        className={`grid min-h-24 place-items-center rounded-preview bg-preview-surface px-4 text-center text-sm text-red-700 ${className}`}
+        className={`grid min-h-24 place-items-center rounded-preview bg-preview-surface px-4 text-center text-sm text-error ${className}`}
       >
         {personError}
       </div>

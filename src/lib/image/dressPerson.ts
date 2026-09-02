@@ -1,4 +1,4 @@
-import personBaseUrl from "../../assets/dress-person-base.webp?url";
+import personBaseUrl from "../../assets/dress-person-illustration-v2.webp?url";
 import { blobToDataUrl } from "./processFace";
 
 export class DressPersonBaseLoadError extends Error {
