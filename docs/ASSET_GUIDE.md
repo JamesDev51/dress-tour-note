@@ -13,7 +13,14 @@
 
 ## 드레스 미리보기
 
-`src/assets/dress-person-illustration-v6.webp`는 투명 배경의 720×1280 로컬 패션 마네킹 일러스트입니다. 큰 가슴·잘록한 허리·부드러운 골반 S곡선의 비너스형 드레스폼이며, 드레스 외곽은 `public/assets/dress-layers/`의 동일 규격 투명 WebP가 결정합니다.
+`src/assets/dress-person-illustration-v6.webp`는 투명 배경의 720×1280 로컬 패션 마네킹 일러스트입니다. 큰 가슴·잘록한 허리·부드러운 골반 S곡선의 비너스형 드레스폼이며, 실제 미리보기의 드레스 외곽은 `public/assets/dress-structures/`의 완성형 조합 WebP가 결정합니다.
+
+- `dress-structures/`: 상의 7 × 넥라인 7 × 실루엣 5의 전체 245개 조합
+- 파일명: `<top>__<neckline>__<silhouette>.webp`
+- 각 파일은 상체·소매·치마를 하나의 연속된 알파 구조로 미리 합쳐 런타임 접합선을 만들지 않습니다.
+- `manifest.json`: 전체 245개 키와 크기, 바이트, SHA-256 인벤토리
+
+`public/assets/dress-layers/`는 완성형 구조를 재생성하는 소스 파트와 볼륨 레이어입니다.
 
 - `bodice/`: 넥라인별 보디스 6개
 - `top/`: 끈·홀터·오프숄더·소매 5개
@@ -21,9 +28,9 @@
 - `volume/`: 공통 그림자·하이라이트와 머메이드·엠파이어 전용 볼륨 4개
 - `manifest.json`: 크기, 역할, 바이트, SHA-256 인벤토리
 
-canonical SVG는 경로를 그리지 않고 위 이미지의 알파를 `<mask>`로 사용해 색상과 `render-textures/fabric/` 소재를 자르는 합성 컨테이너 역할만 합니다. 브라우저 미리보기와 JPEG/PDF가 동일 로더와 합성 함수를 사용하며, 배경색으로 신체를 덮는 하체 마스크는 사용하지 않습니다.
+canonical SVG는 경로를 그리지 않고 선택 조합의 완성형 이미지 알파 하나를 `<mask>`로 사용해 색상과 `render-textures/fabric/` 소재를 자르는 합성 컨테이너 역할만 합니다. 브라우저 미리보기와 JPEG/PDF가 동일 로더와 합성 함수를 사용하며, 배경색으로 신체를 덮는 하체 마스크는 사용하지 않습니다.
 
-레이어를 수정한 뒤에는 `node scripts/generate-dress-layers.mjs`로 20개 WebP와 매니페스트를 함께 갱신합니다. 모든 파일은 720×1280, alpha 포함, 250KB 미만이어야 합니다. `npm run validate:dress-proportions`는 짧은소매/오프숄더 구분도, 마네킹 비율, 보디스·치마 허리 폭을 함께 검사합니다.
+레이어를 수정한 뒤에는 `node scripts/generate-dress-layers.mjs`로 20개 소스 WebP를 갱신한 다음 `npm run generate:dress-structures`로 245개 완성형 WebP와 매니페스트를 재생성합니다. `npm run validate:dress-structures`는 정확한 전체 키, 720×1280, alpha, 250KB 미만, 바이트와 SHA-256을 전수 검사합니다. `npm run validate:dress-proportions`는 짧은소매/오프숄더 구분도, 마네킹 비율, 보디스·치마 허리 폭을 함께 검사합니다.
 
 ## 검증
 

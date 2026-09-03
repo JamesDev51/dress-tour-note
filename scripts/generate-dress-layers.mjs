@@ -43,7 +43,7 @@ const layers = {
       '<path d="M322 252 Q360 238 398 252 L394 284 C416 312 432 348 442 390 L404 402 C396 360 382 324 366 292 L354 292 C338 324 324 360 316 402 L278 390 C288 348 304 312 326 284 Z" fill-rule="evenodd"/>',
     shortSleeve:
       '<path d="M292 304 C274 288 250 286 232 298 C216 312 210 334 212 358 C214 382 220 404 232 422 C246 426 260 416 270 398 C282 376 290 342 292 304 Z"/><path d="M428 304 C446 288 470 286 488 298 C504 312 510 334 508 358 C506 382 500 404 488 422 C474 426 460 416 450 398 C438 376 430 342 428 304 Z"/>',
-    longSleeve: `<defs><clipPath id="generated-sleeve-clips"><rect x="120" y="220" width="190" height="540"/><rect x="410" y="220" width="190" height="540"/></clipPath><filter id="sleeve-expand"><feMorphology operator="dilate" radius="7"/></filter></defs><image href="${longSleeveMaskDataUrl}" x="0" y="0" width="720" height="1280" preserveAspectRatio="none" clip-path="url(#generated-sleeve-clips)" filter="url(#sleeve-expand)"/><path d="M220 270 C250 245 272 248 282 276 C298 304 422 304 438 276 C448 248 470 245 500 270 L486 460 L234 460 Z"/>`,
+    longSleeve: `<defs><clipPath id="generated-sleeve-clips"><rect x="120" y="220" width="180" height="540"/><rect x="440" y="220" width="160" height="540"/></clipPath><filter id="sleeve-expand"><feMorphology operator="dilate" radius="7"/></filter></defs><image href="${longSleeveMaskDataUrl}" x="0" y="0" width="720" height="1280" preserveAspectRatio="none" clip-path="url(#generated-sleeve-clips)" filter="url(#sleeve-expand)"/>`,
   },
   skirt: {
     unknown:

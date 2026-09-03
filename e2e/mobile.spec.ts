@@ -34,6 +34,10 @@ const optionAssetPaths = [
 ];
 
 const dressLayerAssetPaths = [
+  "/assets/dress-structures/manifest.json",
+  "/assets/dress-structures/strapless__sweetheart__mermaid.webp",
+  "/assets/dress-structures/longSleeve__asymmetric__empire.webp",
+  "/assets/dress-structures/unknown__unknown__unknown.webp",
   ...["straight", "sweetheart", "v", "square", "scoop", "asymmetric"].map(
     (id) => `/assets/dress-layers/bodice/${id}.webp`,
   ),
@@ -45,13 +49,6 @@ const dressLayerAssetPaths = [
   ),
   ...["shadow", "highlight", "mermaid", "empire"].map(
     (id) => `/assets/dress-layers/volume/${id}.webp`,
-  ),
-  "/assets/dress-appearances/bodice/base.webp",
-  ...["offShoulder", "strap", "halter", "shortSleeve"].map(
-    (id) => `/assets/dress-appearances/top/${id}.webp`,
-  ),
-  ...["aLine", "ballGown", "mermaid", "empire"].map(
-    (id) => `/assets/dress-appearances/silhouette/${id}.webp`,
   ),
 ];
 

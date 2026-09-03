@@ -33,12 +33,12 @@ const fabricTileSize = {
 
 const fabricOpacity = {
   unknown: { bodice: 0, skirt: 0, top: 0 },
-  mikadoSatin: { bodice: 0.2, skirt: 0.28, top: 0.22 },
+  mikadoSatin: { bodice: 0.38, skirt: 0.48, top: 0.42 },
   lace: { bodice: 0.62, skirt: 0.72, top: 0.66 },
-  organzaChiffon: { bodice: 0.42, skirt: 0.56, top: 0.48 },
-  subtleBeaded: { bodice: 0.58, skirt: 0.68, top: 0.62 },
-  ornateBeaded: { bodice: 0.72, skirt: 0.78, top: 0.74 },
-  floral3D: { bodice: 0.7, skirt: 0.78, top: 0.72 },
+  organzaChiffon: { bodice: 0.58, skirt: 0.68, top: 0.62 },
+  subtleBeaded: { bodice: 0.7, skirt: 0.78, top: 0.74 },
+  ornateBeaded: { bodice: 0.82, skirt: 0.88, top: 0.84 },
+  floral3D: { bodice: 0.78, skirt: 0.86, top: 0.8 },
 } as const satisfies Record<
   PresentedFabric,
   { readonly bodice: number; readonly skirt: number; readonly top: number }
@@ -62,16 +62,6 @@ function maskDefinition(id: string, name: string, dataUrl: string) {
   return `<mask id="${name}-${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="640"><image href="${esc(dataUrl)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none"/></mask>`;
 }
 
-function garmentPart(
-  layer: string,
-  mask: string,
-  garmentFill: string,
-  textureFill: string,
-  textureOpacity: number,
-) {
-  return `<g data-layer="raster-${layer}" mask="url(#${mask})"><rect width="360" height="640" fill="${garmentFill}"/><rect width="360" height="640" fill="${textureFill}" opacity="${textureOpacity}"/></g>`;
-}
-
 function dressLayers(
   dress: PresentedDress,
   id: string,
@@ -83,42 +73,19 @@ function dressLayers(
   const pattern = fabricPattern(dress, id, textureDataUrl);
   const textureFill = pattern ? `url(#p-${id})` : "none";
   const accent = fabricAccent(dress, id);
-  const topMask = assets.top ? maskDefinition(id, "top-mask", assets.top) : "";
-  const skirtMask = `<mask id="skirt-mask-${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="700"><image href="${esc(assets.skirt)}" x="0" y="-20" width="360" height="690" preserveAspectRatio="none"/></mask>`;
-  const combinedTop = assets.top
-    ? `<image href="${esc(assets.top)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none"/>`
-    : "";
-  const defs = `${pattern}${accent}<linearGradient id="g-${id}" x1="0" x2="1"><stop stop-color="${edge}"/><stop offset=".18" stop-color="${dressRenderTokens.garmentColor[dress.color]}"/><stop offset=".52" stop-color="${dressRenderTokens.garmentHighlight}"/><stop offset=".82" stop-color="${dressRenderTokens.garmentColor[dress.color]}"/><stop offset="1" stop-color="${edge}"/></linearGradient>${maskDefinition(id, "bodice-mask", assets.bodice)}${skirtMask}${topMask}<mask id="garment-mask-${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="700"><image href="${esc(assets.skirt)}" x="0" y="-20" width="360" height="690" preserveAspectRatio="none"/><image href="${esc(assets.bodice)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none"/>${combinedTop}</mask><filter id="s-${id}" x="-30%" y="-20%" width="160%" height="150%"><feDropShadow dx="0" dy="0" stdDeviation=".65" flood-color="${edge}" flood-opacity=".9"/><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="${dressRenderTokens.garmentDropShadow}" flood-opacity=".18"/></filter>`;
-  const skirt = `<g data-layer="raster-skirt" mask="url(#skirt-mask-${id})"><rect width="360" height="700" fill="url(#g-${id})"/><rect width="360" height="700" fill="${textureFill}" opacity="${opacity.skirt}"/></g>`;
-  const silhouetteAppearance = assets.silhouetteAppearance
-    ? `<image data-layer="reference-silhouette-appearance" href="${esc(assets.silhouetteAppearance)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#skirt-mask-${id})" opacity=".9"/>`
-    : "";
-  const necklineAppearance = assets.necklineAppearance
-    ? `<image data-layer="reference-neckline-appearance" href="${esc(assets.necklineAppearance)}" x="96" y="106" width="168" height="168" preserveAspectRatio="xMidYMid slice" mask="url(#bodice-mask-${id})" opacity=".82"/>`
-    : "";
-  const topAppearance = assets.topAppearance
-    ? `<image data-layer="reference-top-appearance" href="${esc(assets.topAppearance)}" x="86" y="${dress.topStyle === "offShoulder" ? 112 : 94}" width="188" height="188" preserveAspectRatio="xMidYMid slice" opacity=".88"/>`
-    : "";
-  const top =
-    assets.top && !assets.topAppearance
-      ? garmentPart(
-          "top",
-          `top-mask-${id}`,
-          `url(#g-${id})`,
-          textureFill,
-          opacity.top,
-        )
-      : "";
+  const structureMask = maskDefinition(id, "structure-mask", assets.structure);
+  const defs = `${pattern}${accent}<linearGradient id="g-${id}" x1="0" x2="1"><stop stop-color="${edge}"/><stop offset=".18" stop-color="${dressRenderTokens.garmentColor[dress.color]}"/><stop offset=".52" stop-color="${dressRenderTokens.garmentHighlight}"/><stop offset=".82" stop-color="${dressRenderTokens.garmentColor[dress.color]}"/><stop offset="1" stop-color="${edge}"/></linearGradient>${structureMask}<filter id="s-${id}" x="-30%" y="-20%" width="160%" height="150%"><feDropShadow dx="0" dy="0" stdDeviation=".65" flood-color="${edge}" flood-opacity=".9"/><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="${dressRenderTokens.garmentDropShadow}" flood-opacity=".18"/></filter>`;
+  const structure = `<g data-layer="raster-dress-structure" mask="url(#structure-mask-${id})"><rect width="360" height="640" fill="url(#g-${id})"/><rect width="360" height="640" fill="${textureFill}" opacity="${opacity.skirt}" style="mix-blend-mode:multiply"/></g>`;
   const accentLayer = accent
-    ? `<g data-layer="fabric-accent" mask="url(#garment-mask-${id})" opacity="${dress.fabric === "subtleBeaded" ? 0.56 : 0.38}"><rect width="360" height="640" fill="url(#b-${id})"/></g>`
+    ? `<g data-layer="fabric-accent" mask="url(#structure-mask-${id})" opacity="${dress.fabric === "subtleBeaded" ? 0.56 : 0.38}"><rect width="360" height="640" fill="url(#b-${id})"/></g>`
     : "";
   const mermaidVolume = assets.mermaidVolume
-    ? `<image data-layer="raster-mermaid-volume" href="${esc(assets.mermaidVolume)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})"/>`
+    ? `<image data-layer="raster-mermaid-volume" href="${esc(assets.mermaidVolume)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#structure-mask-${id})"/>`
     : "";
   const empireVolume = assets.empireVolume
-    ? `<image data-layer="raster-empire-volume" href="${esc(assets.empireVolume)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})"/>`
+    ? `<image data-layer="raster-empire-volume" href="${esc(assets.empireVolume)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#structure-mask-${id})"/>`
     : "";
-  const markup = `<g data-layer="dress-fit" data-renderer="raster-layers" transform="translate(0 -18)" filter="url(#s-${id})">${skirt}${silhouetteAppearance}${garmentPart("bodice", `bodice-mask-${id}`, `url(#g-${id})`, textureFill, opacity.bodice)}${necklineAppearance}${top}${topAppearance}${accentLayer}<image data-layer="raster-volume-shadow" href="${esc(assets.shadow)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})" opacity=".46"/><image data-layer="raster-volume-highlight" href="${esc(assets.highlight)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})" opacity=".34"/>${mermaidVolume}${empireVolume}</g>`;
+  const markup = `<g data-layer="dress-fit" data-renderer="complete-structure" transform="translate(0 -18)" filter="url(#s-${id})">${structure}${accentLayer}<image data-layer="raster-volume-shadow" href="${esc(assets.shadow)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#structure-mask-${id})" opacity=".66"/><image data-layer="raster-volume-highlight" href="${esc(assets.highlight)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#structure-mask-${id})" opacity=".38"/>${mermaidVolume}${empireVolume}</g>`;
   return { defs, markup };
 }
 

@@ -11,6 +11,8 @@
     "build": "tsc -b && vite build",
     "validate:dress-layers": "node scripts/validate-dress-layers.mjs",
     "validate:dress-proportions": "node scripts/validate-dress-proportions.mjs",
+    "generate:dress-structures": "node scripts/generate-dress-structures.mjs",
+    "validate:dress-structures": "node scripts/validate-dress-structures.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
@@ -21,8 +23,6 @@
     "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
-    "@fontsource/noto-sans-kr": "^5.2.6",
-    "@fontsource/noto-serif-kr": "^5.2.6",
     "@pdf-lib/fontkit": "^1.1.1",
     "dexie": "^4.0.11",
     "dexie-react-hooks": "^1.1.7",

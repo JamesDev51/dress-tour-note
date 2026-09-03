@@ -1,0 +1,1970 @@
+{
+  "version": 1,
+  "canvas": {
+    "width": 720,
+    "height": 1280
+  },
+  "viewBox": "0 0 360 640",
+  "combinations": {
+    "unknown__unknown__unknown": {
+      "src": "/assets/dress-structures/unknown__unknown__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6104,
+      "sha256": "f123ebe7b1d31ddb95e3e33104dee7d541b58bb12e3de6361e602e2d85d8664e"
+    },
+    "unknown__unknown__aLine": {
+      "src": "/assets/dress-structures/unknown__unknown__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7368,
+      "sha256": "bf94689e21e265aadf0a530f83f14bea572555c8d90cb869d4e874ed2beaacd4"
+    },
+    "unknown__unknown__ballGown": {
+      "src": "/assets/dress-structures/unknown__unknown__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7882,
+      "sha256": "a4f00e5ac7963c940c076b6a39404298fef4fd982865f6c83dac50b2a8ee8911"
+    },
+    "unknown__unknown__mermaid": {
+      "src": "/assets/dress-structures/unknown__unknown__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7660,
+      "sha256": "114df75af567f3e5151a86f561d14bd6c72967af52ff8102a0f217960a8f3f42"
+    },
+    "unknown__unknown__empire": {
+      "src": "/assets/dress-structures/unknown__unknown__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7460,
+      "sha256": "2248f7d96544c09d4ac4f91c5ea018c62702fa23a51d7410f830731fb7e9a1c4"
+    },
+    "unknown__straight__unknown": {
+      "src": "/assets/dress-structures/unknown__straight__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6104,
+      "sha256": "f123ebe7b1d31ddb95e3e33104dee7d541b58bb12e3de6361e602e2d85d8664e"
+    },
+    "unknown__straight__aLine": {
+      "src": "/assets/dress-structures/unknown__straight__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7368,
+      "sha256": "bf94689e21e265aadf0a530f83f14bea572555c8d90cb869d4e874ed2beaacd4"
+    },
+    "unknown__straight__ballGown": {
+      "src": "/assets/dress-structures/unknown__straight__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7882,
+      "sha256": "a4f00e5ac7963c940c076b6a39404298fef4fd982865f6c83dac50b2a8ee8911"
+    },
+    "unknown__straight__mermaid": {
+      "src": "/assets/dress-structures/unknown__straight__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7660,
+      "sha256": "114df75af567f3e5151a86f561d14bd6c72967af52ff8102a0f217960a8f3f42"
+    },
+    "unknown__straight__empire": {
+      "src": "/assets/dress-structures/unknown__straight__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7460,
+      "sha256": "2248f7d96544c09d4ac4f91c5ea018c62702fa23a51d7410f830731fb7e9a1c4"
+    },
+    "unknown__sweetheart__unknown": {
+      "src": "/assets/dress-structures/unknown__sweetheart__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6816,
+      "sha256": "856c96d19fadb9f01f2296346fbf94e5e6ab5a713bd748e0128b750f02d48b17"
+    },
+    "unknown__sweetheart__aLine": {
+      "src": "/assets/dress-structures/unknown__sweetheart__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7994,
+      "sha256": "4e1a12d3480220413b7e872791ce049b155fca5cfa37494f97b601a15831c1ba"
+    },
+    "unknown__sweetheart__ballGown": {
+      "src": "/assets/dress-structures/unknown__sweetheart__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8394,
+      "sha256": "7888f54cfe4ad8c48b997760a5b4b47063cefe7593b2a0a7ab4fa350e10099e3"
+    },
+    "unknown__sweetheart__mermaid": {
+      "src": "/assets/dress-structures/unknown__sweetheart__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8292,
+      "sha256": "70458d5b1deafe6e08838c4f15c9d39bb37440632fe15ef8c1723c07a3e50db5"
+    },
+    "unknown__sweetheart__empire": {
+      "src": "/assets/dress-structures/unknown__sweetheart__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8108,
+      "sha256": "662846301c44f4e69defc17cdf1a9482c04ab4415e1fc8a58f4ba13a9987bc68"
+    },
+    "unknown__v__unknown": {
+      "src": "/assets/dress-structures/unknown__v__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6988,
+      "sha256": "253c5751e66b259d739779f0229145deb25510a665c1540d3a0f49c77809aeef"
+    },
+    "unknown__v__aLine": {
+      "src": "/assets/dress-structures/unknown__v__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8204,
+      "sha256": "e2060f679a8dbaa0cda7b5a89194ca5e8decca917f9a7068b59de47b62a685ab"
+    },
+    "unknown__v__ballGown": {
+      "src": "/assets/dress-structures/unknown__v__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8636,
+      "sha256": "af194ee2575b223a8f2c1d45727b050058d4b67d700cee0ee670151b48890ec0"
+    },
+    "unknown__v__mermaid": {
+      "src": "/assets/dress-structures/unknown__v__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8460,
+      "sha256": "52350dc307df9ab9713277120744ae73a46de2acc089a9faf39a09702dc978c7"
+    },
+    "unknown__v__empire": {
+      "src": "/assets/dress-structures/unknown__v__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8322,
+      "sha256": "8b798e8018ab30037f795e05328fa0173da06cda18a54f3bf63eb2f976786323"
+    },
+    "unknown__square__unknown": {
+      "src": "/assets/dress-structures/unknown__square__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6238,
+      "sha256": "97fa1e9c0db9d97268bb1945e4000de0f1e567de209ba7fda0157e0329b8306d"
+    },
+    "unknown__square__aLine": {
+      "src": "/assets/dress-structures/unknown__square__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7458,
+      "sha256": "32df21ab2d77b891d17af60fb8dd468f2157ea8ada67af0ef1d5974d1fc11451"
+    },
+    "unknown__square__ballGown": {
+      "src": "/assets/dress-structures/unknown__square__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7950,
+      "sha256": "1e879969218520578f1ba0ab4f27e347b9715da38321ad290ac727bbe826c10b"
+    },
+    "unknown__square__mermaid": {
+      "src": "/assets/dress-structures/unknown__square__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7722,
+      "sha256": "89eca729f0ae0c398017ef1b85ab4e88c450af617b5fd743cf761682e3f91659"
+    },
+    "unknown__square__empire": {
+      "src": "/assets/dress-structures/unknown__square__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7482,
+      "sha256": "cb43a719eb7769c8c7c717e0b4668a6834ca91df5a53f36c2ad46683e9dd6224"
+    },
+    "unknown__scoop__unknown": {
+      "src": "/assets/dress-structures/unknown__scoop__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6714,
+      "sha256": "f837c5cff0d9e7213ceabea8a2fc8ccfc671b28ae7fd153f148f2a017b130569"
+    },
+    "unknown__scoop__aLine": {
+      "src": "/assets/dress-structures/unknown__scoop__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7924,
+      "sha256": "f4d99051d2d4fa00b890c6020541cf01bb6cfa5281eb1b8b7c420497021968d1"
+    },
+    "unknown__scoop__ballGown": {
+      "src": "/assets/dress-structures/unknown__scoop__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8386,
+      "sha256": "38d35a50c71a0526f620d537d6116331c620d6f1a394e04e7140b89fcf17043a"
+    },
+    "unknown__scoop__mermaid": {
+      "src": "/assets/dress-structures/unknown__scoop__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8220,
+      "sha256": "d9f293cf87dc556ab8084388c18d50274d32729310f8c591ab99b47e88181b7f"
+    },
+    "unknown__scoop__empire": {
+      "src": "/assets/dress-structures/unknown__scoop__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8024,
+      "sha256": "b84cf04b74bd6be91f6aecaeea1e0fcd164a977f5db20ff15df652c54c2b08f3"
+    },
+    "unknown__asymmetric__unknown": {
+      "src": "/assets/dress-structures/unknown__asymmetric__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6640,
+      "sha256": "edfa73893d2fa98ae16495f9dc5555b5ba1aadc9058836a8a6bad14b4f02cadb"
+    },
+    "unknown__asymmetric__aLine": {
+      "src": "/assets/dress-structures/unknown__asymmetric__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7814,
+      "sha256": "da11ed5ddfdc33557efa20a3a6133729a0b0dd0203a7f7f7a179701662cc6e27"
+    },
+    "unknown__asymmetric__ballGown": {
+      "src": "/assets/dress-structures/unknown__asymmetric__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8360,
+      "sha256": "527bb9197c2c2590766513f0e3b23da17bec056b01fcebcefbe5f57e62a87de7"
+    },
+    "unknown__asymmetric__mermaid": {
+      "src": "/assets/dress-structures/unknown__asymmetric__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8174,
+      "sha256": "4964913e0968a62f7f089c6138461d2547f11be01dc8e45928ad652d57a2f3eb"
+    },
+    "unknown__asymmetric__empire": {
+      "src": "/assets/dress-structures/unknown__asymmetric__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7926,
+      "sha256": "73b25abe219f603a0f2464aba886be59e40b9ff2888d40c42b57d89cfed98f54"
+    },
+    "strapless__unknown__unknown": {
+      "src": "/assets/dress-structures/strapless__unknown__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6104,
+      "sha256": "f123ebe7b1d31ddb95e3e33104dee7d541b58bb12e3de6361e602e2d85d8664e"
+    },
+    "strapless__unknown__aLine": {
+      "src": "/assets/dress-structures/strapless__unknown__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7368,
+      "sha256": "bf94689e21e265aadf0a530f83f14bea572555c8d90cb869d4e874ed2beaacd4"
+    },
+    "strapless__unknown__ballGown": {
+      "src": "/assets/dress-structures/strapless__unknown__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7882,
+      "sha256": "a4f00e5ac7963c940c076b6a39404298fef4fd982865f6c83dac50b2a8ee8911"
+    },
+    "strapless__unknown__mermaid": {
+      "src": "/assets/dress-structures/strapless__unknown__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7660,
+      "sha256": "114df75af567f3e5151a86f561d14bd6c72967af52ff8102a0f217960a8f3f42"
+    },
+    "strapless__unknown__empire": {
+      "src": "/assets/dress-structures/strapless__unknown__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7460,
+      "sha256": "2248f7d96544c09d4ac4f91c5ea018c62702fa23a51d7410f830731fb7e9a1c4"
+    },
+    "strapless__straight__unknown": {
+      "src": "/assets/dress-structures/strapless__straight__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6104,
+      "sha256": "f123ebe7b1d31ddb95e3e33104dee7d541b58bb12e3de6361e602e2d85d8664e"
+    },
+    "strapless__straight__aLine": {
+      "src": "/assets/dress-structures/strapless__straight__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7368,
+      "sha256": "bf94689e21e265aadf0a530f83f14bea572555c8d90cb869d4e874ed2beaacd4"
+    },
+    "strapless__straight__ballGown": {
+      "src": "/assets/dress-structures/strapless__straight__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7882,
+      "sha256": "a4f00e5ac7963c940c076b6a39404298fef4fd982865f6c83dac50b2a8ee8911"
+    },
+    "strapless__straight__mermaid": {
+      "src": "/assets/dress-structures/strapless__straight__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7660,
+      "sha256": "114df75af567f3e5151a86f561d14bd6c72967af52ff8102a0f217960a8f3f42"
+    },
+    "strapless__straight__empire": {
+      "src": "/assets/dress-structures/strapless__straight__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7460,
+      "sha256": "2248f7d96544c09d4ac4f91c5ea018c62702fa23a51d7410f830731fb7e9a1c4"
+    },
+    "strapless__sweetheart__unknown": {
+      "src": "/assets/dress-structures/strapless__sweetheart__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6816,
+      "sha256": "856c96d19fadb9f01f2296346fbf94e5e6ab5a713bd748e0128b750f02d48b17"
+    },
+    "strapless__sweetheart__aLine": {
+      "src": "/assets/dress-structures/strapless__sweetheart__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7994,
+      "sha256": "4e1a12d3480220413b7e872791ce049b155fca5cfa37494f97b601a15831c1ba"
+    },
+    "strapless__sweetheart__ballGown": {
+      "src": "/assets/dress-structures/strapless__sweetheart__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8394,
+      "sha256": "7888f54cfe4ad8c48b997760a5b4b47063cefe7593b2a0a7ab4fa350e10099e3"
+    },
+    "strapless__sweetheart__mermaid": {
+      "src": "/assets/dress-structures/strapless__sweetheart__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8292,
+      "sha256": "70458d5b1deafe6e08838c4f15c9d39bb37440632fe15ef8c1723c07a3e50db5"
+    },
+    "strapless__sweetheart__empire": {
+      "src": "/assets/dress-structures/strapless__sweetheart__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8108,
+      "sha256": "662846301c44f4e69defc17cdf1a9482c04ab4415e1fc8a58f4ba13a9987bc68"
+    },
+    "strapless__v__unknown": {
+      "src": "/assets/dress-structures/strapless__v__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6988,
+      "sha256": "253c5751e66b259d739779f0229145deb25510a665c1540d3a0f49c77809aeef"
+    },
+    "strapless__v__aLine": {
+      "src": "/assets/dress-structures/strapless__v__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8204,
+      "sha256": "e2060f679a8dbaa0cda7b5a89194ca5e8decca917f9a7068b59de47b62a685ab"
+    },
+    "strapless__v__ballGown": {
+      "src": "/assets/dress-structures/strapless__v__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8636,
+      "sha256": "af194ee2575b223a8f2c1d45727b050058d4b67d700cee0ee670151b48890ec0"
+    },
+    "strapless__v__mermaid": {
+      "src": "/assets/dress-structures/strapless__v__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8460,
+      "sha256": "52350dc307df9ab9713277120744ae73a46de2acc089a9faf39a09702dc978c7"
+    },
+    "strapless__v__empire": {
+      "src": "/assets/dress-structures/strapless__v__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8322,
+      "sha256": "8b798e8018ab30037f795e05328fa0173da06cda18a54f3bf63eb2f976786323"
+    },
+    "strapless__square__unknown": {
+      "src": "/assets/dress-structures/strapless__square__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6238,
+      "sha256": "97fa1e9c0db9d97268bb1945e4000de0f1e567de209ba7fda0157e0329b8306d"
+    },
+    "strapless__square__aLine": {
+      "src": "/assets/dress-structures/strapless__square__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7458,
+      "sha256": "32df21ab2d77b891d17af60fb8dd468f2157ea8ada67af0ef1d5974d1fc11451"
+    },
+    "strapless__square__ballGown": {
+      "src": "/assets/dress-structures/strapless__square__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7950,
+      "sha256": "1e879969218520578f1ba0ab4f27e347b9715da38321ad290ac727bbe826c10b"
+    },
+    "strapless__square__mermaid": {
+      "src": "/assets/dress-structures/strapless__square__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7722,
+      "sha256": "89eca729f0ae0c398017ef1b85ab4e88c450af617b5fd743cf761682e3f91659"
+    },
+    "strapless__square__empire": {
+      "src": "/assets/dress-structures/strapless__square__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7482,
+      "sha256": "cb43a719eb7769c8c7c717e0b4668a6834ca91df5a53f36c2ad46683e9dd6224"
+    },
+    "strapless__scoop__unknown": {
+      "src": "/assets/dress-structures/strapless__scoop__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6714,
+      "sha256": "f837c5cff0d9e7213ceabea8a2fc8ccfc671b28ae7fd153f148f2a017b130569"
+    },
+    "strapless__scoop__aLine": {
+      "src": "/assets/dress-structures/strapless__scoop__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7924,
+      "sha256": "f4d99051d2d4fa00b890c6020541cf01bb6cfa5281eb1b8b7c420497021968d1"
+    },
+    "strapless__scoop__ballGown": {
+      "src": "/assets/dress-structures/strapless__scoop__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8386,
+      "sha256": "38d35a50c71a0526f620d537d6116331c620d6f1a394e04e7140b89fcf17043a"
+    },
+    "strapless__scoop__mermaid": {
+      "src": "/assets/dress-structures/strapless__scoop__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8220,
+      "sha256": "d9f293cf87dc556ab8084388c18d50274d32729310f8c591ab99b47e88181b7f"
+    },
+    "strapless__scoop__empire": {
+      "src": "/assets/dress-structures/strapless__scoop__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8024,
+      "sha256": "b84cf04b74bd6be91f6aecaeea1e0fcd164a977f5db20ff15df652c54c2b08f3"
+    },
+    "strapless__asymmetric__unknown": {
+      "src": "/assets/dress-structures/strapless__asymmetric__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6640,
+      "sha256": "edfa73893d2fa98ae16495f9dc5555b5ba1aadc9058836a8a6bad14b4f02cadb"
+    },
+    "strapless__asymmetric__aLine": {
+      "src": "/assets/dress-structures/strapless__asymmetric__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7814,
+      "sha256": "da11ed5ddfdc33557efa20a3a6133729a0b0dd0203a7f7f7a179701662cc6e27"
+    },
+    "strapless__asymmetric__ballGown": {
+      "src": "/assets/dress-structures/strapless__asymmetric__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8360,
+      "sha256": "527bb9197c2c2590766513f0e3b23da17bec056b01fcebcefbe5f57e62a87de7"
+    },
+    "strapless__asymmetric__mermaid": {
+      "src": "/assets/dress-structures/strapless__asymmetric__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8174,
+      "sha256": "4964913e0968a62f7f089c6138461d2547f11be01dc8e45928ad652d57a2f3eb"
+    },
+    "strapless__asymmetric__empire": {
+      "src": "/assets/dress-structures/strapless__asymmetric__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7926,
+      "sha256": "73b25abe219f603a0f2464aba886be59e40b9ff2888d40c42b57d89cfed98f54"
+    },
+    "offShoulder__unknown__unknown": {
+      "src": "/assets/dress-structures/offShoulder__unknown__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6770,
+      "sha256": "1f0fc91232936ba679e64594471c0effa5f3c9f52a466df298c4744661938d74"
+    },
+    "offShoulder__unknown__aLine": {
+      "src": "/assets/dress-structures/offShoulder__unknown__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8030,
+      "sha256": "03d61145cb08f115459a604a595c00a6b0e2916954b060b2db9817921bd7f6ad"
+    },
+    "offShoulder__unknown__ballGown": {
+      "src": "/assets/dress-structures/offShoulder__unknown__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8428,
+      "sha256": "ffb32776b4aa1628f587c0307865ceb4bf6a6214dd0056877a61ebda8e197aed"
+    },
+    "offShoulder__unknown__mermaid": {
+      "src": "/assets/dress-structures/offShoulder__unknown__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8290,
+      "sha256": "d23c21ce51c67352d85ceff370d1f8f6d0b9b6cd8230746d50d8e2786f826604"
+    },
+    "offShoulder__unknown__empire": {
+      "src": "/assets/dress-structures/offShoulder__unknown__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8144,
+      "sha256": "894a0e0dd6374255b138554c48699d95a261ba557c4cc14a4fc82784b37388f1"
+    },
+    "offShoulder__straight__unknown": {
+      "src": "/assets/dress-structures/offShoulder__straight__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6770,
+      "sha256": "1f0fc91232936ba679e64594471c0effa5f3c9f52a466df298c4744661938d74"
+    },
+    "offShoulder__straight__aLine": {
+      "src": "/assets/dress-structures/offShoulder__straight__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8030,
+      "sha256": "03d61145cb08f115459a604a595c00a6b0e2916954b060b2db9817921bd7f6ad"
+    },
+    "offShoulder__straight__ballGown": {
+      "src": "/assets/dress-structures/offShoulder__straight__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8428,
+      "sha256": "ffb32776b4aa1628f587c0307865ceb4bf6a6214dd0056877a61ebda8e197aed"
+    },
+    "offShoulder__straight__mermaid": {
+      "src": "/assets/dress-structures/offShoulder__straight__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8290,
+      "sha256": "d23c21ce51c67352d85ceff370d1f8f6d0b9b6cd8230746d50d8e2786f826604"
+    },
+    "offShoulder__straight__empire": {
+      "src": "/assets/dress-structures/offShoulder__straight__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8144,
+      "sha256": "894a0e0dd6374255b138554c48699d95a261ba557c4cc14a4fc82784b37388f1"
+    },
+    "offShoulder__sweetheart__unknown": {
+      "src": "/assets/dress-structures/offShoulder__sweetheart__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7188,
+      "sha256": "632fee5328378268e6f90622de674ce20a24bd0f004b523c54a40900a390e936"
+    },
+    "offShoulder__sweetheart__aLine": {
+      "src": "/assets/dress-structures/offShoulder__sweetheart__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8340,
+      "sha256": "eb399e5ced899d791d5db53afc73d9ee393714fb3ccc1c38f4f33a9ee14ae42f"
+    },
+    "offShoulder__sweetheart__ballGown": {
+      "src": "/assets/dress-structures/offShoulder__sweetheart__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8730,
+      "sha256": "4e75f4f82fca2a26c1fdef1bdc9f9c45882ac5d4541197a03f0422f5a7fc1944"
+    },
+    "offShoulder__sweetheart__mermaid": {
+      "src": "/assets/dress-structures/offShoulder__sweetheart__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8616,
+      "sha256": "cdebde38dc742e3cd1cfef55c0e316338d181a66e7809a8ff13cc777ece524ba"
+    },
+    "offShoulder__sweetheart__empire": {
+      "src": "/assets/dress-structures/offShoulder__sweetheart__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8454,
+      "sha256": "7333cda29243c7ebaba552fcda13bff128f9a76d9ed44f1b2cdb3165fd6f3651"
+    },
+    "offShoulder__v__unknown": {
+      "src": "/assets/dress-structures/offShoulder__v__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7252,
+      "sha256": "054890776b1abcfd96b94ae57fed40f5d3ce265be9075c6623fb12a26e099789"
+    },
+    "offShoulder__v__aLine": {
+      "src": "/assets/dress-structures/offShoulder__v__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8446,
+      "sha256": "0ffac0ee231abda54d61a8682e927e1e331754556903a3344894be342f22149f"
+    },
+    "offShoulder__v__ballGown": {
+      "src": "/assets/dress-structures/offShoulder__v__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8854,
+      "sha256": "234e68c5c5cc1b553ced7c6e05da509a52dd7268dd9dc65cd9e7e5a502d186a1"
+    },
+    "offShoulder__v__mermaid": {
+      "src": "/assets/dress-structures/offShoulder__v__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8764,
+      "sha256": "b40b626a662749aac4fed62a542af9a6103a64cbbdb1ad250eb80130f79985bf"
+    },
+    "offShoulder__v__empire": {
+      "src": "/assets/dress-structures/offShoulder__v__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8578,
+      "sha256": "794bab119edc3d9a28afd5f12474c72a8e9ee75cdd88fa90fb7760fe3afc2029"
+    },
+    "offShoulder__square__unknown": {
+      "src": "/assets/dress-structures/offShoulder__square__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6708,
+      "sha256": "d85f3a22b31ec94f02e43a291a392f90a3e681da5a7c22f17ea6dcab6d35b5ad"
+    },
+    "offShoulder__square__aLine": {
+      "src": "/assets/dress-structures/offShoulder__square__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7966,
+      "sha256": "e028288d813979ab7384cae2848eec421dcf506a25409414998050e68ac30090"
+    },
+    "offShoulder__square__ballGown": {
+      "src": "/assets/dress-structures/offShoulder__square__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8382,
+      "sha256": "6c120cdb36a100e924a294b67725a456e944353758bb3839fa48456b0962405e"
+    },
+    "offShoulder__square__mermaid": {
+      "src": "/assets/dress-structures/offShoulder__square__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8296,
+      "sha256": "253b8140f5f46f618f9bdcdd6f7650eacb77e69bf7451e4ee81293614a2454ac"
+    },
+    "offShoulder__square__empire": {
+      "src": "/assets/dress-structures/offShoulder__square__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8102,
+      "sha256": "d542e53dbd853d16b73081f802f1f8ad0f823780e8ba881fa73e4780e7352eb4"
+    },
+    "offShoulder__scoop__unknown": {
+      "src": "/assets/dress-structures/offShoulder__scoop__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7052,
+      "sha256": "8ae7ff4989d63192a2b58b13d8ccd5d7d306d37c7a7870d1c2134d2478ed1239"
+    },
+    "offShoulder__scoop__aLine": {
+      "src": "/assets/dress-structures/offShoulder__scoop__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8304,
+      "sha256": "682c7a7ba6f13515d578f0ff36374cf0f2808289aa8605cee4d06c3361d48ca8"
+    },
+    "offShoulder__scoop__ballGown": {
+      "src": "/assets/dress-structures/offShoulder__scoop__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8660,
+      "sha256": "26b350491a5d0067dc978115c46ca4e0848350cd4eb77de576f48f5b95e9e716"
+    },
+    "offShoulder__scoop__mermaid": {
+      "src": "/assets/dress-structures/offShoulder__scoop__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8466,
+      "sha256": "6640ae5aeff65ea5d9b73cabf14b0b368ad8d434ccd49c4604fee8c0a137cf0d"
+    },
+    "offShoulder__scoop__empire": {
+      "src": "/assets/dress-structures/offShoulder__scoop__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8358,
+      "sha256": "a8875ed79cc544d69415cb7bd6c5776511841cffacfa5e274c715df88a54cbe4"
+    },
+    "offShoulder__asymmetric__unknown": {
+      "src": "/assets/dress-structures/offShoulder__asymmetric__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7054,
+      "sha256": "80ceed7a272f1defa02634f8464595f6169fe47eca985426b6e05ea7af1e83a4"
+    },
+    "offShoulder__asymmetric__aLine": {
+      "src": "/assets/dress-structures/offShoulder__asymmetric__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8348,
+      "sha256": "95c5bf7b21f7889500b4ac3065e7f3992db04f08fedadc18c52f6178e933b953"
+    },
+    "offShoulder__asymmetric__ballGown": {
+      "src": "/assets/dress-structures/offShoulder__asymmetric__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8744,
+      "sha256": "d6045ad2d171a713abfc03db4110a34578b0cf56ffb3f3f751549d56a2319f82"
+    },
+    "offShoulder__asymmetric__mermaid": {
+      "src": "/assets/dress-structures/offShoulder__asymmetric__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8578,
+      "sha256": "2fef09b9419a35200e7ac5129d243c8ae26797dfc31e6ef046a77704c3e51197"
+    },
+    "offShoulder__asymmetric__empire": {
+      "src": "/assets/dress-structures/offShoulder__asymmetric__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8468,
+      "sha256": "35e039a04fc365e9a296eebe729b3b1b3466cec2c9b7f13025b89f9fad029654"
+    },
+    "strap__unknown__unknown": {
+      "src": "/assets/dress-structures/strap__unknown__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6912,
+      "sha256": "b26779a55cf70ab02fd80e1984fda6b6d78415dde00d17856513195726ae5ec4"
+    },
+    "strap__unknown__aLine": {
+      "src": "/assets/dress-structures/strap__unknown__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8182,
+      "sha256": "19cbe5ee0908f141e92c0637c4d0993c52d3167baf7fb91b17245fa14fff32b6"
+    },
+    "strap__unknown__ballGown": {
+      "src": "/assets/dress-structures/strap__unknown__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8754,
+      "sha256": "9ca971940887713d841a892c8ca98c78fb89e2373f9d0d57d121432612b883a9"
+    },
+    "strap__unknown__mermaid": {
+      "src": "/assets/dress-structures/strap__unknown__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8418,
+      "sha256": "487dfbe13912d93ed778de4eb3a3a2b52aca26ac2ca5a491386ac2dbe2aa6735"
+    },
+    "strap__unknown__empire": {
+      "src": "/assets/dress-structures/strap__unknown__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8240,
+      "sha256": "d02bd17050557bbd816834f5e8dc717ca411f3ced3dcbff405c8dddb70c034fd"
+    },
+    "strap__straight__unknown": {
+      "src": "/assets/dress-structures/strap__straight__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6912,
+      "sha256": "b26779a55cf70ab02fd80e1984fda6b6d78415dde00d17856513195726ae5ec4"
+    },
+    "strap__straight__aLine": {
+      "src": "/assets/dress-structures/strap__straight__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8182,
+      "sha256": "19cbe5ee0908f141e92c0637c4d0993c52d3167baf7fb91b17245fa14fff32b6"
+    },
+    "strap__straight__ballGown": {
+      "src": "/assets/dress-structures/strap__straight__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8754,
+      "sha256": "9ca971940887713d841a892c8ca98c78fb89e2373f9d0d57d121432612b883a9"
+    },
+    "strap__straight__mermaid": {
+      "src": "/assets/dress-structures/strap__straight__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8418,
+      "sha256": "487dfbe13912d93ed778de4eb3a3a2b52aca26ac2ca5a491386ac2dbe2aa6735"
+    },
+    "strap__straight__empire": {
+      "src": "/assets/dress-structures/strap__straight__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8240,
+      "sha256": "d02bd17050557bbd816834f5e8dc717ca411f3ced3dcbff405c8dddb70c034fd"
+    },
+    "strap__sweetheart__unknown": {
+      "src": "/assets/dress-structures/strap__sweetheart__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7452,
+      "sha256": "34f2d97591b75629a5a5ad7c629e691a83053d2255275153c6d00348db1ad24b"
+    },
+    "strap__sweetheart__aLine": {
+      "src": "/assets/dress-structures/strap__sweetheart__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8696,
+      "sha256": "bb9999ea683c5836f45cc50e0f5b636ee61435a05e3c255f6de5aa53cdec5442"
+    },
+    "strap__sweetheart__ballGown": {
+      "src": "/assets/dress-structures/strap__sweetheart__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9220,
+      "sha256": "ecf58ea2ef30948ecf26b7481be3290de5d06ea9e116bea4a1dcbc9108928ad2"
+    },
+    "strap__sweetheart__mermaid": {
+      "src": "/assets/dress-structures/strap__sweetheart__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8872,
+      "sha256": "abff257ade799dae86da6a4072a87f428ad9e5ec6b119766ea88571e87d3426c"
+    },
+    "strap__sweetheart__empire": {
+      "src": "/assets/dress-structures/strap__sweetheart__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8756,
+      "sha256": "685f3f888cc9e2387f3e557bbd55d0db19c416381f80a05952e013752e6205d8"
+    },
+    "strap__v__unknown": {
+      "src": "/assets/dress-structures/strap__v__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7990,
+      "sha256": "8f1b8ab0c8370ac04aa45e65a3902637feb22ddcf9a07facbc09bfdf6db6aca2"
+    },
+    "strap__v__aLine": {
+      "src": "/assets/dress-structures/strap__v__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9236,
+      "sha256": "028e9c379fb7b078137399e175da9a49100fa25c07d3c8641fde5d361506f0fd"
+    },
+    "strap__v__ballGown": {
+      "src": "/assets/dress-structures/strap__v__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9782,
+      "sha256": "26ab27bffb0c849b2ddfbd7c3c98702c3eb4d060ee051500f20c031e31845dd1"
+    },
+    "strap__v__mermaid": {
+      "src": "/assets/dress-structures/strap__v__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9536,
+      "sha256": "53acb6822916866bc3193efadf503a7ced0472492abadf3b6909ebf216228082"
+    },
+    "strap__v__empire": {
+      "src": "/assets/dress-structures/strap__v__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9260,
+      "sha256": "f0c2e1f3220cbc1f77518459b608216d8c67b34e323e0ba46ff7d123d6f11bde"
+    },
+    "strap__square__unknown": {
+      "src": "/assets/dress-structures/strap__square__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6944,
+      "sha256": "e88445da249462b5bdc38d2f6a772a508ea06511379505aaf55c666b47f83dc4"
+    },
+    "strap__square__aLine": {
+      "src": "/assets/dress-structures/strap__square__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8214,
+      "sha256": "67d4be2c1e091eb92e62f59cf9bd1d981328b690db5da4661c39231355fc1f43"
+    },
+    "strap__square__ballGown": {
+      "src": "/assets/dress-structures/strap__square__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8772,
+      "sha256": "50bfe7e962e03993bc11feaca117faa401d5a62a62c962f4195d45d8f1271300"
+    },
+    "strap__square__mermaid": {
+      "src": "/assets/dress-structures/strap__square__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8452,
+      "sha256": "a3ec4da9112754f3d695fd2c9f065510bd670a1b463d3d696ac7c2fbe4444e32"
+    },
+    "strap__square__empire": {
+      "src": "/assets/dress-structures/strap__square__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8316,
+      "sha256": "2ecdfcf67f066a9dde42c1f6c1ae80884e4e58bac93b5e2f39fb193b4e3d0c71"
+    },
+    "strap__scoop__unknown": {
+      "src": "/assets/dress-structures/strap__scoop__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7666,
+      "sha256": "27a95f5579274e9244d316c08961862976d1d896c4dfc367132abf256f497533"
+    },
+    "strap__scoop__aLine": {
+      "src": "/assets/dress-structures/strap__scoop__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8890,
+      "sha256": "2ed2381a2e6826ddd16145e1a3a918130bc96599f34bea623a2204705b3cecd2"
+    },
+    "strap__scoop__ballGown": {
+      "src": "/assets/dress-structures/strap__scoop__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9524,
+      "sha256": "033f52d9a44623adbe96e31a409d90c9c10ada87ef3f7ae3e66c9aad3b37e45c"
+    },
+    "strap__scoop__mermaid": {
+      "src": "/assets/dress-structures/strap__scoop__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9206,
+      "sha256": "1b637c1cfbd9202db4841e62bc87e5b79fc6bdb897da74fcbd29642098540f08"
+    },
+    "strap__scoop__empire": {
+      "src": "/assets/dress-structures/strap__scoop__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8996,
+      "sha256": "270042fccc82e5ad05a18e7106de445e15317ee87e4a66473909f18c87cb40ad"
+    },
+    "strap__asymmetric__unknown": {
+      "src": "/assets/dress-structures/strap__asymmetric__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7376,
+      "sha256": "834e34f67a032ac2e90c37ed01a3ab6870d79799b52e01bd9c8b65fb3268566d"
+    },
+    "strap__asymmetric__aLine": {
+      "src": "/assets/dress-structures/strap__asymmetric__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8556,
+      "sha256": "6eced8265203312b37b4bce0367568ebc206072687151e1d366db438ab37cfb6"
+    },
+    "strap__asymmetric__ballGown": {
+      "src": "/assets/dress-structures/strap__asymmetric__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9212,
+      "sha256": "2b5aedd8662eff55dd829996de141814ed90d8d683f871151aa90daced8aec45"
+    },
+    "strap__asymmetric__mermaid": {
+      "src": "/assets/dress-structures/strap__asymmetric__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8812,
+      "sha256": "d0ddacb579f4813861829309274fc92f011717f4ddded56a38840da8b06da802"
+    },
+    "strap__asymmetric__empire": {
+      "src": "/assets/dress-structures/strap__asymmetric__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8694,
+      "sha256": "c4a87a494bcecbf4cb878ee3f6aab4f2abfe9da7d3289d41d883fe798dc4fd5f"
+    },
+    "halter__unknown__unknown": {
+      "src": "/assets/dress-structures/halter__unknown__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7422,
+      "sha256": "fbef391104f7b68c8fda73f3fc9ce6104637e949850f7611454cd5e818958b85"
+    },
+    "halter__unknown__aLine": {
+      "src": "/assets/dress-structures/halter__unknown__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8590,
+      "sha256": "1a4e5aa719163bbb1fc17bbd443a6d4e607266b9b7108fe97b520f5926171d1e"
+    },
+    "halter__unknown__ballGown": {
+      "src": "/assets/dress-structures/halter__unknown__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8942,
+      "sha256": "0910b24110d0604c1f962021ab2b284b3a0376046a0b73f2a2bd28029ca8f4b0"
+    },
+    "halter__unknown__mermaid": {
+      "src": "/assets/dress-structures/halter__unknown__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8844,
+      "sha256": "a27add204df05323f83d9bbf4276ed41f0f2858fd237629628de1ca710bcb07c"
+    },
+    "halter__unknown__empire": {
+      "src": "/assets/dress-structures/halter__unknown__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8670,
+      "sha256": "fc3622bf51c868f459e323515921df160c8e98b44935ccfb11251b315aae86d8"
+    },
+    "halter__straight__unknown": {
+      "src": "/assets/dress-structures/halter__straight__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7422,
+      "sha256": "fbef391104f7b68c8fda73f3fc9ce6104637e949850f7611454cd5e818958b85"
+    },
+    "halter__straight__aLine": {
+      "src": "/assets/dress-structures/halter__straight__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8590,
+      "sha256": "1a4e5aa719163bbb1fc17bbd443a6d4e607266b9b7108fe97b520f5926171d1e"
+    },
+    "halter__straight__ballGown": {
+      "src": "/assets/dress-structures/halter__straight__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8942,
+      "sha256": "0910b24110d0604c1f962021ab2b284b3a0376046a0b73f2a2bd28029ca8f4b0"
+    },
+    "halter__straight__mermaid": {
+      "src": "/assets/dress-structures/halter__straight__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8844,
+      "sha256": "a27add204df05323f83d9bbf4276ed41f0f2858fd237629628de1ca710bcb07c"
+    },
+    "halter__straight__empire": {
+      "src": "/assets/dress-structures/halter__straight__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8670,
+      "sha256": "fc3622bf51c868f459e323515921df160c8e98b44935ccfb11251b315aae86d8"
+    },
+    "halter__sweetheart__unknown": {
+      "src": "/assets/dress-structures/halter__sweetheart__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7686,
+      "sha256": "2d8a69fd6d9ea9df92a8ed6bbe8180766d8cb29c6cfa7201c7ce111c671f2b91"
+    },
+    "halter__sweetheart__aLine": {
+      "src": "/assets/dress-structures/halter__sweetheart__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8870,
+      "sha256": "f7453fc1a7cc27ff6535991f0e87c56a6fcf30c4c44c5071ea555bf0be81db57"
+    },
+    "halter__sweetheart__ballGown": {
+      "src": "/assets/dress-structures/halter__sweetheart__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9282,
+      "sha256": "34dd8b8e7a35b4c677edc31ed79a2cd1c87855896ba9cb6ff681effeff2f28bd"
+    },
+    "halter__sweetheart__mermaid": {
+      "src": "/assets/dress-structures/halter__sweetheart__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9092,
+      "sha256": "913af904274e63567b8ee605200a918af2474d070ba397c32ea4d010e92174f5"
+    },
+    "halter__sweetheart__empire": {
+      "src": "/assets/dress-structures/halter__sweetheart__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8938,
+      "sha256": "46b91d3bc5ac121db12fc91bf151a3231f3f0d4e22b5c8c97f5c199b0363ec7e"
+    },
+    "halter__v__unknown": {
+      "src": "/assets/dress-structures/halter__v__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8160,
+      "sha256": "d1cea656212caf5d4ae2ae5f30fda22cf5a38d4b7b731822411a3c81113a1d3c"
+    },
+    "halter__v__aLine": {
+      "src": "/assets/dress-structures/halter__v__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9398,
+      "sha256": "c51f400c6666e929caa9a621ea23a6df68b80017b802df3867c32b0232c94abf"
+    },
+    "halter__v__ballGown": {
+      "src": "/assets/dress-structures/halter__v__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9754,
+      "sha256": "6a36e9ccad240ecf84c854a0fa785ed778f166069429fb8c21c31319209461a3"
+    },
+    "halter__v__mermaid": {
+      "src": "/assets/dress-structures/halter__v__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9624,
+      "sha256": "5244750c152f2ffedce80ebb7b34fb7005b4397515ef6dfb4b7b44dc17a63350"
+    },
+    "halter__v__empire": {
+      "src": "/assets/dress-structures/halter__v__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9490,
+      "sha256": "1e7b04ea13bb1de3a8cab12abcc2f71bc5d0c756891f7c6997b582404c72be03"
+    },
+    "halter__square__unknown": {
+      "src": "/assets/dress-structures/halter__square__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7326,
+      "sha256": "fd5790ce41bd0d0c3d9afd7445e1c3860eb91adf3ff0c7bc405f98be55837c30"
+    },
+    "halter__square__aLine": {
+      "src": "/assets/dress-structures/halter__square__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8514,
+      "sha256": "18e1605e0a1d487da037b3541655c3272157e37b0c38c786c815019464962eb8"
+    },
+    "halter__square__ballGown": {
+      "src": "/assets/dress-structures/halter__square__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9006,
+      "sha256": "6adc405e79e697ce819e07220a0ebddee19a997172564e4337f2e9ab53d90ee8"
+    },
+    "halter__square__mermaid": {
+      "src": "/assets/dress-structures/halter__square__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8808,
+      "sha256": "ec9b48e4e05200a68a235156ef52e6d36c0c2d32f6d55a40d2dacdbfcbd17022"
+    },
+    "halter__square__empire": {
+      "src": "/assets/dress-structures/halter__square__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8572,
+      "sha256": "2a41a6a1774e6a07ee2c8dbc9a566574e7ebd678a1d9ab9d1a2bb81caf89d796"
+    },
+    "halter__scoop__unknown": {
+      "src": "/assets/dress-structures/halter__scoop__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7932,
+      "sha256": "951b7180073c573373c696407138d91ddde6ab1b59a3286ef0f65d6d8a7202b0"
+    },
+    "halter__scoop__aLine": {
+      "src": "/assets/dress-structures/halter__scoop__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9216,
+      "sha256": "a613bf95760460683f3bef4a0ab6fbe3e638746b1ad2af970e8a624cb3cc5f8b"
+    },
+    "halter__scoop__ballGown": {
+      "src": "/assets/dress-structures/halter__scoop__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9506,
+      "sha256": "5059cb92ef4b0bd683e8474449285262c0d50842e599ee1e35ba1182634acd49"
+    },
+    "halter__scoop__mermaid": {
+      "src": "/assets/dress-structures/halter__scoop__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9414,
+      "sha256": "bfba16bb3e791bece78645e2713dca57bb51008a576a664eb5644fa2289b9460"
+    },
+    "halter__scoop__empire": {
+      "src": "/assets/dress-structures/halter__scoop__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9274,
+      "sha256": "e1aa665d7c3a8d4ad786cc74931bc4728318b1b151b1539fb3ba9947aa6b42d3"
+    },
+    "halter__asymmetric__unknown": {
+      "src": "/assets/dress-structures/halter__asymmetric__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7668,
+      "sha256": "c91ab16dccd95b0ef6c072ba4891305a5fc807c1985d294006d0bec70713d42c"
+    },
+    "halter__asymmetric__aLine": {
+      "src": "/assets/dress-structures/halter__asymmetric__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8904,
+      "sha256": "128de2222edb6ffb94873c73523dedd9a0579b4ec1906de3738b67530b99aa00"
+    },
+    "halter__asymmetric__ballGown": {
+      "src": "/assets/dress-structures/halter__asymmetric__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9228,
+      "sha256": "49f55192c52a0d5608146db6faedd13d628b06eed15b781c81fc533305b26479"
+    },
+    "halter__asymmetric__mermaid": {
+      "src": "/assets/dress-structures/halter__asymmetric__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9158,
+      "sha256": "cad9c2968b3d18e5b243c7d1945ac66fd85dd24d54159cabe7b2bf743083e682"
+    },
+    "halter__asymmetric__empire": {
+      "src": "/assets/dress-structures/halter__asymmetric__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8950,
+      "sha256": "853f4f5c3a1980930ef7c03326b01cf49c17745f22e0712b7eae7ae06d8c64de"
+    },
+    "shortSleeve__unknown__unknown": {
+      "src": "/assets/dress-structures/shortSleeve__unknown__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7280,
+      "sha256": "c2e7fc696bd3dc2184f95040d3483c6fc847f801393e977c131818404e4020c5"
+    },
+    "shortSleeve__unknown__aLine": {
+      "src": "/assets/dress-structures/shortSleeve__unknown__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8466,
+      "sha256": "90206cc5f4ae1b2b7dcd37de98c50a24a1e6f116fbc41717dd846a2a7ad51ff2"
+    },
+    "shortSleeve__unknown__ballGown": {
+      "src": "/assets/dress-structures/shortSleeve__unknown__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8832,
+      "sha256": "ce555b947a038d09bd3419785f7af1db01b8cd61b7995c7f6ddd4c6afa40b6c7"
+    },
+    "shortSleeve__unknown__mermaid": {
+      "src": "/assets/dress-structures/shortSleeve__unknown__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8764,
+      "sha256": "f7a19158f6747a12cb651d6f588ed4b3f13c504c06d24489a5e848e4d0b70915"
+    },
+    "shortSleeve__unknown__empire": {
+      "src": "/assets/dress-structures/shortSleeve__unknown__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8620,
+      "sha256": "2ffb7eda0353ba5085b448aa3879e0ec757f44e5503c3f4682ed1a329a25468a"
+    },
+    "shortSleeve__straight__unknown": {
+      "src": "/assets/dress-structures/shortSleeve__straight__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7280,
+      "sha256": "c2e7fc696bd3dc2184f95040d3483c6fc847f801393e977c131818404e4020c5"
+    },
+    "shortSleeve__straight__aLine": {
+      "src": "/assets/dress-structures/shortSleeve__straight__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8466,
+      "sha256": "90206cc5f4ae1b2b7dcd37de98c50a24a1e6f116fbc41717dd846a2a7ad51ff2"
+    },
+    "shortSleeve__straight__ballGown": {
+      "src": "/assets/dress-structures/shortSleeve__straight__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8832,
+      "sha256": "ce555b947a038d09bd3419785f7af1db01b8cd61b7995c7f6ddd4c6afa40b6c7"
+    },
+    "shortSleeve__straight__mermaid": {
+      "src": "/assets/dress-structures/shortSleeve__straight__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8764,
+      "sha256": "f7a19158f6747a12cb651d6f588ed4b3f13c504c06d24489a5e848e4d0b70915"
+    },
+    "shortSleeve__straight__empire": {
+      "src": "/assets/dress-structures/shortSleeve__straight__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8620,
+      "sha256": "2ffb7eda0353ba5085b448aa3879e0ec757f44e5503c3f4682ed1a329a25468a"
+    },
+    "shortSleeve__sweetheart__unknown": {
+      "src": "/assets/dress-structures/shortSleeve__sweetheart__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7504,
+      "sha256": "cc6da994ae62e5016156533dcfe5b841066b51435f20344e11a8a4795a7d514e"
+    },
+    "shortSleeve__sweetheart__aLine": {
+      "src": "/assets/dress-structures/shortSleeve__sweetheart__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8730,
+      "sha256": "95a8b473785785e62f42f4e07940d3163bf3876525b19a0a4dbb19237bebdb8d"
+    },
+    "shortSleeve__sweetheart__ballGown": {
+      "src": "/assets/dress-structures/shortSleeve__sweetheart__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9054,
+      "sha256": "b3c64976cdf7e51dfdb05f2c7f2d9da434cab345057e00cd5a9884ed91fda09c"
+    },
+    "shortSleeve__sweetheart__mermaid": {
+      "src": "/assets/dress-structures/shortSleeve__sweetheart__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8968,
+      "sha256": "29f388176e993b98c265ce2d13da0cc2dd411eccc898594d6a071ace50761066"
+    },
+    "shortSleeve__sweetheart__empire": {
+      "src": "/assets/dress-structures/shortSleeve__sweetheart__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8820,
+      "sha256": "11b983d9935127198665291b26cefda2da08e7ff1cce04fe773ab16ab3f0f4d6"
+    },
+    "shortSleeve__v__unknown": {
+      "src": "/assets/dress-structures/shortSleeve__v__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7862,
+      "sha256": "7c57bb4354d275299aa5f9c75652c657ab5010386dc2242fa83156ccccd4223e"
+    },
+    "shortSleeve__v__aLine": {
+      "src": "/assets/dress-structures/shortSleeve__v__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8994,
+      "sha256": "8afda789c47399c0c2d3c7fe1d0adca70ac11fbcabd51fabd93aac76b13f4e95"
+    },
+    "shortSleeve__v__ballGown": {
+      "src": "/assets/dress-structures/shortSleeve__v__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9328,
+      "sha256": "45e525ea7ed2d59528621925d9a1a4ced89480f0be65f3810f3acde1264d51eb"
+    },
+    "shortSleeve__v__mermaid": {
+      "src": "/assets/dress-structures/shortSleeve__v__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9234,
+      "sha256": "633837b6b573e996c273cfbd15e21293244f2d7979fcc1289eb2e486b3b6cc34"
+    },
+    "shortSleeve__v__empire": {
+      "src": "/assets/dress-structures/shortSleeve__v__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9062,
+      "sha256": "df6106a28479852a217adddf9ea156dd4017b9fc417a1a8ab6371ba9ee41b270"
+    },
+    "shortSleeve__square__unknown": {
+      "src": "/assets/dress-structures/shortSleeve__square__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7216,
+      "sha256": "d6f29e35cbe9b66402013449bf8db7231abaadc0b2c3aceb343036dbd905fd42"
+    },
+    "shortSleeve__square__aLine": {
+      "src": "/assets/dress-structures/shortSleeve__square__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8444,
+      "sha256": "96c96435671c5351ddebda5a82d3816153d1b6d0caa02caeb1de70c4586616c2"
+    },
+    "shortSleeve__square__ballGown": {
+      "src": "/assets/dress-structures/shortSleeve__square__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8802,
+      "sha256": "3d1a28a816ab1db2a090b5e9ea17ee13faa94adaa18028c9d427c7fddf377199"
+    },
+    "shortSleeve__square__mermaid": {
+      "src": "/assets/dress-structures/shortSleeve__square__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8696,
+      "sha256": "09c235789f523b50548ad1ad393c7f9bf5c25f4f37b5094402ce2c61a3823c32"
+    },
+    "shortSleeve__square__empire": {
+      "src": "/assets/dress-structures/shortSleeve__square__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8502,
+      "sha256": "6b741971219432fd74e44e2753c27d5feafb24ece7176bdb4491d1dafe54ddb1"
+    },
+    "shortSleeve__scoop__unknown": {
+      "src": "/assets/dress-structures/shortSleeve__scoop__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7544,
+      "sha256": "8139f5976d2713be4b7326c893d8beb9d2a47176c34ce4653be2bc82b6aed28d"
+    },
+    "shortSleeve__scoop__aLine": {
+      "src": "/assets/dress-structures/shortSleeve__scoop__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8786,
+      "sha256": "489749178a347a85014426b203e6cb2d04f45a651873257b49f6eb2446f56335"
+    },
+    "shortSleeve__scoop__ballGown": {
+      "src": "/assets/dress-structures/shortSleeve__scoop__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9132,
+      "sha256": "9b5c20bc9fbb5d3af4f11cc9a3f49ac6a337c42996c10127b6ce2ac81c5d0fe9"
+    },
+    "shortSleeve__scoop__mermaid": {
+      "src": "/assets/dress-structures/shortSleeve__scoop__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9002,
+      "sha256": "7728c6af07c3bad6bc24009c9346e4b7efdf91f986972a24a4cf8b6a054a2e52"
+    },
+    "shortSleeve__scoop__empire": {
+      "src": "/assets/dress-structures/shortSleeve__scoop__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8870,
+      "sha256": "36d3d6b567e2cf076a4a0f7d1b5136aa8eeae2a5ed3b8aada1e54e9254175013"
+    },
+    "shortSleeve__asymmetric__unknown": {
+      "src": "/assets/dress-structures/shortSleeve__asymmetric__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7510,
+      "sha256": "71121d2dcc4ed1586aba6c33af32ad048134c5fc79aabd3a1575551f78251281"
+    },
+    "shortSleeve__asymmetric__aLine": {
+      "src": "/assets/dress-structures/shortSleeve__asymmetric__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8754,
+      "sha256": "85a2fe08e71bf7cddd8e1891b64ac7fd4c6159b81b93150b8479ee6abf895659"
+    },
+    "shortSleeve__asymmetric__ballGown": {
+      "src": "/assets/dress-structures/shortSleeve__asymmetric__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 9088,
+      "sha256": "a8236e4c6314bdea8b872beb34df1f9abd3d69e09bba497ba16e67bbbb3470f4"
+    },
+    "shortSleeve__asymmetric__mermaid": {
+      "src": "/assets/dress-structures/shortSleeve__asymmetric__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8994,
+      "sha256": "fa24f9f8a69dc6206dbe44cd8766296362bba8d6d4723263d915368cdfcbe29b"
+    },
+    "shortSleeve__asymmetric__empire": {
+      "src": "/assets/dress-structures/shortSleeve__asymmetric__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8840,
+      "sha256": "9bbd0a7459c74d58191601012245379858b8c8723a7b0037872ce638c1e0728d"
+    },
+    "longSleeve__unknown__unknown": {
+      "src": "/assets/dress-structures/longSleeve__unknown__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6672,
+      "sha256": "935cd6e10275f2da0998be9fe2baabf2339d7be35337756701e4724f0553f38f"
+    },
+    "longSleeve__unknown__aLine": {
+      "src": "/assets/dress-structures/longSleeve__unknown__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7888,
+      "sha256": "ac6a8f0b4a6c9199f1bc3a7964223103d0bfda67fb61e9eab06d89b1d2549345"
+    },
+    "longSleeve__unknown__ballGown": {
+      "src": "/assets/dress-structures/longSleeve__unknown__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8168,
+      "sha256": "034f01ff54079d9f146e44518df7db79e4c3733438f07c90f70191b4506fd741"
+    },
+    "longSleeve__unknown__mermaid": {
+      "src": "/assets/dress-structures/longSleeve__unknown__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8118,
+      "sha256": "4a6d8ee4fbbcb041ff2406b932b4c21a098780992f3065310150a5f37ab7c2f2"
+    },
+    "longSleeve__unknown__empire": {
+      "src": "/assets/dress-structures/longSleeve__unknown__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7946,
+      "sha256": "bda8f9b63afa3bb2c1901c8be1b4144a5c5dea77f76c9564b18fb31e658affee"
+    },
+    "longSleeve__straight__unknown": {
+      "src": "/assets/dress-structures/longSleeve__straight__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6672,
+      "sha256": "935cd6e10275f2da0998be9fe2baabf2339d7be35337756701e4724f0553f38f"
+    },
+    "longSleeve__straight__aLine": {
+      "src": "/assets/dress-structures/longSleeve__straight__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7888,
+      "sha256": "ac6a8f0b4a6c9199f1bc3a7964223103d0bfda67fb61e9eab06d89b1d2549345"
+    },
+    "longSleeve__straight__ballGown": {
+      "src": "/assets/dress-structures/longSleeve__straight__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8168,
+      "sha256": "034f01ff54079d9f146e44518df7db79e4c3733438f07c90f70191b4506fd741"
+    },
+    "longSleeve__straight__mermaid": {
+      "src": "/assets/dress-structures/longSleeve__straight__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8118,
+      "sha256": "4a6d8ee4fbbcb041ff2406b932b4c21a098780992f3065310150a5f37ab7c2f2"
+    },
+    "longSleeve__straight__empire": {
+      "src": "/assets/dress-structures/longSleeve__straight__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7946,
+      "sha256": "bda8f9b63afa3bb2c1901c8be1b4144a5c5dea77f76c9564b18fb31e658affee"
+    },
+    "longSleeve__sweetheart__unknown": {
+      "src": "/assets/dress-structures/longSleeve__sweetheart__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7174,
+      "sha256": "e3cc62b5972f6cc217a9e5825d0ee50501db68b937cc443c9aa04f9f3a07d2e0"
+    },
+    "longSleeve__sweetheart__aLine": {
+      "src": "/assets/dress-structures/longSleeve__sweetheart__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8290,
+      "sha256": "57543edb944787938378cfd7c865f0cde3b0b869689573d24771592faf810086"
+    },
+    "longSleeve__sweetheart__ballGown": {
+      "src": "/assets/dress-structures/longSleeve__sweetheart__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8592,
+      "sha256": "4533f36a33da7ad303d1a2ca21aea861f384a5a80cc44a366559de5df5bdf44d"
+    },
+    "longSleeve__sweetheart__mermaid": {
+      "src": "/assets/dress-structures/longSleeve__sweetheart__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8534,
+      "sha256": "de9dbc215188bb0f2577af890964a5ec69bd86ca7349b7111fbb170b86aac1fe"
+    },
+    "longSleeve__sweetheart__empire": {
+      "src": "/assets/dress-structures/longSleeve__sweetheart__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8388,
+      "sha256": "a5334ae5e83d77d3d8e13b002ecb50e405dfcd4cf163b77463cf4eb4a2215312"
+    },
+    "longSleeve__v__unknown": {
+      "src": "/assets/dress-structures/longSleeve__v__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7254,
+      "sha256": "a30e047ad28e2583c77937087cf8c9f40c5f23db605074bc1d18c6688a3dd1bf"
+    },
+    "longSleeve__v__aLine": {
+      "src": "/assets/dress-structures/longSleeve__v__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8462,
+      "sha256": "8f73fa7348d08bc35b388a49a32be3bea74a8c620ec963914fb6ca48b214c740"
+    },
+    "longSleeve__v__ballGown": {
+      "src": "/assets/dress-structures/longSleeve__v__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8792,
+      "sha256": "8cc9ff170fa1cfb01a5ad104436dca2cfdcff68fbffe0a4f2ae99fb24ff9fc70"
+    },
+    "longSleeve__v__mermaid": {
+      "src": "/assets/dress-structures/longSleeve__v__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8722,
+      "sha256": "2819c9de24eb69605c726fe6ffdb3c3cc00e7563bed222ee5755d81d841ab144"
+    },
+    "longSleeve__v__empire": {
+      "src": "/assets/dress-structures/longSleeve__v__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8576,
+      "sha256": "561368c7cf9c5d5ea519f342db8db378e2d18f6b0ad5187e067e8d6f4b725720"
+    },
+    "longSleeve__square__unknown": {
+      "src": "/assets/dress-structures/longSleeve__square__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6700,
+      "sha256": "38ba7e7f1cfce3fa4eeafd0e81460e1c731b00c80f00b7d7fe8b5e03bd160fb5"
+    },
+    "longSleeve__square__aLine": {
+      "src": "/assets/dress-structures/longSleeve__square__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7928,
+      "sha256": "c82e53cf4a6ad2a082ba192137897d4267dc1549c49c17596919176c1b4905e9"
+    },
+    "longSleeve__square__ballGown": {
+      "src": "/assets/dress-structures/longSleeve__square__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8200,
+      "sha256": "a90b3d7fa65758e52dcffcd37ab27847ea8418d925e821561186a22ed594b6e7"
+    },
+    "longSleeve__square__mermaid": {
+      "src": "/assets/dress-structures/longSleeve__square__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8140,
+      "sha256": "a8bd5c5c2f2cf1f3c8b8d6cced68a8ef1c7bf76acc5fe4f8624b55a94240266c"
+    },
+    "longSleeve__square__empire": {
+      "src": "/assets/dress-structures/longSleeve__square__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 7974,
+      "sha256": "0e09eb12208bdcf010b383529fb978a82637e3ad31a226ba1f1b043cdf88bd85"
+    },
+    "longSleeve__scoop__unknown": {
+      "src": "/assets/dress-structures/longSleeve__scoop__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6984,
+      "sha256": "5609255bab31c96c85432111fd39bbb6b0e148c008f0b072ef1baea6187f70db"
+    },
+    "longSleeve__scoop__aLine": {
+      "src": "/assets/dress-structures/longSleeve__scoop__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8248,
+      "sha256": "6d72915c96f70aff7e8a2ba5afc124c0c48e54c3142bf36d959bbad3014c4402"
+    },
+    "longSleeve__scoop__ballGown": {
+      "src": "/assets/dress-structures/longSleeve__scoop__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8532,
+      "sha256": "1c8912a2a5bc8bf12787c59846863e4fe476e90ad666a4a915cdf2c7f3600a6d"
+    },
+    "longSleeve__scoop__mermaid": {
+      "src": "/assets/dress-structures/longSleeve__scoop__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8466,
+      "sha256": "d01e6685660ac84167d5af3b07fb959f9cb5169a71db7347d40f8a2ab0c134e4"
+    },
+    "longSleeve__scoop__empire": {
+      "src": "/assets/dress-structures/longSleeve__scoop__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8314,
+      "sha256": "32eeca349d03af93e79c9dd987f808605bcc5e1940f8bb61c1dde5f9a5d8adb8"
+    },
+    "longSleeve__asymmetric__unknown": {
+      "src": "/assets/dress-structures/longSleeve__asymmetric__unknown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 6974,
+      "sha256": "45b8987a466739ba1d4607ea8d94d1e9325b50bccc82d1aced2f932f03a6cade"
+    },
+    "longSleeve__asymmetric__aLine": {
+      "src": "/assets/dress-structures/longSleeve__asymmetric__aLine.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8230,
+      "sha256": "abd1a4a45332877540fbcbde662ba7cb7d94f38be1db2401ff32ed9dc1ecdf32"
+    },
+    "longSleeve__asymmetric__ballGown": {
+      "src": "/assets/dress-structures/longSleeve__asymmetric__ballGown.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8534,
+      "sha256": "62b736f1f86aa1bc6b905850771f66a110c4ba0d91c465fbab05143b5b9a03fe"
+    },
+    "longSleeve__asymmetric__mermaid": {
+      "src": "/assets/dress-structures/longSleeve__asymmetric__mermaid.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8440,
+      "sha256": "d2ec413e7741dfab5595d355eb804de7142673c555f239ef324c743bbe1ed3e6"
+    },
+    "longSleeve__asymmetric__empire": {
+      "src": "/assets/dress-structures/longSleeve__asymmetric__empire.webp",
+      "role": "alpha-structure",
+      "width": 720,
+      "height": 1280,
+      "bytes": 8304,
+      "sha256": "b8f62b12c5a7d2925849aa66021f6c944309e666c377b033d456dbd5e0e01b61"
+    }
+  }
+}

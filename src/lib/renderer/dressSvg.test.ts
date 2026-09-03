@@ -26,10 +26,7 @@ const dress: Dress = {
 };
 
 const assets: DressLayerAssets = {
-  bodice: "data:image/webp;base64,bodice",
-  skirt: "data:image/webp;base64,skirt",
-  necklineAppearance: "data:image/webp;base64,neckline-reference",
-  silhouetteAppearance: "data:image/webp;base64,silhouette-reference",
+  structure: "data:image/webp;base64,structure",
   shadow: "data:image/webp;base64,shadow",
   highlight: "data:image/webp;base64,highlight",
   mermaidVolume: "data:image/webp;base64,mermaid-volume",
@@ -41,12 +38,20 @@ describe("dress raster layer composition", () => {
     const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
 
     expect(svg).toContain('data-layer="raster-mannequin"');
-    expect(svg).toContain('data-renderer="raster-layers"');
-    expect(svg).toContain('data-layer="raster-bodice"');
-    expect(svg).toContain('data-layer="raster-skirt"');
+    expect(svg).toContain('data-renderer="complete-structure"');
+    expect(svg).toContain('data-layer="raster-dress-structure"');
     expect(svg).toContain('data-layer="raster-volume-shadow"');
     expect(svg).not.toContain('data-layer="hip-mask"');
     expect(svg).not.toContain("<path data-silhouette");
+  });
+
+  it("uses one prebuilt structure asset for the complete dress combination", () => {
+    const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
+
+    expect(svg).toContain('data-layer="raster-dress-structure"');
+    expect(svg).toContain('mask="url(#structure-mask-dress-svg)"');
+    expect(svg).not.toContain('mask="url(#bodice-mask-dress-svg)"');
+    expect(svg).not.toContain('mask="url(#skirt-mask-dress-svg)"');
   });
 
   it("keeps the optional face inside its feathered mask", () => {
@@ -72,15 +77,21 @@ describe("dress raster layer composition", () => {
     expect(svg).toContain(`href="${texture}"`);
     expect(svg).toContain('width="96" height="96"');
     expect(svg).toContain('fill="url(#p-dress-svg)"');
+    expect(svg).toContain('style="mix-blend-mode:multiply"');
   });
 
-  it("clips the selected option artwork into the fitted garment layers", () => {
-    const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
+  it("uses the complete structure without separate photographic overlays", () => {
+    const svg = dressSvgMarkup(
+      { ...dress, topStyle: "shortSleeve" },
+      personDataUrl,
+      assets,
+      undefined,
+      false,
+    );
 
-    expect(svg).toContain('data-layer="reference-silhouette-appearance"');
-    expect(svg).toContain('data-layer="reference-neckline-appearance"');
-    expect(svg).toContain("data:image/webp;base64,silhouette-reference");
-    expect(svg).toContain("data:image/webp;base64,neckline-reference");
+    expect(svg).toContain("data:image/webp;base64,structure");
+    expect(svg).not.toContain("raster-silhouette-appearance");
+    expect(svg).not.toContain("raster-top-appearance");
   });
 
   it("adds a distinct dense accent for ornate beadwork", () => {
@@ -133,17 +144,17 @@ describe("dress raster layer composition", () => {
     expect(svg).toContain('data-layer="raster-empire-volume"');
   });
 
-  it("uses an independent top asset for sleeves and straps", () => {
+  it("includes sleeves inside the selected complete structure", () => {
     const svg = dressSvgMarkup(
       { ...dress, topStyle: "longSleeve" },
       personDataUrl,
-      { ...assets, top: "data:image/webp;base64,long-sleeve" },
+      assets,
       undefined,
       false,
     );
 
-    expect(svg).toContain('data-layer="raster-top"');
-    expect(svg).toContain("data:image/webp;base64,long-sleeve");
+    expect(svg).toContain('data-layer="raster-dress-structure"');
+    expect(svg).not.toContain('data-layer="raster-top"');
   });
 
   it("does not emit retired geometric garment effects", () => {
@@ -153,7 +164,7 @@ describe("dress raster layer composition", () => {
     expect(svg).not.toContain('data-layer="halter-collar"');
   });
 
-  it("omits a top layer for strapless dresses", () => {
+  it("does not emit a separate top layer for strapless dresses", () => {
     const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
     expect(svg).not.toContain('data-layer="raster-top"');
   });
