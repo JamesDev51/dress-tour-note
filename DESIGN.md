@@ -2,7 +2,7 @@
 
 ## 1. Atmosphere & Identity
 
-드레스노트는 피팅룸에서 손이 먼저 움직이는 조용한 기록 도구다. Warm cream surfaces, Noto Korean typography, restrained blush accents, and generous square garment artwork keep attention on the shape being remembered. The signature is a calm cream canvas with one blush selection language: the chosen dress detail should feel marked, not decorated.
+드레스노트는 피팅룸에서 손이 먼저 움직이는 조용한 기록 도구다. Clean white surfaces, Pretendard Korean typography, restrained blush accents, and generous square garment artwork keep attention on the shape being remembered. The signature is a clear white canvas with one blush selection language: the chosen dress detail should feel marked, not decorated.
 
 This document extracts the existing visual system before the option-asset and selector work described in `.omo/plans/dress-note-option-assets-branding.md`. It is a preservation contract, not a broad visual rebrand.
 
@@ -10,23 +10,30 @@ This document extracts the existing visual system before the option-asset and se
 
 ### Palette
 
-| Role                | Token                                     | Value                            | Usage                                                                              |
-| ------------------- | ----------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------- |
-| App canvas          | `--color-canvas-warm`                     | `#f4efec`                        | Warm theme root and page background                                                |
-| App canvas clean    | `--color-canvas-clean`                    | `#eef0f2`                        | Clean theme root                                                                   |
-| Shell surface       | `--color-surface-shell`                   | `#fffdfa`                        | Warm app shell                                                                     |
-| Shell surface clean | `--color-surface-shell-clean`             | `#ffffff`                        | Clean app shell and elevated cards                                                 |
-| Soft accent surface | `--color-accent-soft`                     | `#fff2ee`                        | Selected cards, warm callouts                                                      |
-| Artwork surface     | `--color-artwork-surface`                 | `#faf7f5`                        | Image and unknown-artwork backing                                                  |
-| Preview surface     | `--color-preview-surface`                 | `#fbf8f6`                        | Dress preview frame and SVG backdrop                                               |
-| Primary text        | `--color-ink`                             | `#211d1c` / Tailwind `stone-900` | Main copy and controls                                                             |
-| Secondary text      | `--color-ink-secondary`                   | Tailwind `stone-500`             | Supporting copy                                                                    |
-| Muted text          | `--color-ink-muted`                       | `#6f6662`                        | Metadata, hints, disabled-adjacent copy; the global override keeps contrast usable |
-| Accent              | `--color-accent`                          | `#b96e63`                        | Selection, primary blush action, progress                                          |
-| Accent dark         | `--color-accent-dark`                     | `#a75e55` / `#a85f55`            | Small labels, links, icon accents                                                  |
-| Accent copy         | `--color-accent-copy`                     | `#8b5750`                        | Warm callout text                                                                  |
-| Selection tint      | `--color-selection`                       | `#f1d5ce`                        | Text selection                                                                     |
-| Error surface/copy  | `--color-error-surface` / `--color-error` | Tailwind `red-50` / `red-700`    | Destructive and import errors                                                      |
+| Role                | Token                                     | Value                                         | Usage                                                                              |
+| ------------------- | ----------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
+| App canvas          | `--color-canvas`                          | `#eef0f2`                                     | Fixed clean app canvas                                                             |
+| Shell surface       | `--color-shell`                           | `#ffffff`                                     | Fixed clean app shell and elevated cards                                           |
+| Soft accent surface | `--color-accent-soft`                     | `#fff2ee`                                     | Selected cards, warm callouts                                                      |
+| Artwork surface     | `--color-artwork-surface`                 | `#faf7f5`                                     | Image and unknown-artwork backing                                                  |
+| Preview surface     | `--color-preview-surface`                 | `#fbf8f6`                                     | Dress preview frame and SVG backdrop                                               |
+| Mannequin base      | `--color-mannequin`                       | `#e5c3ad`                                     | Warm peach articulated shoulder, neck, and arm form behind the dress               |
+| Garment white       | `dressRenderTokens.garmentColor`          | `#f7f5f3` / `#ffffff` / `#fffaf0` / `#f4e6d1` | Unknown, pure white, ivory, and champagne raster fills                             |
+| Garment edge        | `dressRenderTokens.garmentEdge`           | `#ddd6d2` / `#d9d3cf` / `#dfd3c4` / `#cdb99e` | Per-color raster edge and soft outline                                             |
+| Garment light       | `dressRenderTokens.garmentHighlight`      | `#ffffff`                                     | Satin center light, beads, face feather mask                                       |
+| Garment shadow      | `dressRenderTokens.garmentDropShadow`     | `#7b6256`                                     | Low-opacity dress depth shadow                                                     |
+| Volume shadows      | `dressRenderTokens.volume`                | `#6f584d` / `#76584d` / `#75584d` / `#73564b` | Side, contour, seam, and mermaid raster-volume source layers                       |
+| Preview floor       | `dressRenderTokens.floorShadow`           | `#d8cbc5`                                     | Soft floor ellipse beneath the mannequin                                           |
+| Bead shadow         | `dressRenderTokens.*BeadShadow`           | `#bfa89b` / `#b99f92`                         | Subtle and ornate bead contrast                                                    |
+| Export canvas       | `dressRenderTokens.exportCanvas`          | `#ffffff`                                     | JPEG/PDF canvas behind the composed dress                                          |
+| Primary text        | `--color-ink`                             | `#211d1c` / Tailwind `stone-900`              | Main copy and controls                                                             |
+| Secondary text      | `--color-ink-secondary`                   | Tailwind `stone-500`                          | Supporting copy                                                                    |
+| Muted text          | `--color-ink-muted`                       | `#6f6662`                                     | Metadata, hints, disabled-adjacent copy; the global override keeps contrast usable |
+| Accent              | `--color-accent`                          | `#b96e63`                                     | Selection, primary blush action, progress                                          |
+| Accent dark         | `--color-accent-dark`                     | `#a75e55` / `#a85f55`                         | Small labels, links, icon accents                                                  |
+| Accent copy         | `--color-accent-copy`                     | `#8b5750`                                     | Warm callout text                                                                  |
+| Selection tint      | `--color-selection`                       | `#f1d5ce`                                     | Text selection                                                                     |
+| Error surface/copy  | `--color-error-surface` / `--color-error` | Tailwind `red-50` / `red-700`                 | Destructive and import errors                                                      |
 
 The executable source for these semantic tokens is the `:root` `--ds-*` map in
 `src/styles/index.css`; its `@theme inline` bridge exposes the palette and
@@ -37,10 +44,10 @@ sizes available as `text-body` and `text-section` when a semantic name is useful
 
 ### Rules
 
-- The palette is warm and low-saturation. Blush is the single interactive accent; it is not used as decorative noise.
+- The palette is clear and low-saturation. Blush is the single interactive accent; it is not used as decorative noise.
 - Existing Tailwind stone/amber/red/emerald utility colors remain semantic status colors. New work must use an existing token or add the semantic token here first.
 - Surfaces use a mixed depth strategy: tonal difference first, a one-pixel border for control boundaries, and soft tinted shadows only for genuinely elevated content.
-- The dress SVG uses the same warm preview surface and neutral garment shadow family so the browser preview and derived PDF remain visually related.
+- The dress SVG uses the same warm preview surface and neutral garment shadow family so the browser preview and derived PDF remain visually related. A painterly raster mannequin supplies human proportions while dynamic SVG garment layers preserve editable options.
 
 ## 3. Typography
 
@@ -56,9 +63,9 @@ sizes available as `text-body` and `text-section` when a semantic name is useful
 
 ### Font Stack
 
-- Primary: `Noto Sans KR`, then `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, sans-serif.
-- Optional preference: `Noto Serif KR`, serif, applied to the app root and form controls when the stored serif preference is active.
-- Maximum families: two. The Noto files are already bundled locally; no runtime font CDN is allowed.
+- Primary: local `Pretendard`, then `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, sans-serif.
+- Font choice is fixed across the app; there is no user-facing font preference.
+- The subsetted Pretendard file is bundled locally; no runtime font CDN is allowed.
 
 ### Rules
 
@@ -97,7 +104,7 @@ All intent-level spacing derives from a **4px base unit**.
 ### Mobile shell
 
 - **Structure**: app root → centered `app-shell` → routed page; global toast/update notices are fixed overlays.
-- **Variants**: warm/clean theme, sans/serif font preference.
+- **Variants**: fixed clean canvas and fixed Pretendard type.
 - **Spacing**: safe-area-aware top/bottom offsets; shell width contract above.
 - **States**: default, toast/status, update-available; route loading/error states remain page-owned.
 - **Accessibility**: routed landmarks, `role=status` for transient announcements, keyboard-reachable links/buttons, no overlay blocking primary content.
@@ -106,13 +113,19 @@ All intent-level spacing derives from a **4px base unit**.
 
 ### Brand header
 
-- **Structure**: semantic `header` with home brand link and privacy/settings link.
-- **Variants**: warm/clean inherited from shell.
+- **Structure**: semantic `header` with home brand and privacy links.
+- **Variants**: fixed clean inherited from shell.
 - **Spacing**: 20px horizontal inset and safe-area-aware top padding.
 - **States**: default, keyboard focus, visited/current route link.
-- **Accessibility**: text link carries the product name; settings remains explicit Korean link text.
+- **Accessibility**: both text links are explicit and keep 44px hit areas; privacy is not presented as a display-settings control.
 - **Motion**: none beyond existing link behavior.
 - **Layout**: header row / cluster.
+
+### Home action hierarchy
+
+- **Primary**: `새 투어 시작` is the only full-width CTA below the hero.
+- **Secondary**: PDF import belongs to the recent-record context, rendered once as `PDF 가져오기` in the section header when records exist or `PDF에서 가져오기` inside the empty state.
+- **Accessibility**: both variants remain native links with at least a 44px touch height; the import action is never hidden in settings.
 
 ### Option tile
 
@@ -123,16 +136,29 @@ All intent-level spacing derives from a **4px base unit**.
 - **Accessibility**: native button, `aria-pressed`, visible focus, disabled remains understandable, artwork is decorative because the button label is the accessible name; a broken image never removes the label or target.
 - **Motion**: 100–150ms ease-out for state/press feedback; honor reduced motion.
 - **Layout**: responsive two-column grid; target remains at least 44px even when artwork content changes.
+- **Layering**: the selected check badge sits beside the option label, outside the square artwork region; it never overlays the dress artwork.
+
+### Direct option input
+
+- **Structure**: each option section ends with a labeled `직접 적기` text field for details the fixed catalog cannot express.
+- **Persistence**: trimmed values up to 80 characters are stored in `Dress.customOptions`, included in summaries, and preserved by schema-v1 portable PDFs as optional fields.
+- **Accessibility**: native label/input pairing, readable body-sized text, and a 48px field height.
 
 ### Dress preview
 
-- **Structure**: framed preview container → canonical SVG composition → raster person base → dynamic dress layers → optional clipped local face.
-- **Variants**: no-face, face-included, loading, base-image error.
+- **Structure**: framed preview container → canonical SVG image compositor → local raster mannequin → optional portrait medallion → aligned transparent raster masks for skirt, bodice, and top/sleeves → shared volume images → fabric texture clipped inside the combined garment alpha.
+- **Variants**: no-face raster mannequin and face-included soft-mask portrait.
 - **Spacing**: 28px outer radius and existing preview padding/layout context.
-- **States**: loaded, loading, error; no silent geometric-body fallback once the raster contract is active.
-- **Accessibility**: SVG has a Korean `aria-label`; loading/error is direct and readable; face-excluded output contains no face reference.
-- **Motion**: none required; export waits for the same loaded base bytes.
-- **Layout**: media frame with intrinsic aspect ratio; SVG and PDF use the same 720×1280 person-base bytes.
+- **States**: raster-base loading/error, no-face, and face-included portrait; the uploaded face uses a feathered mask directly over the mannequin head without a circular border, backing plate, or neck-erasing mask.
+- **Accessibility**: SVG has a Korean `aria-label`; face-excluded output contains no face reference.
+- **Motion**: none required.
+- **Layout**: every garment asset uses a fixed 720×1280 transparent canvas aligned to the 360×640 compositor. All layers render at `x=0 y=0`, sit 18px above mannequin coordinates, overlap by 8–12px at the waist, and share the exact browser/PDF composition. No preview-background-colored body mask is allowed.
+- **Form**: raster alpha, rather than runtime SVG paths, owns every garment edge. The mannequin follows a couture Venus proportion: a full rounded bust, a visibly cinched waist, a planar abdomen, and a smooth S-curve into defined hips without a heavy torso. The bodice shares a 232px upper envelope and narrows to a 136px waist; standard skirts begin around 152px with 8px of side overhang and at least 16px of vertical overlap. Top/sleeve alpha covers the complete arm without cutting into the torso; fitted skirt alpha fully contains hips, knees, and calves.
+- **Sleeve distinction**: off-shoulder remains a shallow low band no deeper than 82 source pixels. Short sleeves use rounded shoulder caps and cover at least 145 source pixels vertically; at 200px preview width they remain at least 18px deeper than off-shoulder and read as sleeves rather than pointed tabs.
+- **Asset contract**: `public/assets/dress-layers/manifest.json` records six bodices, five top/sleeve layers, five skirts, and four volume layers. Each WebP is 720×1280, alpha-enabled, below 250KB, and reproducible with `scripts/generate-dress-layers.mjs`.
+- **Fabric identity**: flat 512px source textures retain recognizable material identity at the 200px preview width. Subtle beadwork uses a 110-unit texture with a sparse 60-unit highlight layer; ornate beadwork uses a denser 96-unit embroidered texture with an irregular 46-unit sparkle layer. Lace and floral motifs stay large enough to read as flowers, Mikado shows a broad satin sheen, and organza shows a cooler open weave.
+- **Mermaid geometry**: the raster skirt contains the full high hip, thigh, knee, and calf silhouette before opening into a curved floor flare; the separate mermaid volume image reinforces hips and flare without exposing mannequin pixels.
+- **Halter anatomy**: one transparent top asset contains a curved collar band and two shaped neck-to-bodice straps; never use a single triangular bib.
 
 ### Status and destructive callouts
 
@@ -161,7 +187,7 @@ Rules:
 
 ### Strategy: mixed, with warm tonal hierarchy
 
-- Warm canvas → shell surface → soft accent/artwork surface establishes hierarchy first.
+- Clean canvas → shell surface → soft accent/artwork surface establishes hierarchy first.
 - Use a one-pixel neutral border for cards/frames and a tinted low-opacity shadow only for raised lists, popovers, or bottom actions.
 - Use radii by anatomy: 12px inner artwork, 16px controls, 24px cards, 28px preview, 32px hero/major surfaces. Do not apply one radius indiscriminately.
 - Avoid purple/blue gradients, remote photographic backgrounds, decorative noise, and card stacks without task hierarchy.
@@ -177,8 +203,8 @@ Rules:
 
 ### Accepted Debt
 
-| Item                                                              | Location                                                    | Why accepted                                                                                                   | Owner / Exit                                             |
-| ----------------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Desktop support-context note remains visible above 768px          | `src/styles/index.css`                                      | Product is intentionally mobile-only; note helps desktop QA without becoming a second layout                   | Keep until product scope changes                         |
-| PDF export embeds a full Korean font while UI faces are subsetted | `src/lib/pdf/exportPdf.ts` / `src/assets/noto-*-ui-*.woff2` | Portable PDFs need broad glyph coverage; the interactive shell keeps a small local Noto subset for first paint | Revisit PDF font subsetting with a portable-glyph test   |
-| Existing `role=status` overlay does not own focus                 | `src/components/MobileShell.tsx`                            | Toast/update behavior is transient and current; changing focus policy would expand scope                       | Revisit with a dedicated notification accessibility pass |
+| Item                                                     | Location                                                            | Why accepted                                                                                                         | Owner / Exit                                             |
+| -------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Desktop support-context note remains visible above 768px | `src/styles/index.css`                                              | Product is intentionally mobile-only; note helps desktop QA without becoming a second layout                         | Keep until product scope changes                         |
+| PDF export embeds full Pretendard while UI uses a subset | `src/lib/pdf/exportPdf.ts` / `src/assets/pretendard-{pdf,ui}.woff2` | Portable PDFs need broad glyph coverage; the interactive shell keeps a small local Pretendard subset for first paint | Revisit PDF font subsetting with a portable-glyph test   |
+| Existing `role=status` overlay does not own focus        | `src/components/MobileShell.tsx`                                    | Toast/update behavior is transient and current; changing focus policy would expand scope                             | Revisit with a dedicated notification accessibility pass |
