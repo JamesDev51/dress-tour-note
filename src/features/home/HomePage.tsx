@@ -33,39 +33,46 @@ export function HomePage() {
             사진 촬영이 어려운 드레스투어
           </p>
           <h1 className="text-[28px] font-black leading-[1.2] tracking-[-0.04em]">
-            그림 대신
+            그림 대신 👗
             <br />
-            모양으로 기록해요 👗
+            모양으로 기록해요
           </h1>
           <p className="mt-3 text-sm leading-6 text-stone-600">
-            드레스 특징을 그림 타일로 고르고, 투어가 끝나면 다른 폰에서도 다시
-            여는 PDF로 저장해요.
+            드레스 특징을 그림 타일로 고르고,{" "}
+            <span className="whitespace-nowrap">투어가 끝나면</span> 다른
+            폰에서도 다시 여는 PDF로 저장해요.
           </p>
         </div>
-        <div className="mt-5 grid gap-3">
-          <Link
-            to="/tour/new"
-            className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-stone-900 px-4 font-bold text-white"
-          >
-            <Plus size={19} />새 투어 시작
-          </Link>
-          <Link
-            to="/import"
-            className="flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 font-bold"
-          >
-            <FileUp size={18} />
-            PDF 불러오기
-          </Link>
-        </div>
+        <Link
+          to="/tour/new"
+          className="mt-5 flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-stone-900 px-4 font-bold text-white"
+        >
+          <Plus size={19} />새 투어 시작
+        </Link>
       </section>
       <section className="mt-9 px-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-bold">최근 기록</h2>
-          <span className="text-xs text-stone-400">최대 5개</span>
+          {recent.length > 0 && (
+            <Link
+              to="/import"
+              className="inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-accent-dark"
+            >
+              <FileUp size={14} />
+              PDF 가져오기
+            </Link>
+          )}
         </div>
         {recent.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-stone-200 p-6 text-center text-sm text-stone-400">
-            아직 저장된 드레스투어가 없어요.
+            <p>아직 저장된 드레스투어가 없어요.</p>
+            <Link
+              to="/import"
+              className="mt-3 inline-flex min-h-11 items-center gap-1 font-semibold text-accent-dark"
+            >
+              <FileUp size={15} />
+              PDF에서 가져오기
+            </Link>
           </div>
         ) : (
           <div className="space-y-3">
