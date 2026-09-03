@@ -33,6 +33,21 @@ const optionAssetPaths = [
   ),
 ];
 
+const dressLayerAssetPaths = [
+  ...["straight", "sweetheart", "v", "square", "scoop", "asymmetric"].map(
+    (id) => `/assets/dress-layers/bodice/${id}.webp`,
+  ),
+  ...["offShoulder", "strap", "halter", "shortSleeve", "longSleeve"].map(
+    (id) => `/assets/dress-layers/top/${id}.webp`,
+  ),
+  ...["unknown", "aLine", "ballGown", "empire", "mermaid"].map(
+    (id) => `/assets/dress-layers/skirt/${id}.webp`,
+  ),
+  ...["shadow", "highlight", "mermaid", "empire"].map(
+    (id) => `/assets/dress-layers/volume/${id}.webp`,
+  ),
+];
+
 async function createTour(
   page: Page,
   {
@@ -185,7 +200,7 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
   });
   const pdfBytes = await capturePdf(page);
   await page.goto("/");
-  await page.getByRole("link", { name: "PDF 불러오기", exact: true }).click();
+  await page.getByRole("link", { name: /PDF.*가져오기/ }).click();
   await page.locator('input[type="file"]').setInputFiles({
     name: "gudress-copy.pdf",
     mimeType: "application/pdf",
@@ -205,7 +220,14 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
     .getByRole("button", { name: /Dress 01/ })
     .first()
     .click();
-  await expect(page.locator(".dress-preview image")).toHaveCount(2);
+  await expect(
+    page.locator(
+      '.dress-preview image[data-layer="raster-mannequin"], .dress-preview image[data-layer="face"]',
+    ),
+  ).toHaveCount(2);
+  await expect(
+    page.locator('.dress-preview image[data-layer="face"]'),
+  ).toHaveAttribute("href", /^data:image\/webp;base64,/);
   await expect(page.getByPlaceholder(/허리가 제일 얇아/)).toHaveValue(
     "E2E 메모: 허리 라인이 가장 좋았음",
   );
@@ -227,7 +249,7 @@ test("view-only PDF cannot be restored", async ({ page }) => {
   });
   const pdfBytes = await capturePdf(page);
   await page.goto("/");
-  await page.getByRole("link", { name: "PDF 불러오기", exact: true }).click();
+  await page.getByRole("link", { name: /PDF.*가져오기/ }).click();
   await page.locator('input[type="file"]').setInputFiles({
     name: "gudress-view-only.pdf",
     mimeType: "application/pdf",
@@ -254,13 +276,16 @@ test("direct editor URL survives a full reload", async ({ page }) => {
 
 test("app shell, individual artwork, and service worker load without external requests", async ({
   page,
-}) => {
+}, testInfo) => {
   const external: string[] = [];
+  const appOrigin = new URL(
+    testInfo.project.use.baseURL ?? "http://127.0.0.1:4173",
+  ).origin;
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (
       (url.protocol === "http:" || url.protocol === "https:") &&
-      url.origin !== "http://127.0.0.1:4173"
+      url.origin !== appOrigin
     )
       external.push(request.url());
   });
@@ -277,7 +302,7 @@ test("app shell, individual artwork, and service worker load without external re
     )
     .toBe(true);
   const assets = await Promise.all(
-    optionAssetPaths.map(async (path) => {
+    [...optionAssetPaths, ...dressLayerAssetPaths].map(async (path) => {
       const response = await page.request.get(path);
       return {
         path,
@@ -293,10 +318,13 @@ test("app shell, individual artwork, and service worker load without external re
     ),
   ).toBe(true);
   await page.context().setOffline(true);
-  const offlineAssets = await page.evaluate(async (paths) => {
-    const responses = await Promise.all(paths.map((path) => fetch(path)));
-    return responses.map((response) => response.ok);
-  }, optionAssetPaths);
+  const offlineAssets = await page.evaluate(
+    async (paths) => {
+      const responses = await Promise.all(paths.map((path) => fetch(path)));
+      return responses.map((response) => response.ok);
+    },
+    [...optionAssetPaths, ...dressLayerAssetPaths],
+  );
   await page.context().setOffline(false);
   expect(offlineAssets.every(Boolean)).toBe(true);
   expect(external).toEqual([]);

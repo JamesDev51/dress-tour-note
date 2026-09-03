@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "validate:dress-layers": "node scripts/validate-dress-layers.mjs",
+    "validate:dress-proportions": "node scripts/validate-dress-proportions.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",

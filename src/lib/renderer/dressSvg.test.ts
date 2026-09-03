@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { dressForPresentation } from "../../lib/dress/options";
 import type { Dress } from "../../types/domain";
+import type { DressLayerAssets } from "../image/dressLayers";
 import { dressSvgMarkup } from "./dressSvg";
 
 const dress: Dress = {
@@ -9,9 +10,9 @@ const dress: Dress = {
   shopId: "shop-svg",
   order: 0,
   label: "Dress SVG",
-  topStyle: "strap",
+  topStyle: "strapless",
   neckline: "sweetheart",
-  silhouette: "empire",
+  silhouette: "mermaid",
   waistline: "unknown",
   fabric: "lace",
   color: "ivory",
@@ -24,126 +25,129 @@ const dress: Dress = {
   updatedAt: "2026-09-01T00:00:00.000Z",
 };
 
-describe("dress SVG fashion illustration", () => {
-  const personDataUrl = "data:image/webp;base64,illustrated-person";
+const assets: DressLayerAssets = {
+  bodice: "data:image/webp;base64,bodice",
+  skirt: "data:image/webp;base64,skirt",
+  shadow: "data:image/webp;base64,shadow",
+  highlight: "data:image/webp;base64,highlight",
+  mermaidVolume: "data:image/webp;base64,mermaid-volume",
+};
+const personDataUrl = "data:image/webp;base64,illustrated-person";
 
-  it("composes the dress over the raster illustration base", () => {
-    const svg = dressSvgMarkup(dress, personDataUrl, undefined, false);
+describe("dress raster layer composition", () => {
+  it("composes raster garment parts over the mannequin without a white body mask", () => {
+    const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
 
-    expect(svg).toContain("드레스 패션 일러스트");
     expect(svg).toContain('data-layer="raster-mannequin"');
-    expect(svg).toContain('data-layer="hip-mask"');
-    expect(svg).toContain(
-      'data-layer="dress-fit" transform="translate(0 -18)"',
-    );
-    expect(svg).toContain('data-layer="bust-shaping"');
-    expect(svg).toContain("L150 258 C146 242");
-    expect(svg).not.toContain('data-layer="head-mask"');
-    expect(svg).toContain(`href="${personDataUrl}"`);
-    expect(svg).toContain('fill="url(#g-dress-svg)"');
-    expect(svg).not.toContain('data-layer="articulated-mannequin"');
+    expect(svg).toContain('data-renderer="raster-layers"');
+    expect(svg).toContain('data-layer="raster-bodice"');
+    expect(svg).toContain('data-layer="raster-skirt"');
+    expect(svg).toContain('data-layer="raster-volume-shadow"');
+    expect(svg).not.toContain('data-layer="hip-mask"');
+    expect(svg).not.toContain("<path data-silhouette");
   });
 
-  it("keeps the optional face inside a portrait medallion", () => {
+  it("keeps the optional face inside its feathered mask", () => {
     const faceDataUrl = "data:image/webp;base64,face";
-    const svg = dressSvgMarkup(dress, personDataUrl, faceDataUrl, true);
+    const svg = dressSvgMarkup(dress, personDataUrl, assets, faceDataUrl, true);
 
     expect(svg).toContain(`href="${faceDataUrl}"`);
     expect(svg).toContain('mask="url(#face-mask-dress-svg)"');
-    expect(svg).not.toContain('data-layer="head-mask"');
     expect(svg).not.toContain('stroke="#eadfda"');
   });
 
-  it("clips the selected fabric artwork across the dress and sleeves", () => {
-    const fabricDataUrl = "data:image/webp;base64,lace-texture";
+  it("uses the selected texture at its fabric-specific tile scale", () => {
+    const texture = "data:image/webp;base64,lace-texture";
     const svg = dressSvgMarkup(
-      { ...dress, topStyle: "longSleeve" },
+      dress,
       personDataUrl,
+      assets,
       undefined,
       false,
-      fabricDataUrl,
+      texture,
     );
 
-    expect(svg).toContain(`href="${fabricDataUrl}"`);
-    expect(svg).toContain('width="108" height="108"');
-    expect(svg).toContain('data-layer="fabric-texture"');
+    expect(svg).toContain(`href="${texture}"`);
+    expect(svg).toContain('width="96" height="96"');
     expect(svg).toContain('fill="url(#p-dress-svg)"');
   });
 
-  it("adds visible bead highlights for ornate beadwork", () => {
+  it("adds a distinct dense accent for ornate beadwork", () => {
     const svg = dressSvgMarkup(
       { ...dress, fabric: "ornateBeaded" },
       personDataUrl,
+      assets,
       undefined,
       false,
       "data:image/webp;base64,beads",
     );
 
     expect(svg).toContain('data-layer="fabric-accent"');
-    expect(svg).toContain('id="b-dress-svg"');
+    expect(svg).toContain('width="46" height="46"');
+    expect(svg).toContain('opacity="0.38"');
   });
 
-  it("keeps subtle bead highlights sparse", () => {
+  it("keeps subtle beadwork sparser than ornate beadwork", () => {
     const svg = dressSvgMarkup(
       { ...dress, fabric: "subtleBeaded" },
       personDataUrl,
+      assets,
       undefined,
       false,
       "data:image/webp;base64,subtle-beads",
     );
 
-    expect(svg).toContain('width="44" height="44"');
-    expect(svg).toContain('data-layer="fabric-accent" opacity=".52"');
+    expect(svg).toContain('width="110" height="110"');
+    expect(svg).toContain('opacity="0.56"');
   });
 
-  it("models a mermaid dress through hips, thighs, knees, and flare", () => {
+  it("adds the raster mermaid volume layer for the fitted silhouette", () => {
+    const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
+    expect(svg).toContain('data-layer="raster-mermaid-volume"');
+  });
+
+  it("adds the raster under-bust seam for the empire silhouette", () => {
     const svg = dressSvgMarkup(
-      { ...dress, silhouette: "mermaid" },
+      { ...dress, silhouette: "empire" },
       personDataUrl,
+      {
+        ...assets,
+        mermaidVolume: undefined,
+        empireVolume: "data:image/webp;base64,empire-volume",
+      },
       undefined,
       false,
     );
 
-    expect(svg).toContain('data-silhouette="mermaid"');
-    expect(svg).toContain('data-layer="hip-shaping"');
-    expect(svg).toContain('data-flare="fishtail"');
+    expect(svg).toContain('data-layer="raster-empire-volume"');
   });
 
-  it("does not render retired train, waistline, or detail effects", () => {
-    const legacyDress: Dress = {
-      ...dress,
-      topStyle: "spaghetti",
-      neckline: "high",
-      silhouette: "fitAndFlare",
-      waistline: "basque",
-      backStyle: "bowBack",
-      fabric: "glitterBeaded",
-      train: "chapel",
-      details: ["waistBow", "buttons"],
-    };
-    const svg = dressSvgMarkup(legacyDress, personDataUrl, undefined, false);
-
-    expect(svg).not.toContain("M180 470 C240 500");
-    expect(svg).not.toContain("M148 252L180 274");
-    expect(svg).not.toContain("M0 0C-18-18");
-    expect(svg).not.toContain('<circle cx="180" cy="205"');
-  });
-
-  it("lets long sleeves cover the mannequin through the hands", () => {
+  it("uses an independent top asset for sleeves and straps", () => {
     const svg = dressSvgMarkup(
       { ...dress, topStyle: "longSleeve" },
       personDataUrl,
+      { ...assets, top: "data:image/webp;base64,long-sleeve" },
       undefined,
       false,
     );
 
-    expect(svg).toContain("M151 170 Q124 164 109 190");
-    expect(svg).toContain("L70 349 Q78 363 94 356");
-    expect(svg).toContain('fill="#fff"');
-    expect(svg).toContain("M72 343 Q81 357 93 350");
+    expect(svg).toContain('data-layer="raster-top"');
+    expect(svg).toContain("data:image/webp;base64,long-sleeve");
   });
 
-  it("projects legacy choices before renderer switches run", () => {
+  it("does not emit retired geometric garment effects", () => {
+    const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
+    expect(svg).not.toContain('data-layer="bust-shaping"');
+    expect(svg).not.toContain('data-layer="hip-shaping"');
+    expect(svg).not.toContain('data-layer="halter-collar"');
+  });
+
+  it("omits a top layer for strapless dresses", () => {
+    const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
+    expect(svg).not.toContain('data-layer="raster-top"');
+  });
+
+  it("projects legacy choices before raster layer composition", () => {
     const legacyDress: Dress = {
       ...dress,
       topStyle: "spaghetti",
@@ -151,10 +155,13 @@ describe("dress SVG fashion illustration", () => {
       silhouette: "fitAndFlare",
       fabric: "glitterBeaded",
     };
-    expect(dressSvgMarkup(legacyDress, personDataUrl, undefined, false)).toBe(
+    expect(
+      dressSvgMarkup(legacyDress, personDataUrl, assets, undefined, false),
+    ).toBe(
       dressSvgMarkup(
         dressForPresentation(legacyDress),
         personDataUrl,
+        assets,
         undefined,
         false,
       ),

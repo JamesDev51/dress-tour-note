@@ -6,6 +6,10 @@ import {
 } from "../lib/image/dressPerson";
 import { blobToDataUrl } from "../lib/image/processFace";
 import { loadDressFabricTexture } from "../lib/image/dressFabric";
+import {
+  loadDressLayerAssets,
+  type DressLayerAssets,
+} from "../lib/image/dressLayers";
 import { dressForPresentation } from "../lib/dress/options";
 import { dressSvgMarkup } from "../lib/renderer/dressSvg";
 
@@ -22,6 +26,7 @@ export function DressPreview({
   const [personError, setPersonError] = useState<string>();
   const [face, setFace] = useState<string>();
   const [fabricTexture, setFabricTexture] = useState<string>();
+  const [layerAssets, setLayerAssets] = useState<DressLayerAssets>();
   useEffect(() => {
     let active = true;
     loadDressPersonBase()
@@ -50,6 +55,7 @@ export function DressPreview({
     };
   }, [faceAsset]);
   const presentedDress = useMemo(() => dressForPresentation(dress), [dress]);
+  const { neckline, silhouette, topStyle } = presentedDress;
   useEffect(() => {
     let active = true;
     setFabricTexture(undefined);
@@ -64,12 +70,38 @@ export function DressPreview({
       active = false;
     };
   }, [presentedDress.fabric]);
+  useEffect(() => {
+    let active = true;
+    setLayerAssets(undefined);
+    loadDressLayerAssets({ neckline, silhouette, topStyle })
+      .then((assets) => {
+        if (active) setLayerAssets(assets);
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setPersonError(
+          error instanceof Error
+            ? error.message
+            : "드레스 레이어를 불러오지 못했어요.",
+        );
+      });
+    return () => {
+      active = false;
+    };
+  }, [neckline, silhouette, topStyle]);
   const svg = useMemo(
     () =>
-      person
-        ? dressSvgMarkup(presentedDress, person, face, true, fabricTexture)
+      person && layerAssets
+        ? dressSvgMarkup(
+            presentedDress,
+            person,
+            layerAssets,
+            face,
+            true,
+            fabricTexture,
+          )
         : "",
-    [fabricTexture, face, person, presentedDress],
+    [fabricTexture, face, layerAssets, person, presentedDress],
   );
   if (personError)
     return (
@@ -80,7 +112,7 @@ export function DressPreview({
         {personError}
       </div>
     );
-  if (!person)
+  if (!person || !layerAssets)
     return (
       <div
         role="status"

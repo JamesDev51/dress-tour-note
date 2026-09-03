@@ -1,0 +1,27 @@
+{
+  "previewSurface": "#fbf8f6",
+  "floorShadow": "#d8cbc5",
+  "garmentHighlight": "#ffffff",
+  "garmentDropShadow": "#7b6256",
+  "beadShadow": "#bfa89b",
+  "ornateBeadShadow": "#b99f92",
+  "exportCanvas": "#ffffff",
+  "volume": {
+    "sideShadow": "#6f584d",
+    "contourShadow": "#76584d",
+    "seamShadow": "#75584d",
+    "mermaidShadow": "#73564b"
+  },
+  "garmentColor": {
+    "unknown": "#f7f5f3",
+    "pureWhite": "#ffffff",
+    "ivory": "#fffaf0",
+    "champagne": "#f4e6d1"
+  },
+  "garmentEdge": {
+    "unknown": "#ddd6d2",
+    "pureWhite": "#d9d3cf",
+    "ivory": "#dfd3c4",
+    "champagne": "#cdb99e"
+  }
+}

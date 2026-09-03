@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "canvas": {
+    "width": 720,
+    "height": 1280
+  },
+  "viewBox": "0 0 360 640",
+  "assets": {
+    "bodice": {
+      "straight": {
+        "src": "/assets/dress-layers/bodice/straight.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 2968,
+        "sha256": "50d5de9b542ab1fc1de55d8543b3c155ed9921fe1c25933af9587c6b08651703"
+      },
+      "sweetheart": {
+        "src": "/assets/dress-layers/bodice/sweetheart.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3518,
+        "sha256": "ab127bc44ad14998137e86c338a09f13762338ba6b80bf42ec77ab61469abddd"
+      },
+      "v": {
+        "src": "/assets/dress-layers/bodice/v.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3732,
+        "sha256": "3d91793261f659f57b94872040f064b92d0cbea3eb50b3d1ab40893f1f3c8d18"
+      },
+      "square": {
+        "src": "/assets/dress-layers/bodice/square.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3060,
+        "sha256": "ec93e00d56cea6be391da5c2ac003a3357a04bf267ebce9c60fae02aaf3b071d"
+      },
+      "scoop": {
+        "src": "/assets/dress-layers/bodice/scoop.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3498,
+        "sha256": "844d2909f9330f91d6b7a64d33e29519392f20647102fe6c42bec48106e8d8e1"
+      },
+      "asymmetric": {
+        "src": "/assets/dress-layers/bodice/asymmetric.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3440,
+        "sha256": "5e86de59ddf152a9fe17e2ba956ea44601c67c94d1ceaca45b57c5cd63e4ec3c"
+      }
+    },
+    "top": {
+      "offShoulder": {
+        "src": "/assets/dress-layers/top/offShoulder.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3458,
+        "sha256": "d54ede9f6c3b90d267e02eebe05057faaada6f3a47443b6ee0a246615f716667"
+      },
+      "strap": {
+        "src": "/assets/dress-layers/top/strap.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3082,
+        "sha256": "9550fb74fb257418160a7e0e0994c48ed2eef59334b6d021de6078655ec16f2f"
+      },
+      "halter": {
+        "src": "/assets/dress-layers/top/halter.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 4008,
+        "sha256": "202170696032f9f8b63fa501bcc73d60644526dc68685d6155b7a5b2bfe614a3"
+      },
+      "shortSleeve": {
+        "src": "/assets/dress-layers/top/shortSleeve.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3982,
+        "sha256": "ce5e537b0d5a1650f82e123e35322534959e65da81b33b9fff5a61a04bc91f0d"
+      },
+      "longSleeve": {
+        "src": "/assets/dress-layers/top/longSleeve.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 3350,
+        "sha256": "67982864d13124c1236c3df6fe645a688517755ff48f1d6a6da7701ba57d9f99"
+      }
+    },
+    "skirt": {
+      "unknown": {
+        "src": "/assets/dress-layers/skirt/unknown.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 4962,
+        "sha256": "f7cd6a5ed798de7ac27568e91373b8659ce897385adcd07e7b926bec795ef981"
+      },
+      "aLine": {
+        "src": "/assets/dress-layers/skirt/aLine.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 6582,
+        "sha256": "3451ce7a07ee664fd7821339272a1c21f5f82088cec770ec9d7f05dcab5a13ea"
+      },
+      "ballGown": {
+        "src": "/assets/dress-layers/skirt/ballGown.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 7060,
+        "sha256": "d4e44f155b6fd517fc76374798a0ef67279450165856a3a248ba41bb407f6ca4"
+      },
+      "empire": {
+        "src": "/assets/dress-layers/skirt/empire.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 6736,
+        "sha256": "d475d06ef61ccfdd2dd6f5d6bd3191c4583e3fde086dfa1ae29aed617252ee52"
+      },
+      "mermaid": {
+        "src": "/assets/dress-layers/skirt/mermaid.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "alpha-mask",
+        "bytes": 6864,
+        "sha256": "5f1045d40bd65da1f483f55571724e303256680cf0a669116cf04432cd6f4c47"
+      }
+    },
+    "volume": {
+      "shadow": {
+        "src": "/assets/dress-layers/volume/shadow.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "shadow",
+        "bytes": 49630,
+        "sha256": "bb520c6944c3d39e3b32c66f37725d2bcb3122fa395f52b5d645248aeb80a197"
+      },
+      "highlight": {
+        "src": "/assets/dress-layers/volume/highlight.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "highlight",
+        "bytes": 38266,
+        "sha256": "69ad04f00bc8252d1a05c4b3e269b6534c5921a8376f2111cb67bfcc6a3956ca"
+      },
+      "mermaid": {
+        "src": "/assets/dress-layers/volume/mermaid.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "mermaid",
+        "bytes": 16338,
+        "sha256": "97f6846265943a5d50db8379a9a6b86b891b61fa842d2a5dbb2730bc8b3fa092"
+      },
+      "empire": {
+        "src": "/assets/dress-layers/volume/empire.webp",
+        "width": 720,
+        "height": 1280,
+        "role": "empire",
+        "bytes": 6586,
+        "sha256": "8360f40abef2809970a8dafbf2136fa3b8764b008f3634cc6ffad32640f78753"
+      }
+    }
+  }
+}
