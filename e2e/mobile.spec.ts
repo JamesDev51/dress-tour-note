@@ -34,7 +34,6 @@ const optionAssetPaths = [
 ];
 
 const dressLayerAssetPaths = [
-  "/assets/dress-structures/manifest.json",
   "/assets/dress-structures/strapless__sweetheart__mermaid.webp",
   "/assets/dress-structures/longSleeve__asymmetric__empire.webp",
   "/assets/dress-structures/unknown__unknown__unknown.webp",
