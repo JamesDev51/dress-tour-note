@@ -90,15 +90,25 @@ function dressLayers(
     : "";
   const defs = `${pattern}${accent}<linearGradient id="g-${id}" x1="0" x2="1"><stop stop-color="${edge}"/><stop offset=".18" stop-color="${dressRenderTokens.garmentColor[dress.color]}"/><stop offset=".52" stop-color="${dressRenderTokens.garmentHighlight}"/><stop offset=".82" stop-color="${dressRenderTokens.garmentColor[dress.color]}"/><stop offset="1" stop-color="${edge}"/></linearGradient>${maskDefinition(id, "bodice-mask", assets.bodice)}${skirtMask}${topMask}<mask id="garment-mask-${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="700"><image href="${esc(assets.skirt)}" x="0" y="-20" width="360" height="690" preserveAspectRatio="none"/><image href="${esc(assets.bodice)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none"/>${combinedTop}</mask><filter id="s-${id}" x="-30%" y="-20%" width="160%" height="150%"><feDropShadow dx="0" dy="0" stdDeviation=".65" flood-color="${edge}" flood-opacity=".9"/><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="${dressRenderTokens.garmentDropShadow}" flood-opacity=".18"/></filter>`;
   const skirt = `<g data-layer="raster-skirt" mask="url(#skirt-mask-${id})"><rect width="360" height="700" fill="url(#g-${id})"/><rect width="360" height="700" fill="${textureFill}" opacity="${opacity.skirt}"/></g>`;
-  const top = assets.top
-    ? garmentPart(
-        "top",
-        `top-mask-${id}`,
-        `url(#g-${id})`,
-        textureFill,
-        opacity.top,
-      )
+  const silhouetteAppearance = assets.silhouetteAppearance
+    ? `<image data-layer="reference-silhouette-appearance" href="${esc(assets.silhouetteAppearance)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#skirt-mask-${id})" opacity=".9"/>`
     : "";
+  const necklineAppearance = assets.necklineAppearance
+    ? `<image data-layer="reference-neckline-appearance" href="${esc(assets.necklineAppearance)}" x="96" y="106" width="168" height="168" preserveAspectRatio="xMidYMid slice" mask="url(#bodice-mask-${id})" opacity=".82"/>`
+    : "";
+  const topAppearance = assets.topAppearance
+    ? `<image data-layer="reference-top-appearance" href="${esc(assets.topAppearance)}" x="86" y="${dress.topStyle === "offShoulder" ? 112 : 94}" width="188" height="188" preserveAspectRatio="xMidYMid slice" opacity=".88"/>`
+    : "";
+  const top =
+    assets.top && !assets.topAppearance
+      ? garmentPart(
+          "top",
+          `top-mask-${id}`,
+          `url(#g-${id})`,
+          textureFill,
+          opacity.top,
+        )
+      : "";
   const accentLayer = accent
     ? `<g data-layer="fabric-accent" mask="url(#garment-mask-${id})" opacity="${dress.fabric === "subtleBeaded" ? 0.56 : 0.38}"><rect width="360" height="640" fill="url(#b-${id})"/></g>`
     : "";
@@ -108,7 +118,7 @@ function dressLayers(
   const empireVolume = assets.empireVolume
     ? `<image data-layer="raster-empire-volume" href="${esc(assets.empireVolume)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})"/>`
     : "";
-  const markup = `<g data-layer="dress-fit" data-renderer="raster-layers" transform="translate(0 -18)" filter="url(#s-${id})">${skirt}${garmentPart("bodice", `bodice-mask-${id}`, `url(#g-${id})`, textureFill, opacity.bodice)}${top}${accentLayer}<image data-layer="raster-volume-shadow" href="${esc(assets.shadow)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})" opacity=".72"/><image data-layer="raster-volume-highlight" href="${esc(assets.highlight)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})" opacity=".72"/>${mermaidVolume}${empireVolume}</g>`;
+  const markup = `<g data-layer="dress-fit" data-renderer="raster-layers" transform="translate(0 -18)" filter="url(#s-${id})">${skirt}${silhouetteAppearance}${garmentPart("bodice", `bodice-mask-${id}`, `url(#g-${id})`, textureFill, opacity.bodice)}${necklineAppearance}${top}${topAppearance}${accentLayer}<image data-layer="raster-volume-shadow" href="${esc(assets.shadow)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})" opacity=".46"/><image data-layer="raster-volume-highlight" href="${esc(assets.highlight)}" x="0" y="0" width="360" height="640" preserveAspectRatio="none" mask="url(#garment-mask-${id})" opacity=".34"/>${mermaidVolume}${empireVolume}</g>`;
   return { defs, markup };
 }
 

@@ -12,6 +12,9 @@ export type DressLayerAssets = {
   readonly bodice: string;
   readonly top?: string;
   readonly skirt: string;
+  readonly necklineAppearance?: string;
+  readonly topAppearance?: string;
+  readonly silhouetteAppearance?: string;
   readonly shadow: string;
   readonly highlight: string;
   readonly mermaidVolume?: string;
@@ -75,28 +78,69 @@ function loadLayer(group: LayerGroup, name: string) {
   return loaded;
 }
 
+function loadImage(url: string) {
+  const cached = cache.get(url);
+  if (cached) return cached;
+  const loaded = fetch(url)
+    .then(async (response) => {
+      if (!response.ok)
+        throw new Error("드레스 참고 이미지를 불러오지 못했어요.");
+      return blobToDataUrl(await response.blob());
+    })
+    .catch((error: unknown) => {
+      cache.delete(url);
+      throw error;
+    });
+  cache.set(url, loaded);
+  return loaded;
+}
+
 export async function loadDressLayerAssets(
   dress: DressLayerSelection,
 ): Promise<DressLayerAssets> {
   const topName = topNames[dress.topStyle];
-  const [bodice, top, skirt, shadow, highlight, mermaidVolume, empireVolume] =
-    await Promise.all([
-      loadLayer("bodice", bodiceNames[dress.neckline]),
-      topName ? loadLayer("top", topName) : Promise.resolve(undefined),
-      loadLayer("skirt", skirtNames[dress.silhouette]),
-      loadLayer("volume", "shadow"),
-      loadLayer("volume", "highlight"),
-      dress.silhouette === "mermaid"
-        ? loadLayer("volume", "mermaid")
-        : Promise.resolve(undefined),
-      dress.silhouette === "empire"
-        ? loadLayer("volume", "empire")
-        : Promise.resolve(undefined),
-    ]);
+  const [
+    bodice,
+    top,
+    skirt,
+    necklineAppearance,
+    topAppearance,
+    silhouetteAppearance,
+    shadow,
+    highlight,
+    mermaidVolume,
+    empireVolume,
+  ] = await Promise.all([
+    loadLayer("bodice", bodiceNames[dress.neckline]),
+    topName ? loadLayer("top", topName) : Promise.resolve(undefined),
+    loadLayer("skirt", skirtNames[dress.silhouette]),
+    dress.neckline === "unknown"
+      ? Promise.resolve(undefined)
+      : loadImage("/assets/dress-appearances/bodice/base.webp"),
+    topName && topName !== "longSleeve"
+      ? loadImage(`/assets/dress-appearances/top/${topName}.webp`)
+      : Promise.resolve(undefined),
+    dress.silhouette === "unknown"
+      ? Promise.resolve(undefined)
+      : loadImage(
+          `/assets/dress-appearances/silhouette/${dress.silhouette}.webp`,
+        ),
+    loadLayer("volume", "shadow"),
+    loadLayer("volume", "highlight"),
+    dress.silhouette === "mermaid"
+      ? loadLayer("volume", "mermaid")
+      : Promise.resolve(undefined),
+    dress.silhouette === "empire"
+      ? loadLayer("volume", "empire")
+      : Promise.resolve(undefined),
+  ]);
   return {
     bodice,
     top,
     skirt,
+    necklineAppearance,
+    topAppearance,
+    silhouetteAppearance,
     shadow,
     highlight,
     mermaidVolume,

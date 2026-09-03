@@ -28,6 +28,8 @@ const dress: Dress = {
 const assets: DressLayerAssets = {
   bodice: "data:image/webp;base64,bodice",
   skirt: "data:image/webp;base64,skirt",
+  necklineAppearance: "data:image/webp;base64,neckline-reference",
+  silhouetteAppearance: "data:image/webp;base64,silhouette-reference",
   shadow: "data:image/webp;base64,shadow",
   highlight: "data:image/webp;base64,highlight",
   mermaidVolume: "data:image/webp;base64,mermaid-volume",
@@ -70,6 +72,15 @@ describe("dress raster layer composition", () => {
     expect(svg).toContain(`href="${texture}"`);
     expect(svg).toContain('width="96" height="96"');
     expect(svg).toContain('fill="url(#p-dress-svg)"');
+  });
+
+  it("clips the selected option artwork into the fitted garment layers", () => {
+    const svg = dressSvgMarkup(dress, personDataUrl, assets, undefined, false);
+
+    expect(svg).toContain('data-layer="reference-silhouette-appearance"');
+    expect(svg).toContain('data-layer="reference-neckline-appearance"');
+    expect(svg).toContain("data:image/webp;base64,silhouette-reference");
+    expect(svg).toContain("data:image/webp;base64,neckline-reference");
   });
 
   it("adds a distinct dense accent for ornate beadwork", () => {

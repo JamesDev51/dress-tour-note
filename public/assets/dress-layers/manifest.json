@@ -62,8 +62,8 @@
         "width": 720,
         "height": 1280,
         "role": "alpha-mask",
-        "bytes": 3458,
-        "sha256": "d54ede9f6c3b90d267e02eebe05057faaada6f3a47443b6ee0a246615f716667"
+        "bytes": 3034,
+        "sha256": "f7fb421043143eaa8098d4648dd0b3fe8a350d9c430ff7242c5622ee429fb783"
       },
       "strap": {
         "src": "/assets/dress-layers/top/strap.webp",
@@ -78,16 +78,16 @@
         "width": 720,
         "height": 1280,
         "role": "alpha-mask",
-        "bytes": 4008,
-        "sha256": "202170696032f9f8b63fa501bcc73d60644526dc68685d6155b7a5b2bfe614a3"
+        "bytes": 3818,
+        "sha256": "5d112040eaed1b8228a1d1a244d1904ab6094e0d939d0b533747e7c458c15744"
       },
       "shortSleeve": {
         "src": "/assets/dress-layers/top/shortSleeve.webp",
         "width": 720,
         "height": 1280,
         "role": "alpha-mask",
-        "bytes": 3982,
-        "sha256": "ce5e537b0d5a1650f82e123e35322534959e65da81b33b9fff5a61a04bc91f0d"
+        "bytes": 3792,
+        "sha256": "d923fd7f93c5288082b5440f223208af3bdbb0bebf5fb629a9792a1737deff21"
       },
       "longSleeve": {
         "src": "/assets/dress-layers/top/longSleeve.webp",

@@ -37,12 +37,12 @@ const layers = {
   },
   top: {
     offShoulder:
-      '<path d="M290 348 C256 338 224 354 202 388 L218 424 C242 388 268 380 294 396 Z"/><path d="M430 348 C464 338 496 354 518 388 L502 424 C478 388 452 380 426 396 Z"/>',
+      '<path d="M294 344 C270 340 246 350 226 368 C214 380 208 394 208 410 C228 400 250 394 276 398 L294 406 Z"/><path d="M426 344 C450 340 474 350 494 368 C506 380 512 394 512 410 C492 400 470 394 444 398 L426 406 Z"/>',
     strap: `<path d="M308 366 L296 256 M412 366 L424 256" fill="none" stroke="${dressRenderTokens.garmentHighlight}" stroke-width="20" stroke-linecap="round"/>`,
     halter:
-      '<path d="M322 252 Q360 238 398 252 L394 284 Q360 270 326 284 Z"/><path d="M278 390 C288 346 304 310 326 280 L354 292 C338 322 324 360 316 402 Z"/><path d="M442 390 C432 346 416 310 394 280 L366 292 C382 322 396 360 404 402 Z"/>',
+      '<path d="M322 252 Q360 238 398 252 L394 284 C416 312 432 348 442 390 L404 402 C396 360 382 324 366 292 L354 292 C338 324 324 360 316 402 L278 390 C288 348 304 312 326 284 Z" fill-rule="evenodd"/>',
     shortSleeve:
-      '<path d="M286 336 C264 320 236 322 216 342 C202 360 198 390 204 414 C210 438 220 458 236 472 C258 474 278 452 286 426 C292 400 294 366 286 336 Z"/><path d="M434 336 C456 320 484 322 504 342 C518 360 522 390 516 414 C510 438 500 458 484 472 C462 474 442 452 434 426 C428 400 426 366 434 336 Z"/>',
+      '<path d="M292 304 C274 288 250 286 232 298 C216 312 210 334 212 358 C214 382 220 404 232 422 C246 426 260 416 270 398 C282 376 290 342 292 304 Z"/><path d="M428 304 C446 288 470 286 488 298 C504 312 510 334 508 358 C506 382 500 404 488 422 C474 426 460 416 450 398 C438 376 430 342 428 304 Z"/>',
     longSleeve: `<defs><clipPath id="generated-sleeve-clips"><rect x="120" y="220" width="190" height="540"/><rect x="410" y="220" width="190" height="540"/></clipPath><filter id="sleeve-expand"><feMorphology operator="dilate" radius="7"/></filter></defs><image href="${longSleeveMaskDataUrl}" x="0" y="0" width="720" height="1280" preserveAspectRatio="none" clip-path="url(#generated-sleeve-clips)" filter="url(#sleeve-expand)"/><path d="M220 270 C250 245 272 248 282 276 C298 304 422 304 438 276 C448 248 470 245 500 270 L486 460 L234 460 Z"/>`,
   },
   skirt: {

@@ -46,6 +46,13 @@ const dressLayerAssetPaths = [
   ...["shadow", "highlight", "mermaid", "empire"].map(
     (id) => `/assets/dress-layers/volume/${id}.webp`,
   ),
+  "/assets/dress-appearances/bodice/base.webp",
+  ...["offShoulder", "strap", "halter", "shortSleeve"].map(
+    (id) => `/assets/dress-appearances/top/${id}.webp`,
+  ),
+  ...["aLine", "ballGown", "mermaid", "empire"].map(
+    (id) => `/assets/dress-appearances/silhouette/${id}.webp`,
+  ),
 ];
 
 async function createTour(
