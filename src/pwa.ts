@@ -10,7 +10,8 @@ export function setupPwa() {
       });
     },
     onOfflineReady() {
-      useUIStore.getState().showToast("오프라인에서도 사용할 준비가 됐어요.");
+      const ui = useUIStore.getState();
+      if (!ui.toast) ui.showToast("오프라인에서도 사용할 준비가 됐어요.");
     },
   });
 }
