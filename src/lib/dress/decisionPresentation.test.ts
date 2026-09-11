@@ -29,6 +29,57 @@ const baseDress: Dress = {
 };
 
 describe("decision presentation", () => {
+  it("preserves explicit recall reasons in priority order without inventing a title", () => {
+    const recorded = {
+      ...baseDress,
+      memoryCue: "  등 뒤 큰 리본  ",
+      likedReason: "허리가 편함",
+      concern: "팔 올리기 불편함",
+    };
+
+    const presentation = createDressDecisionPresentation(recorded);
+
+    expect(presentation).toMatchObject({
+      recall: [
+        { key: "memoryCue", value: "등 뒤 큰 리본", state: "recorded" },
+        { key: "likedReason", value: "허리가 편함", state: "recorded" },
+        { key: "concern", value: "팔 올리기 불편함", state: "recorded" },
+      ],
+    });
+    expect(recorded.memoryCue).toBe("  등 뒤 큰 리본  ");
+  });
+
+  it("keeps missing recall blank even when an older record has a memo", () => {
+    const presentation = createDressDecisionPresentation(baseDress);
+
+    expect(presentation).toMatchObject({
+      recall: [
+        { key: "memoryCue", value: "미입력", state: "blank" },
+        { key: "likedReason", value: "미입력", state: "blank" },
+        { key: "concern", value: "미입력", state: "blank" },
+      ],
+      memo: { value: "허리가 편하고 움직이기 좋았어요." },
+    });
+  });
+
+  it("compares saved recall differences before taxonomy", () => {
+    const left = {
+      ...baseDress,
+      memoryCue: "등 뒤 리본",
+      likedReason: "가벼움",
+    };
+    const right = {
+      ...baseDress,
+      fabric: "mikadoSatin" as const,
+      memoryCue: "단추",
+      likedReason: "가벼움",
+    };
+
+    const rows = compareDressPresentations(left, right);
+
+    expect(rows.map(({ key }) => key)).toEqual(["memoryCue", "fabric"]);
+  });
+
   it("keeps official terms, explicit unknowns, and category-labelled exceptions consistent", () => {
     const presentation = createDressDecisionPresentation(baseDress);
 
@@ -81,5 +132,58 @@ describe("decision presentation", () => {
       left: { value: "후보" },
       right: { value: "후보 아님" },
     });
+  });
+
+  it("separates missing observations from actual differences and decision reasons", () => {
+    const right = {
+      ...baseDress,
+      fabric: "unknown" as const,
+      color: "champagne" as const,
+      concern: "무거움",
+    };
+
+    const rows = compareDressPresentations(baseDress, right);
+
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: "fabric", group: "missing" }),
+        expect.objectContaining({ key: "color", group: "observed" }),
+        expect.objectContaining({ key: "concern", group: "reasons" }),
+      ]),
+    );
+  });
+
+  it("does not report selection order as a difference in tags or details", () => {
+    const left: Dress = { ...baseDress, details: ["pearl", "buttons"] };
+    const right: Dress = {
+      ...left,
+      details: ["buttons", "pearl"],
+      quickTags: ["편함", "신부 픽"],
+    };
+
+    const rows = compareDressPresentations(left, right);
+
+    expect(rows).toEqual([]);
+  });
+
+  it("can expose matching recorded features without pretending two empty fields are known", () => {
+    const rows = compareDressPresentations(baseDress, baseDress, true);
+
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "fabric",
+          group: "same",
+          left: {
+            key: "fabric",
+            label: "소재",
+            value: "레이스",
+            state: "recorded",
+          },
+        }),
+        expect.objectContaining({ key: "neckline", group: "missing" }),
+      ]),
+    );
+    expect(rows.find(({ key }) => key === "memoryCue")).toBeUndefined();
   });
 });

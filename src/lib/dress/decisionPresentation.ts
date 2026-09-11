@@ -22,10 +22,14 @@ export type DecisionFieldKey =
   | "candidate"
   | "rating"
   | "tags"
-  | "memo";
+  | "memo"
+  | "memoryCue"
+  | "likedReason"
+  | "concern";
 
 export type DressDecisionPresentation = {
   readonly dress: Dress;
+  readonly recall: readonly DecisionField[];
   readonly core: readonly DecisionField[];
   readonly details: readonly DecisionField[];
   readonly decision: readonly DecisionField[];
@@ -34,6 +38,7 @@ export type DressDecisionPresentation = {
 };
 
 export type DressComparisonRow = {
+  readonly group: "reasons" | "observed" | "missing" | "same";
   readonly key: DecisionFieldKey;
   readonly label: string;
   readonly left: DecisionField;
@@ -150,6 +155,19 @@ export function createDressDecisionPresentation(
 
   return {
     dress: visibleDress,
+    recall: [
+      field(
+        "memoryCue",
+        "기억할 특징",
+        visibleDress.memoryCue?.trim() || undefined,
+      ),
+      field(
+        "likedReason",
+        "좋았던 점",
+        visibleDress.likedReason?.trim() || undefined,
+      ),
+      field("concern", "아쉬운 점", visibleDress.concern?.trim() || undefined),
+    ],
     core,
     details,
     decision: [
@@ -176,56 +194,4 @@ export function createDressDecisionPresentation(
   };
 }
 
-export function compareDressPresentations(
-  leftDress: Dress,
-  rightDress: Dress,
-): readonly DressComparisonRow[] {
-  const left = createDressDecisionPresentation(leftDress);
-  const right = createDressDecisionPresentation(rightDress);
-  const leftFields = [
-    ...left.core,
-    ...left.details,
-    ...left.decision,
-    left.memo,
-    ...left.exceptions,
-  ];
-  const rightFields = [
-    ...right.core,
-    ...right.details,
-    ...right.decision,
-    right.memo,
-    ...right.exceptions,
-  ];
-  const keys = [
-    ...CORE_CATEGORIES,
-    ...DETAIL_CATEGORIES,
-    "candidate",
-    "rating",
-    "tags",
-    "memo",
-    ...DRESS_OPTION_CATEGORIES.map(
-      (category): DecisionFieldKey => `exception:${category}`,
-    ),
-  ] satisfies readonly DecisionFieldKey[];
-
-  return keys.flatMap((key) => {
-    const leftField = leftFields.find((item) => item.key === key);
-    const rightField = rightFields.find((item) => item.key === key);
-    const fallbackLabel = leftField?.label ?? rightField?.label ?? key;
-    const visibleLeft =
-      leftField ?? field(key, fallbackLabel, undefined, false);
-    const visibleRight =
-      rightField ?? field(key, fallbackLabel, undefined, false);
-    return visibleLeft.value === visibleRight.value &&
-      visibleLeft.state === visibleRight.state
-      ? []
-      : [
-          {
-            key,
-            label: visibleLeft.label || visibleRight.label,
-            left: visibleLeft,
-            right: visibleRight,
-          },
-        ];
-  });
-}
+export { compareDressPresentations } from "./dressComparison";
