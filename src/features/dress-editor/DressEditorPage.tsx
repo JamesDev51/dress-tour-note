@@ -3,11 +3,10 @@ import {
   readRecallDraft,
 } from "../../lib/storage/recallDraft";
 import { useCallback, useState } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
+import { useDressEditorData } from "./useDressEditorData";
 import { useNavigate, useParams } from "react-router-dom";
 import { RecallDressDetail } from "../../components/RecallDressDetail";
 import { DressPreview } from "../../components/DressPreview";
-import { db } from "../../db/database";
 import {
   addDress,
   patchDress,
@@ -36,15 +35,7 @@ export function DressEditorPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [includeFace, setIncludeFace] = useState(false);
   const { run, waitForPending } = usePendingWrites();
-  const data = useLiveQuery(async () => {
-    const dress = await db.dresses.get(dressId);
-    if (!dress) return undefined;
-    const tour = await db.tours.get(dress.tourId);
-    const face = tour?.faceAssetId
-      ? await db.assets.get(tour.faceAssetId)
-      : undefined;
-    return { dress, tour, face };
-  }, [dressId]);
+  const data = useDressEditorData(dressId);
   const currentData = data?.dress.id === dressId ? data : undefined;
   const writeDress = useCallback(
     (id: string, patch: Partial<Dress>) => run(() => patchDress(id, patch)),
@@ -241,6 +232,7 @@ export function DressEditorPage() {
           renderSummary={(onEditCore) => (
             <RecallDressDetail
               dress={dress}
+              shopName={currentData.shop?.name}
               onEditCore={onEditCore}
               onOpenDetails={() => setDetailsOpen(true)}
             />

@@ -34,10 +34,12 @@ function Fields({ fields }: { readonly fields: readonly DecisionField[] }) {
 
 export function RecallDressDetail({
   dress,
+  shopName,
   onEditCore,
   onOpenDetails,
 }: {
   readonly dress: Dress;
+  readonly shopName?: string;
   readonly onEditCore: () => void;
   readonly onOpenDetails: () => void;
 }) {
@@ -50,6 +52,7 @@ export function RecallDressDetail({
     <section className="px-5 pt-5">
       <header>
         <p className="text-xs leading-[18px] text-ink-muted">
+          {shopName ? `${shopName} · ` : ""}
           {dress.order + 1}번째 · {dress.label}
         </p>
         <h1 className="mt-1 break-keep text-xl font-bold leading-7 [overflow-wrap:anywhere]">

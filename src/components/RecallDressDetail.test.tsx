@@ -171,3 +171,17 @@ describe("RecallDressDetail", () => {
     ).toBeInTheDocument();
   });
 });
+
+it("keeps the shop and fitting order visible beside a remembered feature", () => {
+  render(
+    <RecallDressDetail
+      dress={dress}
+      shopName="루미에르 브라이덜"
+      onEditCore={() => undefined}
+      onOpenDetails={() => undefined}
+    />,
+  );
+  expect(screen.getByText(/루미에르 브라이덜/)).toHaveTextContent(
+    "2번째 · Dress 02",
+  );
+});
