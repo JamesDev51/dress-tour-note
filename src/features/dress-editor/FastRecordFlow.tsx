@@ -1,10 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { DressOptionSection } from "./DressOptionSection";
-import {
-  necklineOptions,
-  silhouetteOptions,
-  topStyleOptions,
-} from "../../lib/dress/options";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { FastRecordOptions } from "./FastRecordOptions";
 import type {
   Dress,
   Neckline,
@@ -31,11 +26,6 @@ type CoreDress = Pick<
 type Step = 1 | 2 | 3 | 4;
 const PREVIOUS_STEP = { 1: 1, 2: 1, 3: 2, 4: 3 } as const;
 const NEXT_STEP = { 1: 2, 2: 3, 3: 4, 4: 4 } as const;
-const fastNecklineOptions = necklineOptions.map((option) =>
-  option.id === "sweetheart"
-    ? { ...option, aliases: [...(option.aliases ?? []), "하트형"] }
-    : option,
-);
 
 function hasRecordedCore(dress: CoreDress) {
   return dress.coreRecordedAt !== undefined;
@@ -46,11 +36,17 @@ export function FastRecordFlow({
   onPatch,
   onComplete,
   onOpenDetails,
+  recallEditor,
+  corePreview,
+  renderSummary,
 }: {
   dress: CoreDress;
   onPatch: (patch: Partial<Dress>) => Promise<void>;
   onComplete: () => Promise<void>;
   onOpenDetails: () => void;
+  recallEditor?: ReactNode;
+  corePreview?: ReactNode;
+  renderSummary?: (onEditCore: () => void) => ReactNode;
 }) {
   const recorded = hasRecordedCore(dress);
   const [view, setView] = useState<"summary" | "steps">(
@@ -164,6 +160,7 @@ export function FastRecordFlow({
   };
 
   if (view === "summary") {
+    if (renderSummary) return renderSummary(() => setView("steps"));
     return (
       <FastRecordSummary
         dress={{
@@ -196,45 +193,23 @@ export function FastRecordFlow({
         />
       </div>
 
-      {step === 1 && (
-        <DressOptionSection
-          category="top"
-          title="어깨/상의는 어땠나요?"
-          options={topStyleOptions}
-          value={acknowledged[0] ? topStyle : undefined}
-          onPick={(value) => void pickTop(value)}
-          disabled={() => saving}
-          allowCustom={false}
-          customValue={dress.customOptions?.top}
-          onCustomCommit={() => undefined}
+      {step !== 4 && (
+        <FastRecordOptions
+          step={step}
+          values={{
+            topStyle,
+            neckline,
+            silhouette,
+            customOptions: dress.customOptions,
+          }}
+          acknowledged={acknowledged[step - 1] === true}
+          saving={saving}
+          onTop={(value) => void pickTop(value)}
+          onNeckline={(value) => void pickNeckline(value)}
+          onSilhouette={(value) => void pickSilhouette(value)}
         />
       )}
-      {step === 2 && (
-        <DressOptionSection
-          category="neckline"
-          title="네크라인은 어땠나요?"
-          options={fastNecklineOptions}
-          value={acknowledged[1] ? neckline : undefined}
-          onPick={(value) => void pickNeckline(value)}
-          disabled={() => saving}
-          allowCustom={false}
-          customValue={dress.customOptions?.neckline}
-          onCustomCommit={() => undefined}
-        />
-      )}
-      {step === 3 && (
-        <DressOptionSection
-          category="silhouette"
-          title="실루엣은 어땠나요?"
-          options={silhouetteOptions}
-          value={acknowledged[2] ? silhouette : undefined}
-          onPick={(value) => void pickSilhouette(value)}
-          disabled={() => saving}
-          allowCustom={false}
-          customValue={dress.customOptions?.silhouette}
-          onCustomCommit={() => undefined}
-        />
-      )}
+      {step === 4 && corePreview}
       {step === 4 && (
         <FastRecordDecisionStep
           acknowledged={acknowledged[3]}
@@ -246,6 +221,12 @@ export function FastRecordFlow({
           onRating={(value) => void changeRating(value)}
           onTag={(value) => void toggleTag(value)}
         />
+      )}
+
+      {step === 4 && (
+        <fieldset disabled={saving} className="min-w-0">
+          {recallEditor}
+        </fieldset>
       )}
 
       {error && (

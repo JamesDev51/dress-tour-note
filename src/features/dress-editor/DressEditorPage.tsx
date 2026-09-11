@@ -1,6 +1,11 @@
+import {
+  acknowledgeRecallDraft,
+  readRecallDraft,
+} from "../../lib/storage/recallDraft";
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useNavigate, useParams } from "react-router-dom";
+import { RecallDressDetail } from "../../components/RecallDressDetail";
 import { DressPreview } from "../../components/DressPreview";
 import { db } from "../../db/database";
 import {
@@ -16,6 +21,7 @@ import {
   type Dress,
   type DressOptionCategory,
 } from "../../types/domain";
+import { DressRecallNotes } from "./DressRecallNotes";
 import { DressDetailsPanel } from "./DressDetailsPanel";
 import { DressEditorHeader } from "./DressEditorHeader";
 import { FastRecordFlow } from "./FastRecordFlow";
@@ -52,12 +58,14 @@ export function DressEditorPage() {
     writeDress,
   });
   const {
+    recall,
+    latestRecall,
+    updateRecall,
     memo,
     setMemo,
     label,
     setLabel,
     transform,
-    setTransform,
     latestMemo,
     latestLabel,
     latestTransform,
@@ -99,12 +107,16 @@ export function DressEditorPage() {
         [category]: value || undefined,
       },
     });
-  const saveDraft = () =>
-    persist({
+  const saveDraft = async () => {
+    const pendingRecall = readRecallDraft(dressId);
+    await persist({
       memo: latestMemo.current,
+      ...latestRecall.current,
       label: latestLabel.current.trim() || dress.label,
       ...(currentData.face ? { faceTransform: latestTransform.current } : {}),
     });
+    if (pendingRecall) acknowledgeRecallDraft(dressId, pendingRecall.revision);
+  };
   const goBack = async () => {
     try {
       await waitForPending();
@@ -142,14 +154,25 @@ export function DressEditorPage() {
     }
   };
   const resetFace = () => {
-    latestTransform.current = DEFAULT_FACE_TRANSFORM;
-    setTransform(DEFAULT_FACE_TRANSFORM);
+    updateTransform(DEFAULT_FACE_TRANSFORM);
     void safelyPersist({ faceTransform: DEFAULT_FACE_TRANSFORM });
   };
   const changeLabel = (value: string) => {
     setLabel(value);
     latestLabel.current = value;
   };
+
+  const recallEditor = (
+    <DressRecallNotes
+      values={recall}
+      onChange={updateRecall}
+      onBlur={() =>
+        void saveDraft().catch(() =>
+          toast("저장하지 못했어요. 다시 시도해 주세요."),
+        )
+      }
+    />
+  );
 
   return (
     <main className="min-h-dvh">
@@ -165,42 +188,63 @@ export function DressEditorPage() {
           safelyPersist({ isFavorite: !dress.isFavorite })
         }
       />
-      <div className="px-5 pt-4">
-        <DressPreview
-          dress={{ ...dress, faceTransform: transform }}
-          faceAsset={currentData.face}
-          includeFace={detailsOpen && includeFace}
-          className="mx-auto aspect-[9/16] max-h-[34dvh] w-auto"
-        />
-      </div>
+      {detailsOpen && (
+        <div className="px-5 pt-4">
+          <DressPreview
+            dress={{ ...dress, faceTransform: transform }}
+            mode="visual"
+            faceAsset={currentData.face}
+            includeFace={detailsOpen && includeFace}
+            className="mx-auto aspect-[9/16] max-h-[34dvh] w-auto"
+          />
+        </div>
+      )}
       {detailsOpen ? (
-        <DressDetailsPanel
-          dress={dress}
-          memo={memo}
-          transform={transform}
-          face={currentData.face}
-          includeFace={includeFace}
-          onPatch={safelyPersist}
-          onCustomCommit={saveCustomOption}
-          onMemoChange={(value) => {
-            setMemo(value);
-            latestMemo.current = value;
-          }}
-          onMemoBlur={() => void safelyPersist({ memo: latestMemo.current })}
-          onRemoveFace={removeFace}
-          onUploadFace={uploadFace}
-          onIncludeFaceChange={setIncludeFace}
-          onTransformPatch={updateTransform}
-          onTransformCommit={flushTransform}
-          onResetFace={resetFace}
-          onClose={() => {
-            setIncludeFace(false);
-            setDetailsOpen(false);
-          }}
-        />
+        <>
+          <div className="px-5">{recallEditor}</div>
+          <DressDetailsPanel
+            dress={dress}
+            memo={memo}
+            transform={transform}
+            face={currentData.face}
+            includeFace={includeFace}
+            onPatch={safelyPersist}
+            onCustomCommit={saveCustomOption}
+            onMemoChange={(value) => {
+              setMemo(value);
+              latestMemo.current = value;
+            }}
+            onMemoBlur={() => void safelyPersist({ memo: latestMemo.current })}
+            onRemoveFace={removeFace}
+            onUploadFace={uploadFace}
+            onIncludeFaceChange={setIncludeFace}
+            onTransformPatch={updateTransform}
+            onTransformCommit={flushTransform}
+            onResetFace={resetFace}
+            onClose={() => {
+              setIncludeFace(false);
+              setDetailsOpen(false);
+            }}
+          />
+        </>
       ) : (
         <FastRecordFlow
           dress={dress}
+          recallEditor={recallEditor}
+          corePreview={
+            <DressPreview
+              dress={dress}
+              mode="visual"
+              className="mx-auto mt-6 max-w-40"
+            />
+          }
+          renderSummary={(onEditCore) => (
+            <RecallDressDetail
+              dress={dress}
+              onEditCore={onEditCore}
+              onOpenDetails={() => setDetailsOpen(true)}
+            />
+          )}
           onPatch={persist}
           onComplete={addNextDress}
           onOpenDetails={() => setDetailsOpen(true)}

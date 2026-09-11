@@ -1,3 +1,4 @@
+import { clearRecallDrafts } from "../../lib/storage/recallDraft";
 import {
   ArrowLeft,
   Database,
@@ -66,6 +67,7 @@ export function PrivacyPage() {
               return;
             await deleteAllData();
             clearPreferences();
+            clearRecallDrafts();
             await clearAllCaches();
             toast("이 기기의 기록을 모두 삭제했어요.");
             nav("/", { replace: true });
