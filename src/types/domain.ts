@@ -184,6 +184,9 @@ export interface Dress {
   details: DressDetail[];
   quickTags: QuickTag[];
   rating?: 1 | 2 | 3 | 4 | 5;
+  memoryCue?: string;
+  likedReason?: string;
+  concern?: string;
   memo: string;
   isFavorite: boolean;
   coreRecordedAt?: ISODateTime;

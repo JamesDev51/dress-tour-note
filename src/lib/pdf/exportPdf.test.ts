@@ -116,6 +116,9 @@ function maximalKoreanDress(): Dress {
     .repeat(4)
     .slice(0, 80);
   return dress({
+    memoryCue: "기".repeat(80),
+    likedReason: "좋".repeat(160),
+    concern: "아".repeat(160),
     details: ["corset", "draping", "pearl", "floral"],
     quickTags: ["신부 픽", "편함", "상체 예쁨"],
     customOptions: {
@@ -262,10 +265,26 @@ describe("visual PDF export", () => {
     const normalized = drawnText(drawText.mock.calls)
       .join("")
       .replaceAll(" ", "");
-    expect(normalized).toContain(
+    const content = normalized.replaceAll(
+      "테스트브라이덜·Dress01상세기록·계속",
+      "",
+    );
+    expect(content).toContain(
       maximal.customOptions?.details?.replaceAll(" ", ""),
     );
-    expect(normalized).toContain(maximal.memo.replaceAll(" ", ""));
+    expect(content).toContain(maximal.memo.replaceAll(" ", ""));
+    expect(content.split(maximal.memoryCue ?? "")).toHaveLength(3);
+    expect(content.split(maximal.likedReason ?? "")).toHaveLength(3);
+    expect(content.split(maximal.concern ?? "")).toHaveLength(3);
+    expect(
+      drawnText(drawText.mock.calls).filter((text) => text === "기억할 특징"),
+    ).toHaveLength(2);
+    expect(
+      drawnText(drawText.mock.calls).filter((text) => text === "좋았던 점"),
+    ).toHaveLength(2);
+    expect(
+      drawnText(drawText.mock.calls).filter((text) => text === "아쉬운 점"),
+    ).toHaveLength(2);
     expect(
       drawText.mock.calls.every(
         ([, options]) => typeof options?.y === "number" && options.y >= 24,

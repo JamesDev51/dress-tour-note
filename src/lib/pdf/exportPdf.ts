@@ -8,22 +8,10 @@ import {
 import fontkit from "@pdf-lib/fontkit";
 import koreanFontUrl from "../../assets/pretendard-pdf-static.ttf?url";
 import { getTourSnapshot, patchTour } from "../../db/repositories";
-import type { Dress, DressOptionCategory, Shop } from "../../types/domain";
+import type { Dress, Shop } from "../../types/domain";
 import type { ExportOptions, ExportProgress } from "../../types/portable";
 import { blobToDataUrl, toArrayBuffer } from "../image/processFace";
-import {
-  backStyleOptions,
-  colorOptions,
-  detailOptions,
-  fabricOptions,
-  necklineOptions,
-  optionLabel,
-  silhouetteOptions,
-  summarizeDress,
-  topStyleOptions,
-  trainOptions,
-  waistlineOptions,
-} from "../dress/options";
+import { fabricOptions, optionLabel, summarizeDress } from "../dress/options";
 import { dressRenderTokens } from "../dress/renderTokens";
 import { dressSvgToJpeg, type DressSketchView } from "../renderer/dressSvg";
 import {
@@ -32,6 +20,12 @@ import {
   serializePortableBundle,
 } from "./portable";
 import { appendPortableTrailer } from "./portableTrailer";
+import {
+  dressTermBlocks,
+  exceptionBlocks,
+  recallBlocks,
+  type TextBlock,
+} from "./dressTextBlocks";
 
 const A4: [number, number] = [595.28, 841.89];
 const margin = 42;
@@ -57,37 +51,10 @@ const sketchViews = [
   "upper",
   "back",
 ] as const satisfies readonly DressSketchView[];
-const exceptionCategories = [
-  "top",
-  "neckline",
-  "silhouette",
-  "fabric",
-  "color",
-  "waistline",
-  "backStyle",
-  "train",
-  "details",
-] as const satisfies readonly DressOptionCategory[];
 const sketchViewLabels: Readonly<Record<DressSketchView, string>> = {
   full: "전체",
   upper: "상체",
   back: "뒤태",
-};
-const categoryLabels: Readonly<Record<DressOptionCategory, string>> = {
-  top: "상의 디자인",
-  neckline: "네크라인",
-  silhouette: "실루엣",
-  fabric: "소재",
-  color: "색상",
-  waistline: "허리선",
-  backStyle: "등 디자인",
-  train: "트레인",
-  details: "디테일",
-};
-
-type TextBlock = {
-  readonly label: string;
-  readonly text: string;
 };
 
 type DetailFlow = {
@@ -197,65 +164,6 @@ function hexColor(value: string) {
     Number.parseInt(normalized.slice(2, 4), 16) / 255,
     Number.parseInt(normalized.slice(4, 6), 16) / 255,
   );
-}
-
-function dressTermBlocks(dress: Dress): readonly TextBlock[] {
-  return [
-    {
-      label: categoryLabels.top,
-      text: optionLabel(topStyleOptions, dress.topStyle),
-    },
-    {
-      label: categoryLabels.neckline,
-      text: optionLabel(necklineOptions, dress.neckline),
-    },
-    {
-      label: categoryLabels.silhouette,
-      text: optionLabel(silhouetteOptions, dress.silhouette),
-    },
-    {
-      label: categoryLabels.fabric,
-      text: optionLabel(fabricOptions, dress.fabric),
-    },
-    {
-      label: categoryLabels.color,
-      text: optionLabel(colorOptions, dress.color),
-    },
-    {
-      label: categoryLabels.waistline,
-      text: optionLabel(waistlineOptions, dress.waistline),
-    },
-    {
-      label: categoryLabels.backStyle,
-      text: optionLabel(backStyleOptions, dress.backStyle),
-    },
-    {
-      label: categoryLabels.train,
-      text: optionLabel(trainOptions, dress.train),
-    },
-    {
-      label: categoryLabels.details,
-      text: dress.details.length
-        ? dress.details
-            .map((detail) => optionLabel(detailOptions, detail))
-            .join(" · ")
-        : "미기록",
-    },
-  ];
-}
-
-function exceptionBlocks(dress: Dress): readonly TextBlock[] {
-  return exceptionCategories.flatMap((category) => {
-    const note = dress.customOptions?.[category];
-    return note
-      ? [
-          {
-            label: `${categoryLabels[category]} · 비슷하지만 달라요`,
-            text: note,
-          },
-        ]
-      : [];
-  });
 }
 
 function drawDetailHeader(
@@ -586,6 +494,7 @@ export async function exportPortablePdf(
     const label = dressLabel(dress, shop);
     drawDetailHeader(page, font, label, false);
     let flow: DetailFlow = { page, y: 726 };
+    flow = drawFlowBlocks(pdf, font, label, flow, recallBlocks(dress));
     flow = drawFlowBlocks(pdf, font, label, flow, dressTermBlocks(dress));
     flow = drawFlowBlocks(pdf, font, label, flow, exceptionBlocks(dress));
     flow = drawFlowBlocks(pdf, font, label, flow, [
@@ -647,6 +556,30 @@ export async function exportPortablePdf(
         15,
         pdfColors.summary,
       );
+      for (const block of recallBlocks(dress)) {
+        favoriteY -= 9;
+        favoriteY = drawTextLines(
+          page,
+          font,
+          block.label,
+          summaryX,
+          favoriteY,
+          8,
+          273,
+          13,
+          pdfColors.accent,
+        );
+        favoriteY = drawTextLines(
+          page,
+          font,
+          block.text,
+          summaryX,
+          favoriteY,
+          8,
+          273,
+          13,
+        );
+      }
       favoriteY -= 12;
       favoriteY = drawTextLines(
         page,

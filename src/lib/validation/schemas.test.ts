@@ -74,6 +74,40 @@ describe("portable schema compatibility", () => {
       portableTourV1Schema.parse(base()).dresses[0].backStyle,
     ).toBeUndefined();
   });
+  it("parses trimmed recall fields at their limits and keeps legacy omission", () => {
+    // Given a v1 dress with boundary-length recall fields
+    const value = base();
+    Object.assign(value.dresses[0], {
+      memoryCue: `  ${"기".repeat(80)}  `,
+      likedReason: `  ${"좋".repeat(160)}  `,
+      concern: `  ${"아".repeat(160)}  `,
+    });
+
+    // When the portable boundary parses the dress
+    const parsed = portableTourV1Schema.parse(value).dresses[0];
+
+    // Then recall text is trimmed exactly and omission remains absent
+    expect(parsed).toMatchObject({
+      memoryCue: "기".repeat(80),
+      likedReason: "좋".repeat(160),
+      concern: "아".repeat(160),
+    });
+    expect(
+      portableTourV1Schema.parse(base()).dresses[0].memoryCue,
+    ).toBeUndefined();
+  });
+  it.each([
+    ["memoryCue", 81],
+    ["likedReason", 161],
+    ["concern", 161],
+  ] as const)("rejects over-limit %s recall text", (field, length) => {
+    // Given a v1 dress with one oversized untrusted recall field
+    const value = base();
+    Object.assign(value.dresses[0], { [field]: "가".repeat(length) });
+
+    // When and then the portable boundary parses it, validation rejects it
+    expect(() => portableTourV1Schema.parse(value)).toThrow();
+  });
   it("accepts new optional backStyle", () => {
     const value = base();
     (

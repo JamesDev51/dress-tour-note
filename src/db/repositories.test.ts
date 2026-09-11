@@ -289,4 +289,39 @@ describe("repositories", () => {
       quickTags: additiveQuickTags,
     });
   });
+
+  it("normalizes recall text and preserves it through reopen duplicate copy and overwrite", async () => {
+    // Given recall text at every exact boundary
+    const t = await createTour({ title: "투어" });
+    const s = await addShop(t, { name: "샵" });
+    const memoryCue = "기".repeat(80);
+    const likedReason = "좋".repeat(160);
+    const concern = "아".repeat(160);
+    const d = await addDress(s, {
+      memoryCue: `  ${memoryCue}  `,
+      likedReason: `  ${likedReason}  `,
+      concern: `  ${concern}  `,
+    });
+
+    // When one field is cleared, restored, reopened, duplicated, and imported
+    await patchDress(d, { concern: "   " });
+    expect((await db.dresses.get(d))?.concern).toBeUndefined();
+    await patchDress(d, { concern: ` ${concern} ` });
+    const duplicateId = await duplicateDress(d);
+    const source = await getTourSnapshot(t);
+    const copyId = await importSnapshot(source, "copy");
+    await patchDress(d, { memoryCue: "바뀐 특징" });
+    await importSnapshot(source, "overwrite");
+    await db.close();
+    await db.open();
+
+    // Then every persistence path retains exact normalized values under schema v1
+    const expectedRecall = { memoryCue, likedReason, concern };
+    expect(db.verno).toBe(1);
+    expect(await db.dresses.get(d)).toMatchObject(expectedRecall);
+    expect(await db.dresses.get(duplicateId)).toMatchObject(expectedRecall);
+    expect((await getTourSnapshot(copyId)).dresses[0]).toMatchObject(
+      expectedRecall,
+    );
+  });
 });

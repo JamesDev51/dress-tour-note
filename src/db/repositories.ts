@@ -44,6 +44,9 @@ const mergeCustomOptions = (
   return normalizeCustomOptions(next);
 };
 
+const trimRecallText = (value: string | undefined) =>
+  value?.trim() || undefined;
+
 export async function createTour(
   input: Partial<Pick<Tour, "title" | "brideName" | "tourDate">> = {},
 ) {
@@ -155,6 +158,9 @@ export async function addDress(shopId: Id, seed?: Partial<Dress>) {
     order,
     label: seed?.label || `Dress ${String(order + 1).padStart(2, "0")}`,
     isFavorite: seed?.isFavorite ?? false,
+    memoryCue: trimRecallText(seed?.memoryCue),
+    likedReason: trimRecallText(seed?.likedReason),
+    concern: trimRecallText(seed?.concern),
     customOptions: normalizeCustomOptions(seed?.customOptions),
     createdAt: now(),
     updatedAt: now(),
@@ -179,8 +185,13 @@ export async function duplicateDress(dressId: Id) {
   return addDress(d.shopId, { ...seed, isFavorite: false });
 }
 export async function patchDress(dressId: Id, patch: Partial<Dress>) {
-  const { customOptions, ...rest } = patch;
+  const { customOptions, memoryCue, likedReason, concern, ...rest } = patch;
   const next: Partial<Dress> = { ...rest };
+  if (Object.hasOwn(patch, "memoryCue"))
+    next.memoryCue = trimRecallText(memoryCue);
+  if (Object.hasOwn(patch, "likedReason"))
+    next.likedReason = trimRecallText(likedReason);
+  if (Object.hasOwn(patch, "concern")) next.concern = trimRecallText(concern);
   if (next.details && next.details.length > 4)
     next.details = next.details.slice(0, 4);
   await db.transaction("rw", db.dresses, db.tours, async () => {

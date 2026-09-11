@@ -21,6 +21,13 @@ export const faceTransformSchema = z.object({
   rotation: z.number().min(-15).max(15),
 });
 const customOptionNoteSchema = z.string().trim().min(1).max(80);
+const optionalRecallTextSchema = (maxLength: number) =>
+  z
+    .string()
+    .trim()
+    .max(maxLength)
+    .transform((value) => value || undefined)
+    .optional();
 const customOptionsSchema = z
   .object({
     top: customOptionNoteSchema.optional(),
@@ -85,6 +92,9 @@ export const dressSchema = z.object({
       z.literal(5),
     ])
     .optional(),
+  memoryCue: optionalRecallTextSchema(80),
+  likedReason: optionalRecallTextSchema(160),
+  concern: optionalRecallTextSchema(160),
   memo: z.string().max(1000),
   isFavorite: z.boolean(),
   coreRecordedAt: z.string().datetime().optional(),

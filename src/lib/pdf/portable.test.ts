@@ -52,6 +52,9 @@ const snapshot: TourSnapshot = {
       train: "chapel",
       details: [],
       quickTags: ["신부 픽"],
+      memoryCue: "기억할 특징".repeat(8).slice(0, 80),
+      likedReason: "좋았던 점".repeat(32).slice(0, 160),
+      concern: "아쉬운 점".repeat(32).slice(0, 160),
       customOptions: {
         top: "얇은 진주 끈",
         waistline: "곡선 절개",
@@ -134,6 +137,9 @@ describe("portable payload", () => {
       coreRecordedAt: now,
       customOptions: snapshot.dresses[0].customOptions,
       quickTags: ["신부 픽"],
+      memoryCue: snapshot.dresses[0].memoryCue,
+      likedReason: snapshot.dresses[0].likedReason,
+      concern: snapshot.dresses[0].concern,
     });
   });
   it("keeps legacy option IDs raw in portable v1 payloads", () => {

@@ -50,6 +50,9 @@ function snapshot(): TourSnapshot {
         train: "chapel",
         details: [],
         quickTags: ["신부 픽"],
+        memoryCue: "실크 광택과 낮은 허리선",
+        likedReason: "움직일 때 가볍고 상체가 정돈되어 보였음",
+        concern: "가슴선이 조금 떠서 수선 여부를 확인해야 함",
         customOptions: {
           neckline: "스캘럽 가장자리",
           backStyle: "등 파임이 더 깊음",
@@ -119,6 +122,11 @@ describe("inspectPortablePdf", () => {
     );
     expect(result.payload.tour.title).toBe("PDF 왕복 테스트");
     expect(result.payload.dresses[0].memo).toBe("왕복 보존 메모");
+    expect(result.payload.dresses[0]).toMatchObject({
+      memoryCue: "실크 광택과 낮은 허리선",
+      likedReason: "움직일 때 가볍고 상체가 정돈되어 보였음",
+      concern: "가슴선이 조금 떠서 수선 여부를 확인해야 함",
+    });
     expect(result.payload.dresses[0].customOptions).toEqual({
       neckline: "스캘럽 가장자리",
       backStyle: "등 파임이 더 깊음",
