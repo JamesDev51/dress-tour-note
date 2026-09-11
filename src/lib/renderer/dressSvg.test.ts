@@ -113,6 +113,51 @@ describe("dress memory sketch", () => {
     expect(dressSvgMarkup(dress, face, true, "upper")).toContain(face);
   });
 
+  it.each(["full", "upper", "back"] as const)(
+    "renders a readable visual-only %s sketch without SVG copy",
+    (view) => {
+      const svg = dressSvgMarkup(
+        { ...dress, train: "cathedral" },
+        undefined,
+        false,
+        view,
+        "visual",
+      );
+
+      expect(svg).toContain(`data-view="${view}"`);
+      expect(svg).toContain('data-mode="visual"');
+      expect(svg).toContain('data-layer="garment"');
+      expect(svg).toContain('data-layer="mannequin"');
+      expect(svg).toContain('data-layer="neck"');
+      expect(svg).not.toContain("<text");
+      expect(svg).not.toContain("data-field");
+      expect(svg).not.toContain('data-layer="fabric-swatch"');
+      if (view !== "upper") {
+        expect(svg).toContain('data-shape="cathedral"');
+        expect(svg).not.toContain("translate(22 -72)");
+      }
+    },
+  );
+
+  it("keeps unknown marks and excludes private face data in visual back view", () => {
+    const svg = dressSvgMarkup(
+      {
+        ...dress,
+        backStyle: "unknown",
+        silhouette: "unknown",
+        faceTransform: { x: 0.5, y: -0.25, scale: 1.2, rotation: 8 },
+      },
+      "data:image/webp;base64,private-face",
+      true,
+      "back",
+      "visual",
+    );
+
+    expect(svg).toContain('data-state="unknown"');
+    expect(svg).not.toContain("private-face");
+    expect(svg).not.toContain("<image");
+  });
+
   it.each([
     ["topStyle", "strapless", ["neckline", "silhouette"]],
     ["neckline", "sweetheart", ["topStyle", "silhouette"]],

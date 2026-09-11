@@ -1,5 +1,35 @@
 # 드레스노트 Design System
 
+## Recall experience — 2026-09-11
+
+이번 사용자 요청은 기록을 다시 보고 어떤 드레스였는지 떠올리고 선택할 수 있게 하는 것이다. 아래 규칙은 이전 문서의 작은 스케치·분류 우선 목록·분류 순서 비교 규칙을 대체한다. 사진처럼 재현한다는 약속은 하지 않으며 기록하지 않은 특징을 추정하지 않는다.
+
+- 기록은 네 단계로 유지한다. 마지막 단계에서 `기억할 특징`(80자), `좋았던 점`(160자), `아쉬운 점`(160자)을 선택적으로 남긴다. 소재·디테일 전체 목록을 거쳐야 이유를 적을 수 있는 구조를 피한다. 입은 사람의 느낌은 당사자에게 물어서 기록하도록 안내한다.
+- 다시 보는 목록은 기억할 특징을 첫 제목으로 보여 주고, 없으면 기존 드레스 이름을 사용한다. 업체·착용 순서/드레스 이름은 함께 남겨 기록의 출처를 잃지 않는다. 문장 생성이나 메모를 임의로 별명으로 바꾸는 것은 금지한다.
+- 저장한 드레스를 열면 큰 그림, 기억할 특징, 이유, 선택한 실제 옵션 예시, 전체 기록을 확인한다. 수정 동작은 명시적이며 새 드레스는 빠른 입력으로 시작한다. 이전 v1 기록도 모든 원래 입력값에 접근할 수 있어야 한다.
+- 브라우저의 작은 스케치 안에는 글자를 넣지 않는다. 동일한 SVG 형태를 넓게 보여 주고 제목·기록 상태·설명은 읽을 수 있는 HTML로 밖에 둔다. PDF의 기존 설명형 렌더링과 face 제외 계약은 유지한다.
+- 선택한 소재·뒤태·디테일은 기존 local WebP 예시를 재사용하며 `선택한 특징 · 예시 이미지`라고 설명한다. 예시의 다른 부위를 실제 기록으로 오인하게 하지 않는다. 미기록 항목에는 이미지를 만들어 넣지 않는다.
+- 비교는 선택 이유/착용감 → 관찰된 외형 차이 → 기록이 부족한 항목 순서다. 알려진 값끼리 다른 것과 한쪽을 기록하지 않은 것은 서로 다른 구역에 둔다. 같은 특징도 필요할 때 펼쳐 확인할 수 있다. 전체/상체/뒤태를 나란히 전환한다.
+- 모든 기록을 보존한다. 요약에서 생략된 메모·디테일은 상세에서 전체를 읽을 수 있어야 한다. 저장 실패에는 재시도를 제공하고 마지막 입력 직후 이동해도 저장을 기다린다.
+
+### Reusable recall primitives and states
+
+| Primitive        | Anatomy                                                                 | States                                                    |
+| ---------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
+| Recall card      | 시각 전용 스케치, 특징 제목, 업체·이름, 후보·별점, 선택 이유, 선택 예시 | recorded / legacy / unknown / image-loading / image-error |
+| Recall notes     | 세 개의 짧은 레이블 입력, 선택 안내, 즉시 반영되는 글자 제한            | empty / editing / saving / saved / error-retry            |
+| Sketch viewer    | 그림, 전체·상체·뒤태 선택 버튼, 의미 있는 HTML 캡션                     | full / upper / back / unknown / optional-face             |
+| Selected artwork | 기존 이미지, 공식 용어, 쉬운 설명; 실제 사진이 아닌 선택 예시 안내      | known / unknown-text / loading / error                    |
+| Comparison group | 두 열의 동일 항목, 이유/실제 차이/정보 부족 그룹                        | observed-difference / incomplete / same / empty           |
+
+### Recall tokens
+
+기존 Pretendard, blush, 흰 shell, 4px spacing과 44px 목표를 유지한다. 제목은 20px/28px semibold 또는 bold, 본문·메모는 14px/22px, 보조 식별 정보는 12px/18px, 섹션 제목은 16px/24px이다. 320px에서도 두 비교 열의 본문은 12px/20px 아래로 줄이지 않는다. 그림의 작은 글자를 키우는 대신 HTML로 분리한다.
+
+기존 CSS 토큰을 정식 채택한다: canvas `#eef0f2`, shell `#ffffff`, artwork-surface `#faf7f5`, preview-surface `#fbf8f6`, ink `#211d1c`, ink-muted `#6f6662`, accent-soft `#fff2ee`, accent `#b96e63`, accent-copy `#8b5750`, error `#b91c1c`, error-surface `#fef2f2`. 카드 24px, preview 28px, control 16px radius; 간격 4/8/12/16/20/24/32px. 이미지 안쪽은 외곽 radius에서 padding을 뺀 값을 사용한다. 그림 면은 기존 preview-surface, 선택 이유 면은 accent-soft를 쓰며 의미 없는 장식이나 추가 팔레트를 만들지 않는다.
+
+모바일 스케치는 정보량에 따라 4:5 또는 3:4 영역을 사용하고, 전체 드레스 끝단이나 트레인을 자르지 않는다. 확대해도 unknown 표시와 face 정책은 동일하다. 긴 한국어는 단어를 보존하고, 매우 긴 단일 문자열만 안전하게 줄바꿈한다.
+
 ## Supersession
 
 드레스노트는 사진을 대신하는 **드레스 기억 스케치** 기록 도구다. 이 contract는 이전의 raster mannequin, photoreal virtual try-on, 그리고 245-combination structure-raster mandate를 명시적으로 폐기한다. 이들은 구현 요구사항이 아니며, 새 구조 조합 생성, 사실적인 신체 비율 약속, 소재를 전신에 덮는 표현을 다시 도입해서는 안 된다. 이 문서는 런타임 동작을 추가하지 않는 design contract다.
@@ -197,3 +227,7 @@ At both widths, sticky actions reserve scroll space, keyboard focus stays visibl
 | Desktop support-context note above 768px                             | Mobile-only scope; useful QA context without a desktop product layout.                                | Revisit only if scope changes.                        |
 | PDF embeds full Pretendard while UI uses subset                      | Portable PDFs need broad Korean glyph coverage; shell prioritizes first paint.                        | Revisit with portable-glyph test.                     |
 | Transient status overlay does not own focus                          | Focus-policy change exceeds documentation scope.                                                      | Dedicated notification accessibility pass.            |
+
+### Interrupted text recovery
+
+저장된 도메인 데이터의 기준은 Dexie다. 새 기억 메모 세 필드는 입력 즉시 저장을 시작하며, 같은 탭에서 저장 도중 새로고침한 경우에만 복구할 수 있도록 sessionStorage에 제한된 임시 스냅샷을 둔다. 스냅샷은 revision이 일치하는 저장 완료 시 제거하고 전체 데이터 삭제에도 포함한다. 얼굴·이미지·다른 도메인 데이터는 담지 않는다. 후보 결정 저장 중에는 메모 입력을 비활성화해 핵심 기록과 메모가 어긋나지 않게 한다.

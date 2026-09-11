@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Dress, LocalAsset } from "../types/domain";
 import { blobToDataUrl } from "../lib/image/processFace";
-import { dressSvgMarkup, type DressSketchView } from "../lib/renderer/dressSvg";
+import {
+  dressSvgMarkup,
+  type DressSketchMode,
+  type DressSketchView,
+} from "../lib/renderer/dressSvg";
 
 export function DressPreview({
   dress,
@@ -9,12 +13,14 @@ export function DressPreview({
   className = "",
   view = "full",
   includeFace = false,
+  mode = "annotated",
 }: {
   dress: Dress;
   faceAsset?: LocalAsset;
   className?: string;
   view?: DressSketchView;
   includeFace?: boolean;
+  mode?: DressSketchMode;
 }) {
   const [face, setFace] = useState<string>();
   useEffect(() => {
@@ -27,12 +33,12 @@ export function DressPreview({
     };
   }, [faceAsset, includeFace, view]);
   const svg = useMemo(
-    () => dressSvgMarkup(dress, face, includeFace, view),
-    [dress, face, includeFace, view],
+    () => dressSvgMarkup(dress, face, includeFace, view, mode),
+    [dress, face, includeFace, mode, view],
   );
   return (
     <div
-      className={`dress-preview overflow-hidden rounded-preview border border-stone-200 bg-preview-surface ${className}`}
+      className={`dress-preview overflow-hidden rounded-preview border border-stone-200 bg-preview-surface ${mode === "visual" ? "aspect-[3/4]" : ""} ${className}`}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

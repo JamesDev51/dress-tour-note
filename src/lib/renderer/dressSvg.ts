@@ -23,6 +23,7 @@ import {
 } from "./memorySketchPrimitives";
 
 export type DressSketchView = "full" | "upper" | "back";
+export type DressSketchMode = "annotated" | "visual";
 
 const escapeXml = (value: string) =>
   value.replace(
@@ -89,8 +90,10 @@ function fieldsFor(dress: Dress, view: DressSketchView) {
   }
 }
 
-function garment(dress: Dress, view: DressSketchView) {
-  const edge = dressRenderTokens.garmentEdge[dress.color];
+function garment(dress: Dress, view: DressSketchView, visual = false) {
+  const edge = visual
+    ? dressRenderTokens.volume.contourShadow
+    : dressRenderTokens.garmentEdge[dress.color];
   const fill = dressRenderTokens.garmentColor[dress.color];
   const dash = ' stroke-dasharray="6 5" data-state="unknown"';
   const skirt =
@@ -166,6 +169,7 @@ export function dressSvgMarkup(
   faceDataUrl?: string,
   includeFace = false,
   view: DressSketchView = "full",
+  mode: DressSketchMode = "annotated",
 ) {
   const faceAllowed = view !== "back" && includeFace && Boolean(faceDataUrl);
   const faceTransform = faceAllowed ? dress.faceTransform : undefined;
@@ -207,10 +211,29 @@ export function dressSvgMarkup(
   const fabricMark =
     dress.fabric === "unknown" ? "" : fabricMarks[dress.fabric];
   const supportingAnnotations =
-    view === "upper"
+    mode === "visual" || view === "upper"
       ? ""
       : `<g data-layer="fabric-swatch" data-material="${dress.fabric}"${fabricKnown ? "" : ' data-state="unknown"'} color="${dressRenderTokens.garmentEdge[dress.color]}"><circle cx="270" cy="352" r="17" fill="${dressRenderTokens.garmentColor[dress.color]}" stroke="${dressRenderTokens.garmentEdge[dress.color]}"${fabricKnown ? "" : ' stroke-dasharray="4 3"'}/>${fabricMark}<text x="294" y="348" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">소재</text><text x="294" y="363" font-size="10" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">${escapeXml(fabricKnown ? optionLabel(fabricOptions, dress.fabric) : "미기록")}</text></g>${annotations(dress, view)}`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-label="${escapeXml(dress.label)} 드레스 기억 스케치" data-renderer="memory-sketch" data-view="${view}"${allUnknown ? ' data-state="unknown"' : ""}>${faceDefs}<rect width="360" height="640" fill="${dressRenderTokens.previewSurface}"/><text x="24" y="34" font-size="15" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">드레스 기억 스케치</text><text x="24" y="51" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">${view === "full" ? "전체" : view === "upper" ? "상체" : "뒤태"} · 선택한 기록을 단순화한 그림</text><g data-layer="figure"${view === "upper" ? ' transform="translate(0 74) scale(1.18)"' : ""}><circle cx="135" cy="116" r="31" fill="${dressRenderTokens.floorShadow}" opacity=".7"/><path d="M105 174 Q135 153 165 174" fill="none" stroke="${dressRenderTokens.floorShadow}" stroke-width="12" stroke-linecap="round"/>${face}${garment(dress, view)}</g>${fieldsFor(dress, view)}${supportingAnnotations}</svg>`;
+  const visual = mode === "visual";
+  const viewBox = visual ? "0 0 320 427" : "0 0 360 640";
+  const figureTransform = visual
+    ? view === "upper"
+      ? "translate(-42 -130) scale(1.5)"
+      : "translate(22 -58) scale(.8)"
+    : view === "upper"
+      ? "translate(0 74) scale(1.18)"
+      : undefined;
+  const heading = visual
+    ? ""
+    : `<text x="24" y="34" font-size="15" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">드레스 기억 스케치</text><text x="24" y="51" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">${view === "full" ? "전체" : view === "upper" ? "상체" : "뒤태"} · 선택한 기록을 단순화한 그림</text>`;
+  const visibleFields = visual ? "" : fieldsFor(dress, view);
+  const background = visual
+    ? `<rect width="100%" height="100%" fill="${dressRenderTokens.previewSurface}"/>`
+    : `<rect width="360" height="640" fill="${dressRenderTokens.previewSurface}"/>`;
+  const mannequin = visual
+    ? `<g data-layer="mannequin"><circle cx="135" cy="116" r="31" fill="${dressRenderTokens.floorShadow}" stroke="${dressRenderTokens.garmentDropShadow}" stroke-opacity=".18" stroke-width="2"/><path data-layer="neck" d="M126 145 L126 161 Q111 166 104 183 L106 204 M144 145 L144 161 Q159 166 166 183 L164 204" fill="none" stroke="${dressRenderTokens.garmentDropShadow}" stroke-opacity=".28" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g>`
+    : `<circle cx="135" cy="116" r="31" fill="${dressRenderTokens.floorShadow}" opacity=".7"/><path d="M105 174 Q135 153 165 174" fill="none" stroke="${dressRenderTokens.floorShadow}" stroke-width="12" stroke-linecap="round"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" role="img" aria-label="${escapeXml(dress.label)} 드레스 기억 스케치" data-renderer="memory-sketch" data-view="${view}"${visual ? ' data-mode="visual"' : ""}${allUnknown ? ' data-state="unknown"' : ""}>${faceDefs}${background}${heading}<g data-layer="figure"${figureTransform ? ` transform="${figureTransform}"` : ""}>${mannequin}${face}${garment(dress, view, visual)}</g>${visibleFields}${supportingAnnotations}</svg>`;
 }
 
 export async function dressSvgToJpeg(
