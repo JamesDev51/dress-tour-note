@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
+import { PDFDocument } from "pdf-lib";
+import { LEGACY_PORTABLE_FILE_NAME } from "../src/lib/pdf/portable";
 
 const tinyPng = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8Dwn4GBgYGJAQoAHQkCAWJ6+ygAAAAASUVORK5CYII=",
@@ -10,45 +12,73 @@ const optionAssetPaths = [
     "strapless",
     "offShoulder",
     "strap",
+    "spaghetti",
+    "wideStrap",
     "halter",
+    "oneShoulder",
     "shortSleeve",
     "longSleeve",
   ].map((id) => `/assets/options/top/${id}.webp`),
-  ...["straight", "sweetheart", "v", "square", "scoop", "asymmetric"].map(
-    (id) => `/assets/options/neckline/${id}.webp`,
-  ),
-  ...["aLine", "ballGown", "mermaid", "empire"].map(
-    (id) => `/assets/options/silhouette/${id}.webp`,
-  ),
+  ...[
+    "straight",
+    "sweetheart",
+    "v",
+    "square",
+    "scoop",
+    "high",
+    "illusion",
+    "asymmetric",
+  ].map((id) => `/assets/options/neckline/${id}.webp`),
+  ...[
+    "aLine",
+    "ballGown",
+    "empire",
+    "fitAndFlare",
+    "mermaid",
+    "sheath",
+    "teaLength",
+  ].map((id) => `/assets/options/silhouette/${id}.webp`),
   ...[
     "mikadoSatin",
     "lace",
-    "organzaChiffon",
     "subtleBeaded",
     "ornateBeaded",
+    "tulle",
+    "organzaChiffon",
+    "glitterBeaded",
     "floral3D",
   ].map((id) => `/assets/options/fabric/${id}.webp`),
   ...["pureWhite", "ivory", "champagne"].map(
     (id) => `/assets/options/color/${id}.webp`,
   ),
-];
-
-const dressLayerAssetPaths = [
-  "/assets/dress-structures/strapless__sweetheart__mermaid.webp",
-  "/assets/dress-structures/longSleeve__asymmetric__empire.webp",
-  "/assets/dress-structures/unknown__unknown__unknown.webp",
-  ...["straight", "sweetheart", "v", "square", "scoop", "asymmetric"].map(
-    (id) => `/assets/dress-layers/bodice/${id}.webp`,
+  ...["natural", "basque", "drop", "empire"].map(
+    (id) => `/assets/options/waistline/${id}.webp`,
   ),
-  ...["offShoulder", "strap", "halter", "shortSleeve", "longSleeve"].map(
-    (id) => `/assets/dress-layers/top/${id}.webp`,
+  ...[
+    "openBack",
+    "vBack",
+    "buttonBack",
+    "corsetBack",
+    "illusionBack",
+    "bowBack",
+  ].map((id) => `/assets/options/back/${id}.webp`),
+  ...["none", "sweep", "chapel", "cathedral"].map(
+    (id) => `/assets/options/train/${id}.webp`,
   ),
-  ...["unknown", "aLine", "ballGown", "empire", "mermaid"].map(
-    (id) => `/assets/dress-layers/skirt/${id}.webp`,
-  ),
-  ...["shadow", "highlight", "mermaid", "empire"].map(
-    (id) => `/assets/dress-layers/volume/${id}.webp`,
-  ),
+  ...[
+    "corset",
+    "draping",
+    "waistBow",
+    "backBow",
+    "pearl",
+    "sequin",
+    "floral",
+    "slit",
+    "sheer",
+    "detachableSleeve",
+    "overskirt",
+    "buttons",
+  ].map((id) => `/assets/options/detail/${id}.webp`),
 ];
 
 async function createTour(
@@ -66,7 +96,9 @@ async function createTour(
     .fill("E2E 드레스투어");
   await page.getByRole("button", { name: "투어 만들기", exact: true }).click();
   await expect(page).toHaveURL(/\/tour\/[^/]+$/);
-  const tourId = page.url().match(/\/tour\/([^/?#]+)/)![1];
+  const tourMatch = page.url().match(/\/tour\/([^/?#]+)/);
+  if (!tourMatch) throw new Error("tour id missing");
+  const tourId = tourMatch[1];
   await page.getByRole("button", { name: /샵 추가/ }).click();
   await page.getByPlaceholder("드레스샵 이름").fill("E2E 브라이덜");
   await page.getByRole("button", { name: "추가하기", exact: true }).click();
@@ -74,15 +106,21 @@ async function createTour(
     .getByRole("button", { name: "E2E 브라이덜 열기", exact: true })
     .click();
   await page.getByRole("button", { name: "드레스 추가", exact: true }).click();
-  await page.getByRole("button", { name: /오프숄더/ }).click();
-  await page.getByRole("button", { name: /하트형/ }).click();
-  await page.getByRole("button", { name: /A라인/ }).click();
+  await recordCore(page, {
+    top: /오프숄더/,
+    neckline: /하트형/,
+    silhouette: /A라인/,
+    candidate: "후보로 남기기",
+  });
+  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
   await page.getByRole("button", { name: /레이스/ }).click();
   await page.getByRole("button", { name: /아이보리/ }).click();
-  await page
-    .getByPlaceholder(/허리가 제일 얇아/)
-    .fill("E2E 메모: 허리 라인이 가장 좋았음");
-  await page.getByLabel("후보").click();
+  await page.getByLabel("특이사항").fill("E2E 메모: 허리 라인이 가장 좋았음");
+  await page.getByLabel("특이사항").blur();
+  await page.getByRole("button", { name: "5점" }).click();
+  await expect(page.getByRole("button", { name: "5점" })).toHaveClass(
+    /text-amber-400/,
+  );
   if (face) {
     await page
       .locator('input[type="file"][accept*="image/heic"]')
@@ -95,20 +133,66 @@ async function createTour(
       "얼굴 사진을 저장했어요.",
     );
   }
-  await page.waitForTimeout(650);
   if (twoDresses) {
     await page
-      .getByRole("button", { name: "다음 드레스 추가", exact: true })
+      .getByRole("button", { name: "핵심 기록으로", exact: true })
       .click();
-    await page.getByRole("button", { name: /끈 없음/ }).click();
-    await page.getByRole("button", { name: /일자형/ }).click();
-    await page.getByRole("button", { name: /무릎부터 크게 퍼짐/ }).click();
-    await page.getByRole("button", { name: /매끈한 실크/ }).click();
-    await page.getByRole("button", { name: /새하얀 화이트/ }).click();
-    await page.getByPlaceholder(/허리가 제일 얇아/).fill("E2E 두 번째 드레스");
-    await page.waitForTimeout(650);
+    await page
+      .getByRole("button", { name: "핵심 기록 수정", exact: true })
+      .click();
+    await page.getByRole("button", { name: /^다음$/ }).click();
+    await page.getByRole("button", { name: /^다음$/ }).click();
+    await page.getByRole("button", { name: /^다음$/ }).click();
+    await page
+      .getByRole("button", { name: "다음 드레스 기록", exact: true })
+      .click();
+    await recordCore(page, {
+      top: /스트랩리스|끈 없음/,
+      neckline: /스트레이트 네크라인|일자 네크라인/,
+      silhouette: /머메이드|무릎 부근부터/,
+      candidate: "후보 아님",
+    });
+    await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+    await page.getByRole("button", { name: /미카도 새틴|새틴/ }).click();
+    await page.getByRole("button", { name: /퓨어 화이트|새하얀/ }).click();
+    await page.getByLabel("특이사항").fill("E2E 두 번째 드레스");
+    await page.getByLabel("특이사항").blur();
+    await page.getByRole("button", { name: "4점" }).click();
+    await expect(page.getByRole("button", { name: "4점" })).toHaveClass(
+      /text-amber-400/,
+    );
   }
   return tourId;
+}
+
+async function selectPersistedOption(page: Page, name: RegExp | string) {
+  const option = page.getByRole("button", { name }).first();
+  await option.click();
+  await expect(option).toHaveAttribute("aria-pressed", "true");
+}
+
+async function advanceCore(page: Page) {
+  const next = page.getByRole("button", { name: /^다음$/ });
+  await expect(next).toBeEnabled();
+  await next.click();
+}
+
+async function recordCore(
+  page: Page,
+  choices: {
+    top: RegExp | string;
+    neckline: RegExp | string;
+    silhouette: RegExp | string;
+    candidate: "후보로 남기기" | "후보 아님";
+  },
+) {
+  await selectPersistedOption(page, choices.top);
+  await advanceCore(page);
+  await selectPersistedOption(page, choices.neckline);
+  await advanceCore(page);
+  await selectPersistedOption(page, choices.silhouette);
+  await advanceCore(page);
+  await selectPersistedOption(page, choices.candidate);
 }
 
 async function editorToReview(page: Page) {
@@ -152,6 +236,67 @@ async function capturePdf(page: Page) {
   return Buffer.from(dataUrl.slice(dataUrl.indexOf(",") + 1), "base64");
 }
 
+async function legacyV1Pdf() {
+  const now = "2025-01-02T03:04:05.000Z";
+  const payload = {
+    format: "gudress-portable-tour",
+    schemaVersion: 1,
+    appVersion: "1.0.0",
+    exportId: "legacy-export",
+    exportedAt: now,
+    sourceTourId: "legacy-tour",
+    includeFace: false,
+    tour: {
+      id: "legacy-tour",
+      title: "예전 v1 투어",
+      status: "draft",
+      createdAt: now,
+      updatedAt: now,
+    },
+    shops: [
+      {
+        id: "legacy-shop",
+        tourId: "legacy-tour",
+        name: "예전 브라이덜",
+        order: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+    dresses: [
+      {
+        id: "legacy-dress",
+        tourId: "legacy-tour",
+        shopId: "legacy-shop",
+        order: 0,
+        label: "Dress 01",
+        topStyle: "offShoulder",
+        neckline: "sweetheart",
+        silhouette: "aLine",
+        waistline: "unknown",
+        fabric: "lace",
+        color: "ivory",
+        train: "unknown",
+        details: [],
+        quickTags: [],
+        memo: "예전 메모",
+        isFavorite: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+    assets: [],
+  };
+  const pdf = await PDFDocument.create();
+  pdf.addPage([300, 300]);
+  await pdf.attach(
+    Buffer.from(JSON.stringify(payload)),
+    LEGACY_PORTABLE_FILE_NAME,
+    { mimeType: "application/json" },
+  );
+  return Buffer.from(await pdf.save());
+}
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     const originalCreateObjectURL = URL.createObjectURL.bind(URL);
@@ -164,7 +309,18 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (error) => console.log(`[pageerror] ${error.message}`));
   page.on("console", (message) => {
     if (message.type() === "error")
-      console.log(`[console.error] ${message.text()}`);
+      console.log(
+        `[console.error] ${message.location().url}:${message.location().lineNumber} ${message.text()}`,
+      );
+  });
+  page.on("requestfailed", (request) =>
+    console.log(
+      `[requestfailed] ${request.url()} ${request.failure()?.errorText ?? "unknown"}`,
+    ),
+  );
+  page.on("response", (response) => {
+    if (response.status() >= 400)
+      console.log(`[response] ${response.status()} ${response.url()}`);
   });
 });
 
@@ -173,9 +329,8 @@ test("mobile core flow autosaves, reloads and compares two dresses", async ({
 }) => {
   await createTour(page, { twoDresses: true });
   await page.reload();
-  await expect(page.getByPlaceholder(/허리가 제일 얇아/)).toHaveValue(
-    "E2E 두 번째 드레스",
-  );
+  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await expect(page.getByLabel("특이사항")).toHaveValue("E2E 두 번째 드레스");
   await editorToReview(page);
   await page.getByRole("button", { name: "2벌 비교", exact: true }).click();
   await page
@@ -185,8 +340,12 @@ test("mobile core flow autosaves, reloads and compares two dresses", async ({
   await page.getByRole("button", { name: /Dress 02/ }).click();
   await page.getByRole("button", { name: /선택한 2벌 비교하기/ }).click();
   await expect(page.getByText("두 벌을")).toBeVisible();
-  await expect(page.getByText("오프숄더")).toBeVisible();
-  await expect(page.getByText("끈 없음")).toBeVisible();
+  await expect(
+    page.getByText("오프숄더", { exact: true }).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByText("스트랩리스", { exact: true }).first(),
+  ).toBeVisible();
 });
 
 test("portable PDF downloads, imports as a copy, and restores face data", async ({
@@ -223,15 +382,17 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
     .getByRole("button", { name: /Dress 01/ })
     .first()
     .click();
+  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .getByRole("button", { name: "얼굴 미리보기 켜기", exact: true })
+    .click();
   await expect(
-    page.locator(
-      '.dress-preview image[data-layer="raster-mannequin"], .dress-preview image[data-layer="face"]',
-    ),
-  ).toHaveCount(2);
+    page.locator('.dress-preview g[data-layer="figure"]'),
+  ).toHaveCount(1);
   await expect(
-    page.locator('.dress-preview image[data-layer="face"]'),
+    page.locator('.dress-preview g[data-layer="face"] image'),
   ).toHaveAttribute("href", /^data:image\/webp;base64,/);
-  await expect(page.getByPlaceholder(/허리가 제일 얇아/)).toHaveValue(
+  await expect(page.getByLabel("특이사항")).toHaveValue(
     "E2E 메모: 허리 라인이 가장 좋았음",
   );
 });
@@ -263,14 +424,60 @@ test("view-only PDF cannot be restored", async ({ page }) => {
   );
 });
 
+test("old v1 recoverable PDF imports without newer optional fields", async ({
+  page,
+}) => {
+  await page.goto("/import");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "legacy-v1.pdf",
+    mimeType: "application/pdf",
+    buffer: await legacyV1Pdf(),
+  });
+  await expectImportPreview(page, "예전 v1 투어");
+  await page
+    .getByRole("button", { name: "이 기록 불러오기", exact: true })
+    .click();
+  await expect(page.getByText("예전 브라이덜", { exact: true })).toBeVisible();
+});
+
+test("face export explains full, upper, and back privacy then excludes face", async ({
+  page,
+}) => {
+  await createTour(page, { face: true });
+  await editorToReview(page);
+  await reviewToExport(page);
+  await expect(page.getByText(/전체·상체 스케치/)).toBeVisible();
+  await expect(page.getByText(/뒤태에는/)).toBeVisible();
+  await page.getByRole("checkbox").uncheck();
+  await page
+    .getByRole("button", { name: "복원 가능한 PDF 만들기", exact: true })
+    .click();
+  await expect(page.getByText("PDF가 준비됐어요.")).toBeVisible({
+    timeout: 40_000,
+  });
+  const pdfBytes = await capturePdf(page);
+  await page.goto("/import");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "face-excluded.pdf",
+    mimeType: "application/pdf",
+    buffer: pdfBytes,
+  });
+  await expectImportPreview(page, "E2E 드레스투어");
+  await expect(page.getByText(/얼굴 사진도 현재 브라우저에 복원/)).toHaveCount(
+    0,
+  );
+});
+
 test("direct editor URL survives a full reload", async ({ page }) => {
   await createTour(page);
   const url = page.url();
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  await expect(page.getByPlaceholder(/허리가 제일 얇아/)).toHaveValue(
+  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await expect(page.getByLabel("특이사항")).toHaveValue(
     "E2E 메모: 허리 라인이 가장 좋았음",
   );
   await page.reload({ waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
   await expect(page.getByRole("button", { name: /오프숄더/ })).toHaveAttribute(
     "aria-pressed",
     "true",
@@ -305,7 +512,7 @@ test("app shell, individual artwork, and service worker load without external re
     )
     .toBe(true);
   const assets = await Promise.all(
-    [...optionAssetPaths, ...dressLayerAssetPaths].map(async (path) => {
+    optionAssetPaths.map(async (path) => {
       const response = await page.request.get(path);
       return {
         path,
@@ -321,13 +528,10 @@ test("app shell, individual artwork, and service worker load without external re
     ),
   ).toBe(true);
   await page.context().setOffline(true);
-  const offlineAssets = await page.evaluate(
-    async (paths) => {
-      const responses = await Promise.all(paths.map((path) => fetch(path)));
-      return responses.map((response) => response.ok);
-    },
-    [...optionAssetPaths, ...dressLayerAssetPaths],
-  );
+  const offlineAssets = await page.evaluate(async (paths) => {
+    const responses = await Promise.all(paths.map((path) => fetch(path)));
+    return responses.map((response) => response.ok);
+  }, optionAssetPaths);
   await page.context().setOffline(false);
   expect(offlineAssets.every(Boolean)).toBe(true);
   expect(external).toEqual([]);

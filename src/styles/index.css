@@ -4,10 +4,8 @@
 @source "../app/**/*.tsx";
 
 @theme inline {
-  --color-canvas-warm: var(--ds-color-canvas-warm);
-  --color-canvas-clean: var(--ds-color-canvas-clean);
+  --color-canvas: var(--ds-color-canvas);
   --color-shell: var(--ds-color-shell);
-  --color-shell-clean: var(--ds-color-shell-clean);
   --color-accent-soft: var(--ds-color-accent-soft);
   --color-artwork-surface: var(--ds-color-artwork-surface);
   --color-preview-surface: var(--ds-color-preview-surface);
@@ -28,10 +26,8 @@
 }
 
 :root {
-  --ds-color-canvas-warm: #f4efec;
-  --ds-color-canvas-clean: #eef0f2;
-  --ds-color-shell: #fffdfa;
-  --ds-color-shell-clean: #fff;
+  --ds-color-canvas: #eef0f2;
+  --ds-color-shell: #fff;
   --ds-color-accent-soft: #fff2ee;
   --ds-color-artwork-surface: #faf7f5;
   --ds-color-preview-surface: #fbf8f6;
@@ -61,42 +57,21 @@
 }
 
 @font-face {
-  font-family: "Noto Sans KR";
+  font-family: "Pretendard";
   font-style: normal;
   font-display: optional;
-  font-weight: 400;
-  src: url("../assets/noto-sans-kr-ui-400.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Noto Sans KR";
-  font-style: normal;
-  font-display: optional;
-  font-weight: 700;
-  src: url("../assets/noto-sans-kr-ui-700.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Noto Serif KR";
-  font-style: normal;
-  font-display: optional;
-  font-weight: 400;
-  src: url("../assets/noto-serif-kr-ui-400.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Noto Serif KR";
-  font-style: normal;
-  font-display: optional;
-  font-weight: 700;
-  src: url("../assets/noto-serif-kr-ui-700.woff2") format("woff2");
+  font-weight: 100 900;
+  src: url("../assets/pretendard-ui.woff2") format("woff2");
 }
 :root {
   font-family:
-    "Noto Sans KR",
+    "Pretendard",
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
   color: var(--ds-color-ink);
-  background: var(--ds-color-canvas-warm);
+  background: var(--ds-color-canvas);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -104,7 +79,7 @@
   box-sizing: border-box;
 }
 html {
-  background: var(--ds-color-canvas-warm);
+  background: var(--ds-color-canvas);
   scroll-padding-top: 88px;
   scroll-padding-bottom: 120px;
 }
@@ -121,6 +96,10 @@ textarea {
 }
 .app-shell :where(p, h1, h2, h3, button, label) {
   word-break: keep-all;
+}
+.app-shell textarea {
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 .app-shell :where(a, button, input, textarea):focus-visible {
   outline: 2px solid var(--ds-color-accent);
@@ -141,25 +120,13 @@ input[type="range"] {
   background: var(--ds-color-selection);
 }
 .app-root {
-  background: var(--ds-color-canvas-warm);
+  background: var(--ds-color-canvas);
 }
 .app-shell {
   background: var(--ds-color-shell);
 }
 .app-root [role="status"] {
   pointer-events: none;
-}
-.app-root[data-theme="clean"] {
-  background: var(--ds-color-canvas-clean);
-}
-.app-root[data-theme="clean"] .app-shell {
-  background: var(--ds-color-shell-clean);
-}
-.app-root[data-font="serif"],
-.app-root[data-font="serif"] button,
-.app-root[data-font="serif"] input,
-.app-root[data-font="serif"] textarea {
-  font-family: "Noto Serif KR", serif;
 }
 @media (max-width: 767px) {
   .app-shell main div.sticky {
@@ -180,7 +147,6 @@ input[type="range"] {
   }
 }
 
-/* Subtle copy still meets mobile contrast requirements on cream and white surfaces. */
 .app-shell .text-stone-300,
 .app-shell .text-stone-400 {
   color: var(--ds-color-ink-muted);

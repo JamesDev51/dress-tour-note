@@ -16,6 +16,7 @@ export function DressFeedbackSection({
   onMemoChange: (value: string) => void;
   onMemoBlur: () => void;
 }) {
+  const selectedTags = new Set(dress.quickTags);
   return (
     <>
       <section className="mt-8">
@@ -24,11 +25,11 @@ export function DressFeedbackSection({
           {quickTagOptions.map((option) => (
             <button
               key={option.id}
-              aria-pressed={dress.quickTags.includes(option.id)}
-              className={`min-h-11 rounded-full border px-4 text-sm ${dress.quickTags.includes(option.id) ? "border-accent bg-accent-soft text-accent-copy" : "border-stone-200 bg-white text-stone-500"}`}
+              aria-pressed={selectedTags.has(option.id)}
+              className={`min-h-11 rounded-full border px-4 text-sm ${selectedTags.has(option.id) ? "border-accent bg-accent-soft text-accent-copy" : "border-stone-200 bg-white text-stone-500"}`}
               onClick={() =>
                 void onPatch({
-                  quickTags: dress.quickTags.includes(option.id)
+                  quickTags: selectedTags.has(option.id)
                     ? dress.quickTags.filter((tag) => tag !== option.id)
                     : [...dress.quickTags, option.id],
                 })
@@ -55,6 +56,7 @@ export function DressFeedbackSection({
       <section className="mt-8">
         <h2 className="mb-3 text-xl font-black">특이사항</h2>
         <textarea
+          aria-label="특이사항"
           maxLength={1000}
           value={memo}
           onChange={(event) => onMemoChange(event.target.value)}

@@ -1,24 +1,11 @@
-import { useEffect, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { readPreferences, type AppPreferences } from "../lib/preferences";
 import { useUIStore } from "../stores/uiStore";
 export function MobileShell() {
   const toast = useUIStore((s) => s.toast);
   const updateAvailable = useUIStore((s) => s.pwaUpdateAvailable);
   const updateSW = useUIStore((s) => s.updateSW);
-  const [prefs, setPrefs] = useState<AppPreferences>(() => readPreferences());
-  useEffect(() => {
-    const onPrefs = (e: Event) =>
-      setPrefs((e as CustomEvent<AppPreferences>).detail);
-    window.addEventListener("gudress-preferences", onPrefs);
-    return () => window.removeEventListener("gudress-preferences", onPrefs);
-  }, []);
   return (
-    <div
-      data-theme={prefs.theme}
-      data-font={prefs.font}
-      className="app-root min-h-dvh text-stone-900"
-    >
+    <div className="app-root min-h-dvh text-stone-900">
       <div className="app-shell mx-auto min-h-dvh w-full max-w-[480px] shadow-sm">
         <Outlet />
       </div>
@@ -34,7 +21,7 @@ export function MobileShell() {
         <div className="fixed left-1/2 top-3 z-50 flex w-[min(92vw,440px)] -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3 text-sm shadow-lg">
           <span>새 버전이 있어요.</span>
           <button
-            className="font-semibold text-accent-dark"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center font-semibold text-accent-dark"
             onClick={() => updateSW?.()}
           >
             저장 후 업데이트
@@ -57,7 +44,7 @@ export function BrandHeader() {
         to="/privacy"
         className="inline-flex min-h-11 min-w-11 items-center justify-center text-xs text-stone-400"
       >
-        설정
+        개인정보
       </Link>
     </header>
   );

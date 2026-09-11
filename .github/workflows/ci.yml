@@ -20,10 +20,16 @@ jobs:
         run: npm ci
       - name: Security audit
         run: npm audit --audit-level=high
+      - name: Formatting
+        run: npm run format:check
       - name: Typecheck
         run: npm run typecheck
       - name: Unit and integration tests
         run: npm test
+      - name: Validate option catalog
+        run: npm run validate:option-catalog
+      - name: Test option catalog validator
+        run: npm run test:option-catalog-validator
       - name: Production build
         run: npm run build
 

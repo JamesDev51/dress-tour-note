@@ -7,7 +7,7 @@ const today = () => new Date().toLocaleDateString("sv-SE");
 export function NewTourPage() {
   const nav = useNavigate();
   const [brideName, setBride] = useState("");
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState(today);
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -30,7 +30,7 @@ export function NewTourPage() {
           만들어볼까요?
         </h1>
         <p className="mt-3 text-sm text-stone-400">
-          모든 항목은 선택이에요. 바로 시작해도 됩니다.
+          모든 항목은 선택이에요. 바로 시작해도 돼요.
         </p>
       </div>
       <div className="mt-9 space-y-5">
@@ -92,6 +92,7 @@ export function NewTourPage() {
               setSave("error");
               setError(message);
               toast(message);
+            } finally {
               setBusy(false);
             }
           }}

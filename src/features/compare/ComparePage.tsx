@@ -1,40 +1,35 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { DressPreview } from "../../components/DressPreview";
+import { DressDecisionCard } from "../../components/DressDecisionCard";
 import { db } from "../../db/database";
-import {
-  colorOptions,
-  dressForPresentation,
-  fabricOptions,
-  necklineOptions,
-  optionLabel,
-  silhouetteOptions,
-  topStyleOptions,
-} from "../../lib/dress/options";
+import { compareDressPresentations } from "../../lib/dress/decisionPresentation";
 import type { Dress } from "../../types/domain";
 
 export function ComparePage() {
   const { tourId = "" } = useParams();
   const [params] = useSearchParams();
   const nav = useNavigate();
-  const ids = [params.get("a"), params.get("b")].filter(
-    (v): v is string => !!v,
-  );
+  const leftId = params.get("a");
+  const rightId = params.get("b");
+  const validIds =
+    leftId && rightId && leftId !== rightId ? [leftId, rightId] : undefined;
   const data = useLiveQuery(async () => {
-    if (ids.length !== 2) return undefined;
+    if (!validIds) return { kind: "invalid" } as const;
     const dresses = (
-      await Promise.all(ids.map((id) => db.dresses.get(id)))
+      await Promise.all(validIds.map((id) => db.dresses.get(id)))
     ).filter((d): d is Dress => !!d && d.tourId === tourId);
-    if (dresses.length !== 2) return undefined;
-    const tour = await db.tours.get(tourId);
-    const face = tour?.faceAssetId
-      ? await db.assets.get(tour.faceAssetId)
-      : undefined;
+    if (dresses.length !== 2) return { kind: "missing" } as const;
     const shops = await db.shops.where("tourId").equals(tourId).toArray();
-    return { dresses, face, shops };
-  }, [tourId, ids.join("|")]);
+    return { kind: "ready", dresses, shops } as const;
+  }, [tourId, leftId, rightId]);
   if (!data)
+    return (
+      <main className="p-8 text-center text-sm text-stone-400">
+        비교 기록을 불러오는 중...
+      </main>
+    );
+  if (data.kind !== "ready")
     return (
       <main className="min-h-dvh px-5 pt-[calc(18px+env(safe-area-inset-top))]">
         <button
@@ -44,13 +39,23 @@ export function ComparePage() {
         >
           <ArrowLeft />
         </button>
-        <div className="mt-16 text-center text-sm text-stone-400">
-          비교할 드레스 2벌을 다시 선택해 주세요.
+        <div className="mt-16 rounded-3xl border border-dashed border-stone-200 p-6 text-center">
+          <p className="text-sm text-stone-500">
+            {data.kind === "invalid"
+              ? "비교 주소가 올바르지 않아요."
+              : "선택한 드레스 기록을 찾을 수 없어요."}
+          </p>
+          <button
+            className="mt-4 min-h-11 rounded-xl bg-stone-900 px-4 text-sm font-bold text-white"
+            onClick={() => nav(`/tour/${tourId}/review`)}
+          >
+            결과에서 다시 선택
+          </button>
         </div>
       </main>
     );
-  const visibleDresses = data.dresses.map(dressForPresentation);
-  const [left, right] = visibleDresses;
+  const [left, right] = data.dresses;
+  const differences = compareDressPresentations(left, right);
   const shopName = (d: Dress) =>
     data.shops.find((s) => s.id === d.shopId)?.name || "드레스샵";
   return (
@@ -72,71 +77,38 @@ export function ComparePage() {
       </header>
       <section className="mt-6 px-3">
         <div className="grid grid-cols-2 gap-2">
-          {visibleDresses.map((d) => (
+          {data.dresses.map((d) => (
             <div
               key={d.id}
               className="min-w-0 rounded-3xl border border-stone-100 bg-white p-2"
             >
-              <DressPreview dress={d} faceAsset={data.face} />
-              <div className="px-1 pb-2 pt-3">
-                <div className="flex items-center gap-1 text-[11px] text-stone-400">
-                  <span className="truncate">{shopName(d)}</span>
-                  {d.isFavorite && (
-                    <Heart
-                      className="shrink-0 text-accent"
-                      size={12}
-                      fill="currentColor"
-                    />
-                  )}
-                </div>
-                <div className="mt-1 truncate text-sm font-bold">{d.label}</div>
-              </div>
+              <DressDecisionCard
+                dress={d}
+                variant="compare"
+                shopName={shopName(d)}
+              />
             </div>
           ))}
         </div>
-        <div className="mt-5 overflow-hidden rounded-3xl border border-stone-100 bg-white">
-          <CompareRow
-            label="어깨"
-            left={optionLabel(topStyleOptions, left.topStyle)}
-            right={optionLabel(topStyleOptions, right.topStyle)}
-          />
-          <CompareRow
-            label="가슴선"
-            left={optionLabel(necklineOptions, left.neckline)}
-            right={optionLabel(necklineOptions, right.neckline)}
-          />
-          <CompareRow
-            label="치마"
-            left={optionLabel(silhouetteOptions, left.silhouette)}
-            right={optionLabel(silhouetteOptions, right.silhouette)}
-          />
-          <CompareRow
-            label="소재"
-            left={optionLabel(fabricOptions, left.fabric)}
-            right={optionLabel(fabricOptions, right.fabric)}
-          />
-          <CompareRow
-            label="색상"
-            left={optionLabel(colorOptions, left.color)}
-            right={optionLabel(colorOptions, right.color)}
-          />
-          <CompareRow
-            label="별점"
-            left={left.rating ? `${left.rating} / 5` : "미입력"}
-            right={right.rating ? `${right.rating} / 5` : "미입력"}
-          />
-          <CompareRow
-            label="평가"
-            left={left.quickTags.join(" · ") || "없음"}
-            right={right.quickTags.join(" · ") || "없음"}
-          />
-          <CompareRow
-            label="메모"
-            left={left.memo || "없음"}
-            right={right.memo || "없음"}
-            last
-          />
-        </div>
+        {differences.length === 0 ? (
+          <div className="mt-5 rounded-3xl border border-dashed border-stone-200 p-6 text-center text-sm text-stone-500">
+            기록된 차이가 없어요.
+          </div>
+        ) : (
+          <div className="mt-5 overflow-hidden rounded-3xl border border-stone-100 bg-white">
+            {differences.map((row, index) => (
+              <CompareRow
+                key={row.key}
+                label={row.label}
+                left={row.left.value}
+                right={row.right.value}
+                leftState={row.left.state}
+                rightState={row.right.state}
+                last={index === differences.length - 1}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
@@ -145,25 +117,33 @@ function CompareRow({
   label,
   left,
   right,
+  leftState,
+  rightState,
   last = false,
 }: {
   label: string;
   left: string;
   right: string;
+  leftState: "recorded" | "unknown" | "blank";
+  rightState: "recorded" | "unknown" | "blank";
   last?: boolean;
 }) {
   return (
-    <div
-      className={`grid grid-cols-[52px_1fr_1fr] ${last ? "" : "border-b border-stone-100"}`}
-    >
-      <div className="bg-stone-50 px-2 py-4 text-[10px] font-semibold text-stone-400">
+    <div className={last ? "" : "border-b border-stone-100"}>
+      <div className="bg-stone-50 px-3 py-2 text-[10px] font-semibold text-stone-400">
         {label}
       </div>
-      <div className="border-l border-stone-100 px-2 py-4 text-[11px] leading-5 text-stone-600">
-        {left}
-      </div>
-      <div className="border-l border-stone-100 px-2 py-4 text-[11px] leading-5 text-stone-600">
-        {right}
+      <div className="grid grid-cols-2">
+        <div
+          className={`min-w-0 break-keep px-3 py-3 text-xs leading-5 [overflow-wrap:anywhere] ${leftState === "recorded" ? "text-stone-600" : "font-semibold text-stone-400"}`}
+        >
+          {left}
+        </div>
+        <div
+          className={`min-w-0 break-keep border-l border-stone-100 px-3 py-3 text-xs leading-5 [overflow-wrap:anywhere] ${rightState === "recorded" ? "text-stone-600" : "font-semibold text-stone-400"}`}
+        >
+          {right}
+        </div>
       </div>
     </div>
   );

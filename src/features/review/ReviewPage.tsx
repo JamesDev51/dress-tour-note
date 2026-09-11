@@ -1,17 +1,9 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import {
-  ArrowLeft,
-  Check,
-  FileDown,
-  GitCompareArrows,
-  Heart,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Check, FileDown, GitCompareArrows, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { DressPreview } from "../../components/DressPreview";
+import { DressDecisionCard } from "../../components/DressDecisionCard";
 import { db } from "../../db/database";
-import { summarizeDress } from "../../lib/dress/options";
 
 export function ReviewPage() {
   const { tourId = "" } = useParams();
@@ -28,10 +20,7 @@ export function ReviewPage() {
     const dresses = (
       await db.dresses.where("tourId").equals(tourId).toArray()
     ).sort((a, b) => a.order - b.order);
-    const face = tour.faceAssetId
-      ? await db.assets.get(tour.faceAssetId)
-      : undefined;
-    return { tour, shops, dresses, face };
+    return { tour, shops, dresses };
   }, [tourId]);
   if (!data)
     return (
@@ -104,9 +93,10 @@ export function ReviewPage() {
       </header>
       <section className="mt-7 px-5">
         {shown.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-stone-200 p-8 text-center text-sm text-stone-400">
-            아직 하트한 드레스가 없어요. 전체 기록을 다시 살펴보세요.
-          </div>
+          <EmptyReviewState
+            filter={filter}
+            onAdd={() => nav(`/tour/${tourId}`)}
+          />
         ) : (
           data.shops.map((shop) => {
             const dresses = shown.filter((d) => d.shopId === shop.id);
@@ -135,40 +125,12 @@ export function ReviewPage() {
                             <Check size={15} />
                           </span>
                         )}
-                        <div className="w-[116px] shrink-0">
-                          <DressPreview dress={d} faceAsset={data.face} />
-                        </div>
-                        <div className="min-w-0 flex-1 py-2 pr-5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold">{d.label}</span>
-                            {d.isFavorite && (
-                              <Heart
-                                size={14}
-                                fill="currentColor"
-                                className="text-accent"
-                              />
-                            )}
-                          </div>
-                          <p className="mt-2 text-xs leading-5 text-stone-400">
-                            {summarizeDress(d).join(" · ") || "형태 기록 없음"}
-                          </p>
-                          {d.quickTags.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-1">
-                              {d.quickTags.slice(0, 3).map((t) => (
-                                <span
-                                  key={t}
-                                  className="rounded-full bg-accent-soft px-2 py-1 text-[10px] text-accent-copy"
-                                >
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                          {d.memo && (
-                            <p className="mt-3 line-clamp-2 text-xs leading-5 text-stone-500">
-                              {d.memo}
-                            </p>
-                          )}
+                        <div className="min-w-0 flex-1 pr-5">
+                          <DressDecisionCard
+                            dress={d}
+                            variant="review"
+                            shopName={shop.name}
+                          />
                         </div>
                       </button>
                     );
@@ -204,5 +166,33 @@ export function ReviewPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function EmptyReviewState({
+  filter,
+  onAdd,
+}: {
+  readonly filter: "all" | "favorite";
+  readonly onAdd: () => void;
+}) {
+  if (filter === "favorite") {
+    return (
+      <div className="rounded-3xl border border-dashed border-stone-200 p-8 text-center text-sm text-stone-500">
+        아직 후보로 남긴 드레스가 없어요.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-3xl border border-dashed border-stone-200 p-8 text-center text-sm text-stone-500">
+      <p>아직 기록한 드레스가 없어요.</p>
+      <button
+        className="mt-4 min-h-11 rounded-xl bg-stone-900 px-4 font-bold text-white"
+        onClick={onAdd}
+      >
+        투어에서 드레스 추가
+      </button>
+    </div>
   );
 }

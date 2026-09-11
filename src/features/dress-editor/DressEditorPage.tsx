@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useNavigate, useParams } from "react-router-dom";
 import { DressPreview } from "../../components/DressPreview";
@@ -8,29 +9,27 @@ import {
   removeFaceAsset,
   setFaceAsset,
 } from "../../db/repositories";
-import {
-  colorOptions,
-  dressForPresentation,
-  fabricOptions,
-  necklineOptions,
-  silhouetteOptions,
-  topStyleOptions,
-} from "../../lib/dress/options";
 import { processFaceFile } from "../../lib/image/processFace";
-import { DEFAULT_FACE_TRANSFORM, type Dress } from "../../types/domain";
 import { useUIStore } from "../../stores/uiStore";
-import { DressEditorFooter } from "./DressEditorFooter";
+import {
+  DEFAULT_FACE_TRANSFORM,
+  type Dress,
+  type DressOptionCategory,
+} from "../../types/domain";
+import { DressDetailsPanel } from "./DressDetailsPanel";
 import { DressEditorHeader } from "./DressEditorHeader";
-import { DressFaceSection } from "./DressFaceSection";
-import { DressFeedbackSection } from "./DressFeedbackSection";
-import { DressOptionSection } from "./DressOptionSection";
+import { FastRecordFlow } from "./FastRecordFlow";
 import { useDressEditorDraft } from "./useDressEditorDraft";
+import { usePendingWrites } from "./usePendingWrites";
 
 export function DressEditorPage() {
   const { tourId = "", dressId = "" } = useParams();
   const nav = useNavigate();
-  const setSave = useUIStore((s) => s.setSaveStatus);
-  const toast = useUIStore((s) => s.showToast);
+  const setSave = useUIStore((state) => state.setSaveStatus);
+  const toast = useUIStore((state) => state.showToast);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [includeFace, setIncludeFace] = useState(false);
+  const { run, waitForPending } = usePendingWrites();
   const data = useLiveQuery(async () => {
     const dress = await db.dresses.get(dressId);
     if (!dress) return undefined;
@@ -40,11 +39,17 @@ export function DressEditorPage() {
       : undefined;
     return { dress, tour, face };
   }, [dressId]);
+  const currentData = data?.dress.id === dressId ? data : undefined;
+  const writeDress = useCallback(
+    (id: string, patch: Partial<Dress>) => run(() => patchDress(id, patch)),
+    [run],
+  );
   const draft = useDressEditorDraft({
     dressId,
-    dress: data?.dress,
-    face: data?.face,
+    dress: currentData?.dress,
+    face: currentData?.face,
     onSaveStatus: setSave,
+    writeDress,
   });
   const {
     memo,
@@ -60,34 +65,72 @@ export function DressEditorPage() {
     updateTransform,
     flushTransform,
   } = draft;
-  if (!data?.dress || !data.tour)
+
+  if (!currentData?.dress || !currentData.tour) {
     return (
       <main className="p-8 text-center text-sm text-stone-400">
         드레스를 불러오는 중...
       </main>
     );
-  const d = data.dress;
-  const presented = dressForPresentation(d);
-  const immediate = async (patch: Partial<Dress>, message?: string) => {
+  }
+  const dress = currentData.dress;
+
+  const persist = async (patch: Partial<Dress>, message?: string) => {
     setSave("saving");
     try {
-      await patchDress(dressId, patch);
+      await writeDress(dressId, patch);
       setSave("saved");
       if (message) toast(message);
-    } catch {
+    } catch (error) {
       setSave("error");
+      throw error;
     }
+  };
+  const safelyPersist = async (patch: Partial<Dress>, message?: string) => {
+    try {
+      await persist(patch, message);
+    } catch {
+      toast("저장하지 못했어요. 다시 시도해 주세요.");
+    }
+  };
+  const saveCustomOption = (category: DressOptionCategory, value: string) =>
+    void safelyPersist({
+      customOptions: {
+        [category]: value || undefined,
+      },
+    });
+  const saveDraft = () =>
+    persist({
+      memo: latestMemo.current,
+      label: latestLabel.current.trim() || dress.label,
+      ...(currentData.face ? { faceTransform: latestTransform.current } : {}),
+    });
+  const goBack = async () => {
+    try {
+      await waitForPending();
+      await saveDraft();
+      nav(`/tour/${tourId}/shop/${dress.shopId}`);
+    } catch {
+      toast("저장하지 못했어요. 다시 시도해 주세요.");
+    }
+  };
+  const addNextDress = async () => {
+    await waitForPending();
+    await saveDraft();
+    const next = await run(() => addDress(dress.shopId));
+    nav(`/tour/${tourId}/dress/${next}`, { replace: true });
   };
   const removeFace = async () => {
     hasFace.current = false;
-    await removeFaceAsset(tourId);
+    setIncludeFace(false);
+    await run(() => removeFaceAsset(tourId));
     toast("얼굴 사진을 삭제했어요.");
   };
   const uploadFace = async (file: File) => {
     try {
       setSave("saving");
       const asset = await processFaceFile(file);
-      await setFaceAsset(tourId, asset);
+      await run(() => setFaceAsset(tourId, asset));
       hasFace.current = true;
       setSave("saved");
       toast("얼굴 사진을 저장했어요.");
@@ -101,107 +144,68 @@ export function DressEditorPage() {
   const resetFace = () => {
     latestTransform.current = DEFAULT_FACE_TRANSFORM;
     setTransform(DEFAULT_FACE_TRANSFORM);
-    void patchDress(dressId, { faceTransform: DEFAULT_FACE_TRANSFORM });
-  };
-  const saveDraft = () =>
-    patchDress(dressId, {
-      memo: latestMemo.current,
-      label: latestLabel.current.trim() || d.label,
-      ...(data.face ? { faceTransform: latestTransform.current } : {}),
-    });
-  const goBack = async () => {
-    await saveDraft();
-    nav(`/tour/${tourId}/shop/${d.shopId}`);
-  };
-  const addNextDress = async () => {
-    await saveDraft();
-    const next = await addDress(d.shopId);
-    nav(`/tour/${tourId}/dress/${next}`, { replace: true });
+    void safelyPersist({ faceTransform: DEFAULT_FACE_TRANSFORM });
   };
   const changeLabel = (value: string) => {
     setLabel(value);
     latestLabel.current = value;
   };
-  const blurLabel = async () => {
-    const next = label.trim();
-    if (next && next !== d.label) await immediate({ label: next });
-  };
+
   return (
-    <main className="min-h-dvh pb-32">
+    <main className="min-h-dvh">
       <DressEditorHeader
         label={label}
-        isFavorite={d.isFavorite}
+        isFavorite={dress.isFavorite}
         onBack={goBack}
         onLabelChange={changeLabel}
-        onLabelBlur={blurLabel}
-        onToggleFavorite={() => immediate({ isFavorite: !d.isFavorite })}
+        onLabelBlur={() =>
+          safelyPersist({ label: label.trim() || dress.label })
+        }
+        onToggleFavorite={() =>
+          safelyPersist({ isFavorite: !dress.isFavorite })
+        }
       />
       <div className="px-5 pt-4">
-        <div className="sticky top-[72px] z-10 rounded-hero bg-shell pb-3">
-          <DressPreview
-            dress={{ ...d, faceTransform: transform }}
-            faceAsset={data.face}
-            className="mx-auto aspect-[9/16] max-h-[42dvh] w-auto"
-          />
-        </div>
-        <DressOptionSection
-          category="top"
-          title="어깨/끈은 어떻게 생겼나요?"
-          options={topStyleOptions}
-          value={presented.topStyle}
-          onPick={(id) => immediate({ topStyle: id })}
+        <DressPreview
+          dress={{ ...dress, faceTransform: transform }}
+          faceAsset={currentData.face}
+          includeFace={detailsOpen && includeFace}
+          className="mx-auto aspect-[9/16] max-h-[34dvh] w-auto"
         />
-        <DressOptionSection
-          category="neckline"
-          title="가슴선은 어떤 모양이었나요?"
-          options={necklineOptions}
-          value={presented.neckline}
-          onPick={(id) => immediate({ neckline: id })}
-        />
-        <DressOptionSection
-          category="silhouette"
-          title="치마는 어떻게 퍼졌나요?"
-          options={silhouetteOptions}
-          value={presented.silhouette}
-          onPick={(id) => immediate({ silhouette: id })}
-        />
-        <DressOptionSection
-          category="fabric"
-          title="주 소재는 어떤 느낌이었나요?"
-          options={fabricOptions}
-          value={presented.fabric}
-          onPick={(id) => immediate({ fabric: id })}
-        />
-        <DressOptionSection
-          category="color"
-          title="색은 가까운 쪽을 골라주세요"
-          options={colorOptions}
-          value={presented.color}
-          onPick={(id) => immediate({ color: id })}
-        />
-        <DressFeedbackSection
-          dress={d}
+      </div>
+      {detailsOpen ? (
+        <DressDetailsPanel
+          dress={dress}
           memo={memo}
-          onPatch={immediate}
+          transform={transform}
+          face={currentData.face}
+          includeFace={includeFace}
+          onPatch={safelyPersist}
+          onCustomCommit={saveCustomOption}
           onMemoChange={(value) => {
             setMemo(value);
             latestMemo.current = value;
           }}
-          onMemoBlur={() =>
-            void patchDress(dressId, { memo: latestMemo.current })
-          }
-        />
-        <DressFaceSection
-          face={data.face}
-          transform={transform}
-          onRemove={removeFace}
-          onUpload={uploadFace}
+          onMemoBlur={() => void safelyPersist({ memo: latestMemo.current })}
+          onRemoveFace={removeFace}
+          onUploadFace={uploadFace}
+          onIncludeFaceChange={setIncludeFace}
           onTransformPatch={updateTransform}
           onTransformCommit={flushTransform}
-          onReset={resetFace}
+          onResetFace={resetFace}
+          onClose={() => {
+            setIncludeFace(false);
+            setDetailsOpen(false);
+          }}
         />
-      </div>
-      <DressEditorFooter onNext={addNextDress} />
+      ) : (
+        <FastRecordFlow
+          dress={dress}
+          onPatch={persist}
+          onComplete={addNextDress}
+          onOpenDetails={() => setDetailsOpen(true)}
+        />
+      )}
     </main>
   );
 }

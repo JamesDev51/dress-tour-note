@@ -99,6 +99,28 @@ export const QUICK_TAGS = [
   "불편함",
   "신부 픽",
   "동행인 픽",
+  "가벼움",
+  "편함",
+  "조임",
+  "흘러내림",
+  "까슬거림",
+  "팔이 부각됨",
+  "목이 길어 보임",
+  "어깨가 정리됨",
+  "상체가 짧아 보임",
+  "골반이 강조됨",
+] as const;
+
+export const DRESS_OPTION_CATEGORIES = [
+  "top",
+  "neckline",
+  "silhouette",
+  "fabric",
+  "color",
+  "waistline",
+  "backStyle",
+  "train",
+  "details",
 ] as const;
 
 export type TopStyle = (typeof TOP_STYLES)[number];
@@ -111,6 +133,7 @@ export type Waistline = (typeof WAISTLINES)[number];
 export type BackStyle = (typeof BACK_STYLES)[number];
 export type DressDetail = (typeof DRESS_DETAILS)[number];
 export type QuickTag = (typeof QUICK_TAGS)[number];
+export type DressOptionCategory = (typeof DRESS_OPTION_CATEGORIES)[number];
 
 export interface Tour {
   id: Id;
@@ -163,7 +186,9 @@ export interface Dress {
   rating?: 1 | 2 | 3 | 4 | 5;
   memo: string;
   isFavorite: boolean;
+  coreRecordedAt?: ISODateTime;
   faceTransform?: FaceTransform;
+  customOptions?: Partial<Record<DressOptionCategory, string>>;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
 }

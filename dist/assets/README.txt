@@ -1,1 +1,1 @@
-The option artwork is stored as 25 locally generated, square WebP files under `options/`, one for each visible dress choice. Unknown choices remain text-backed and do not request an image. The files are cropped for mobile option cards and precached for offline use.
+The option catalog is stored as exactly 61 local, square WebP files under `options/`, covering the nine dress-detail categories. Unknown choices remain text-backed and do not request an image. The files are cropped for mobile option cards, tracked by `options/manifest.json`, and precached for offline use.

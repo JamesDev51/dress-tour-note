@@ -4,17 +4,21 @@ import { FaceSlider } from "./FaceSlider";
 
 export function DressFaceSection({
   face,
+  includeFace,
   transform,
   onRemove,
   onUpload,
+  onIncludeChange,
   onTransformPatch,
   onTransformCommit,
   onReset,
 }: {
   face?: LocalAsset;
+  includeFace: boolean;
   transform: FaceTransform;
   onRemove: () => Promise<void>;
   onUpload: (file: File) => Promise<void>;
+  onIncludeChange: (include: boolean) => void;
   onTransformPatch: (patch: Partial<FaceTransform>) => void;
   onTransformCommit: () => void;
   onReset: () => void;
@@ -32,7 +36,7 @@ export function DressFaceSection({
         {face && (
           <button
             aria-label="얼굴 사진 삭제"
-            className="grid h-11 w-11 place-items-center rounded-full bg-white text-stone-400"
+            className="grid h-11 w-11 min-w-11 shrink-0 place-items-center rounded-full bg-white text-stone-400"
             onClick={async () => {
               if (confirm("얼굴 사진을 삭제할까요?")) await onRemove();
             }}
@@ -57,6 +61,14 @@ export function DressFaceSection({
         </label>
       ) : (
         <div className="mt-4 space-y-3">
+          <button
+            type="button"
+            aria-pressed={includeFace}
+            className={`min-h-11 w-full rounded-control border px-4 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${includeFace ? "border-accent bg-accent-soft text-accent-copy" : "border-stone-200 bg-white text-ink-muted"}`}
+            onClick={() => onIncludeChange(!includeFace)}
+          >
+            {includeFace ? "얼굴 미리보기 끄기" : "얼굴 미리보기 켜기"}
+          </button>
           <FaceSlider
             label="좌우"
             min={-1}

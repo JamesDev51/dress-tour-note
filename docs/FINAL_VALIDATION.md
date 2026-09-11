@@ -1,5 +1,7 @@
 # Final validation
 
-The release has 25 generated, face-free, individual WebP option assets plus the explicit `기억 안 남` state. They are loaded through a typed `OptionArtwork` map, precached for offline use, and paired with semantic Korean labels. Preview/PDF rendering uses one 720×1280 local raster person base and keeps the dynamic dress composition.
+The release contains exactly 61 local WebP option images across nine categories, plus the explicit text-backed `기억 안 남` state. The core capture is four steps: top/shoulder, neckline, silhouette, and candidate decision. The optional detail surface covers all nine categories and preserves category-labelled notes when no listed option matches.
 
-The production quality gate runs locked dependency installation, high-severity security audit, formatting verification, strict TypeScript, unit and integration tests, exact asset inventory/contact-sheet review, PDF round-trip tests, Vite/PWA production build, metadata/origin checks, offline image checks, and mobile Chromium end-to-end journeys at 320px and 390px.
+Preview, comparison, and PDF output use the same deterministic SVG memory-sketch renderer for full, upper, and back views. Unknown values remain visibly unrecorded rather than being guessed. A face is local-only and appears only when explicitly included on an eligible view; the back view never receives face data.
+
+The production gate runs formatting, strict TypeScript, unit/integration tests, the exact option-catalog validator and its six adversarial fixtures, a Vite/PWA build, full mobile Chromium E2E, the active axe sweep over editor/details/review/compare/import/export, and `npm audit --audit-level=high`. Browser QA also verifies direct-route refresh, offline use, all 61 catalog images, and zero external runtime requests. Recoverable transfer remains the local PDF v1 attachment format; arbitrary and view-only PDFs are not recoverable.

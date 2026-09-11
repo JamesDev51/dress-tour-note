@@ -16,6 +16,7 @@ export default defineConfig({
     timezoneId: "Asia/Seoul",
     screenshot: "only-on-failure",
     trace: "on-first-retry",
+    video: process.env.PW_VIDEO === "1" ? "on" : "off",
   },
   webServer: {
     command: "npm run preview -- --host 127.0.0.1 --port 4173",

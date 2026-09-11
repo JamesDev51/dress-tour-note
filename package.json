@@ -9,15 +9,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "validate:dress-layers": "node scripts/validate-dress-layers.mjs",
-    "validate:dress-proportions": "node scripts/validate-dress-proportions.mjs",
-    "generate:dress-structures": "node scripts/generate-dress-structures.mjs",
-    "validate:dress-structures": "node scripts/validate-dress-structures.mjs",
+    "validate:option-catalog": "node scripts/validate-option-catalog.mjs",
+    "test:option-catalog-validator": "node scripts/test-option-catalog-validator.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:timing": "node scripts/run-core-timing-audit.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "doctor": "npx react-doctor@latest"

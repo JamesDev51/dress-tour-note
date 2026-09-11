@@ -13,11 +13,13 @@ export function useDressEditorDraft({
   dress,
   face,
   onSaveStatus,
+  writeDress = (id, patch) => patchDress(id, patch),
 }: {
   dressId: string;
   dress: Dress | undefined;
   face: LocalAsset | undefined;
   onSaveStatus: (status: SaveStatus) => void;
+  writeDress?: (dressId: string, patch: Partial<Dress>) => Promise<void>;
 }) {
   const [memo, setMemo] = useState("");
   const [label, setLabel] = useState("");
@@ -48,14 +50,14 @@ export function useDressEditorDraft({
     onSaveStatus("saving");
     const timeout = window.setTimeout(async () => {
       try {
-        await patchDress(dressId, { memo });
+        await writeDress(dressId, { memo });
         onSaveStatus("saved");
       } catch {
         onSaveStatus("error");
       }
     }, 400);
     return () => clearTimeout(timeout);
-  }, [memo, dressId, dress?.memo, onSaveStatus]);
+  }, [memo, dressId, dress?.memo, onSaveStatus, writeDress]);
 
   useEffect(() => {
     if (!dress) return;
@@ -63,14 +65,14 @@ export function useDressEditorDraft({
     if (JSON.stringify(transform) === JSON.stringify(current)) return;
     const timeout = window.setTimeout(async () => {
       try {
-        await patchDress(dressId, { faceTransform: transform });
+        await writeDress(dressId, { faceTransform: transform });
         onSaveStatus("saved");
       } catch {
         onSaveStatus("error");
       }
     }, 220);
     return () => clearTimeout(timeout);
-  }, [transform, dressId, dress, onSaveStatus]);
+  }, [transform, dressId, dress, onSaveStatus, writeDress]);
 
   useEffect(
     () => () => {
@@ -79,9 +81,9 @@ export function useDressEditorDraft({
       const patch: Partial<Dress> = { memo: latestMemo.current };
       if (finalLabel) patch.label = finalLabel;
       if (hasFace.current) patch.faceTransform = latestTransform.current;
-      void patchDress(dressId, patch);
+      void writeDress(dressId, patch);
     },
-    [dressId],
+    [dressId, writeDress],
   );
 
   const updateTransform = (patch: Partial<FaceTransform>) => {
@@ -91,7 +93,7 @@ export function useDressEditorDraft({
     setTransform(next);
   };
   const flushTransform = () => {
-    void patchDress(dressId, { faceTransform: latestTransform.current });
+    void writeDress(dressId, { faceTransform: latestTransform.current });
   };
 
   return {

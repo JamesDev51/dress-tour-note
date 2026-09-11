@@ -20,6 +20,20 @@ export const faceTransformSchema = z.object({
   scale: z.number().min(0.5).max(3),
   rotation: z.number().min(-15).max(15),
 });
+const customOptionNoteSchema = z.string().trim().min(1).max(80);
+const customOptionsSchema = z
+  .object({
+    top: customOptionNoteSchema.optional(),
+    neckline: customOptionNoteSchema.optional(),
+    silhouette: customOptionNoteSchema.optional(),
+    fabric: customOptionNoteSchema.optional(),
+    color: customOptionNoteSchema.optional(),
+    waistline: customOptionNoteSchema.optional(),
+    backStyle: customOptionNoteSchema.optional(),
+    train: customOptionNoteSchema.optional(),
+    details: customOptionNoteSchema.optional(),
+  })
+  .strict();
 export const tourSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(50),
@@ -73,7 +87,9 @@ export const dressSchema = z.object({
     .optional(),
   memo: z.string().max(1000),
   isFavorite: z.boolean(),
+  coreRecordedAt: z.string().datetime().optional(),
   faceTransform: faceTransformSchema.optional(),
+  customOptions: customOptionsSchema.optional(),
   createdAt: iso,
   updatedAt: iso,
 });

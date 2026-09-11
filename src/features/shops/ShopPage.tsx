@@ -4,13 +4,12 @@ import {
   ArrowLeft,
   ArrowUp,
   Copy,
-  Heart,
   Pencil,
   Plus,
   Trash2,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DressPreview } from "../../components/DressPreview";
+import { DressDecisionCard } from "../../components/DressDecisionCard";
 import { SaveStatus } from "../../components/SaveStatus";
 import { db } from "../../db/database";
 import {
@@ -20,7 +19,6 @@ import {
   patchShop,
   reorderDresses,
 } from "../../db/repositories";
-import { summarizeDress } from "../../lib/dress/options";
 import { useUIStore } from "../../stores/uiStore";
 
 export function ShopPage() {
@@ -33,11 +31,7 @@ export function ShopPage() {
     const dresses = (
       await db.dresses.where("shopId").equals(shopId).toArray()
     ).sort((a, b) => a.order - b.order);
-    const tour = await db.tours.get(shop.tourId);
-    const face = tour?.faceAssetId
-      ? await db.assets.get(tour.faceAssetId)
-      : undefined;
-    return { shop, dresses, face };
+    return { shop, dresses };
   }, [shopId]);
   if (!data)
     return (
@@ -117,46 +111,13 @@ export function ShopPage() {
                 key={d.id}
                 className="rounded-3xl border border-stone-100 bg-white p-3 shadow-[0_6px_24px_rgba(60,45,40,.05)]"
               >
-                <div className="flex gap-3">
-                  <button
-                    aria-label={`${d.label} 미리보기 편집`}
-                    className="w-[104px] shrink-0"
-                    onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
-                  >
-                    <DressPreview dress={d} faceAsset={data.face} />
-                  </button>
-                  <button
-                    aria-label={`${d.label} 상세 편집`}
-                    className="min-w-0 flex-1 py-1 text-left"
-                    onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold">{d.label}</h3>
-                      {d.isFavorite && (
-                        <Heart
-                          size={15}
-                          fill="currentColor"
-                          className="text-accent"
-                        />
-                      )}
-                    </div>
-                    <p className="mt-2 line-clamp-2 text-xs leading-5 text-stone-400">
-                      {summarizeDress(d).slice(0, 3).join(" · ") ||
-                        "아직 특징을 고르지 않았어요"}
-                    </p>
-                    {d.rating && (
-                      <div className="mt-2 text-xs text-amber-500">
-                        {"★".repeat(d.rating)}
-                        {"☆".repeat(5 - d.rating)}
-                      </div>
-                    )}
-                    {d.memo && (
-                      <p className="mt-2 line-clamp-1 text-xs text-stone-500">
-                        {d.memo}
-                      </p>
-                    )}
-                  </button>
-                </div>
+                <button
+                  aria-label={`${d.label} 상세 편집`}
+                  className="block w-full min-w-0 text-left"
+                  onClick={() => nav(`/tour/${tourId}/dress/${d.id}`)}
+                >
+                  <DressDecisionCard dress={d} variant="shop" />
+                </button>
                 <div className="mt-3 flex items-center border-t border-stone-50 pt-2">
                   <button
                     disabled={i === 0}

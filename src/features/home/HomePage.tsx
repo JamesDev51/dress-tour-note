@@ -115,7 +115,9 @@ export function HomePage() {
       <div className="mx-5 mt-8 flex gap-2 rounded-2xl bg-stone-50 p-4 text-sm leading-6 text-stone-500">
         <ShieldCheck size={18} className="shrink-0 text-accent-dark" />
         <span>
-          입력한 내용과 사진은 서버로 보내지 않고 이 기기에만 저장합니다.
+          입력한 내용과 사진은 서버로{" "}
+          <span className="whitespace-nowrap">보내지 않고</span>{" "}
+          <span className="whitespace-nowrap">이 기기에만 저장합니다.</span>
         </span>
       </div>
     </main>

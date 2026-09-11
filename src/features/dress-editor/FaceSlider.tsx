@@ -16,7 +16,7 @@ export function FaceSlider({
   onCommit: () => void;
 }) {
   return (
-    <label className="grid grid-cols-[56px_1fr_42px] items-center gap-2 text-xs text-stone-500">
+    <label className="grid grid-cols-[56px_1fr_42px] items-center gap-2 text-xs text-ink-muted">
       <span>{label}</span>
       <input
         aria-label={label}

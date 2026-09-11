@@ -50,6 +50,11 @@ function snapshot(): TourSnapshot {
         train: "chapel",
         details: [],
         quickTags: ["신부 픽"],
+        customOptions: {
+          neckline: "스캘럽 가장자리",
+          backStyle: "등 파임이 더 깊음",
+          details: "꽃잎 크기가 작음",
+        },
         memo: "왕복 보존 메모",
         isFavorite: true,
         createdAt: now,
@@ -73,7 +78,11 @@ function fileFrom(bytes: Uint8Array, name = "gudress.pdf") {
   });
 }
 
-async function makePortablePdf(source: TourSnapshot, includeFace: boolean) {
+async function makePortablePdf(
+  source: TourSnapshot,
+  includeFace: boolean,
+  faceOverride?: Uint8Array | null,
+) {
   const serialized = await serializePortableBundle(
     buildPortableBundle(source, includeFace),
   );
@@ -91,9 +100,11 @@ async function makePortablePdf(source: TourSnapshot, includeFace: boolean) {
     serialized.manifest.tourAttachment,
     { mimeType: "application/json" },
   );
-  if (serialized.faceBytes && serialized.manifest.faceAttachment) {
+  const faceBytes =
+    faceOverride === undefined ? serialized.faceBytes : faceOverride;
+  if (faceBytes && serialized.manifest.faceAttachment) {
     await pdf.attach(
-      Buffer.from(serialized.faceBytes),
+      Buffer.from(faceBytes),
       serialized.manifest.faceAttachment,
       { mimeType: "image/webp" },
     );
@@ -108,7 +119,24 @@ describe("inspectPortablePdf", () => {
     );
     expect(result.payload.tour.title).toBe("PDF 왕복 테스트");
     expect(result.payload.dresses[0].memo).toBe("왕복 보존 메모");
+    expect(result.payload.dresses[0].customOptions).toEqual({
+      neckline: "스캘럽 가장자리",
+      backStyle: "등 파임이 더 깊음",
+      details: "꽃잎 크기가 작음",
+    });
     expect(result.assetBytes.size).toBe(0);
+  });
+
+  it("accepts an old v1 PDF with no custom observation notes", async () => {
+    const source = snapshot();
+    source.dresses[0].customOptions = undefined;
+
+    const result = await inspectPortablePdf(
+      await makePortablePdf(source, false),
+    );
+    expect(result.payload.schemaVersion).toBe(1);
+    expect(result.payload.dresses[0].customOptions).toBeUndefined();
+    expect(result.payload.dresses[0].quickTags).toEqual(["신부 픽"]);
   });
 
   it("round-trips the optional local face attachment", async () => {
@@ -146,6 +174,72 @@ describe("inspectPortablePdf", () => {
     expect(
       new TextDecoder().decode(result.assetBytes.get("face-roundtrip")),
     ).toBe("test-face-bytes");
+  });
+
+  it("restores the dress data without a face when the declared face attachment is missing", async () => {
+    // Given a valid v1 payload that declares a face but whose PDF attachment is missing
+    const source = snapshot();
+    const faceBytes = new TextEncoder().encode("test-face-bytes");
+    source.tour.faceAssetId = "face-roundtrip";
+    source.dresses[0].faceTransform = {
+      x: 0,
+      y: 0,
+      scale: 1,
+      rotation: 0,
+    };
+    source.assets.push({
+      id: "face-roundtrip",
+      tourId: source.tour.id,
+      kind: "face",
+      mimeType: "image/webp",
+      blob: new Blob([bytesToArrayBuffer(faceBytes)], { type: "image/webp" }),
+      width: 20,
+      height: 20,
+      byteLength: faceBytes.byteLength,
+      sha256: await sha256Hex(faceBytes),
+      createdAt: now,
+    });
+
+    // When the recoverable PDF is inspected without that attachment
+    const result = await inspectPortablePdf(
+      await makePortablePdf(source, true, null),
+    );
+
+    // Then the record stays readable and the missing private asset is reported
+    expect(result.payload.dresses[0].memo).toBe("왕복 보존 메모");
+    expect(result.faceIncluded).toBe(false);
+    expect(result.assetBytes.size).toBe(0);
+    expect(result.faceWarning).toContain("얼굴 파일이 없어");
+  });
+
+  it("restores the dress data without a face when the face hash mismatches", async () => {
+    // Given a v1 payload whose attached face bytes differ from the manifest hash
+    const source = snapshot();
+    const faceBytes = new TextEncoder().encode("test-face-bytes");
+    source.tour.faceAssetId = "face-roundtrip";
+    source.assets.push({
+      id: "face-roundtrip",
+      tourId: source.tour.id,
+      kind: "face",
+      mimeType: "image/webp",
+      blob: new Blob([bytesToArrayBuffer(faceBytes)], { type: "image/webp" }),
+      width: 20,
+      height: 20,
+      byteLength: faceBytes.byteLength,
+      sha256: await sha256Hex(faceBytes),
+      createdAt: now,
+    });
+
+    // When the recoverable PDF is inspected with mismatched face bytes
+    const result = await inspectPortablePdf(
+      await makePortablePdf(source, true, new TextEncoder().encode("wrong")),
+    );
+
+    // Then the record stays readable and the untrusted face bytes are discarded
+    expect(result.payload.dresses[0].memo).toBe("왕복 보존 메모");
+    expect(result.faceIncluded).toBe(false);
+    expect(result.assetBytes.size).toBe(0);
+    expect(result.faceWarning).toContain("얼굴 파일 검증에 실패");
   });
 
   it("rejects a normal PDF without the recovery manifest", async () => {

@@ -52,8 +52,16 @@ const snapshot: TourSnapshot = {
       train: "chapel",
       details: [],
       quickTags: ["신부 픽"],
+      customOptions: {
+        top: "얇은 진주 끈",
+        waistline: "곡선 절개",
+        backStyle: "등 파임이 더 깊음",
+        train: "채플보다 조금 짧음",
+        details: "꽃잎 크기가 작음",
+      },
       memo: "좋음",
       isFavorite: true,
+      coreRecordedAt: now,
       faceTransform: { x: 0, y: 0, scale: 1, rotation: 0 },
       createdAt: now,
       updatedAt: now,
@@ -113,6 +121,20 @@ describe("portable payload", () => {
       parsePortablePayload(JSON.parse(JSON.stringify(out.payload))).dresses[0]
         .backStyle,
     ).toBe("buttonBack");
+  });
+  it("canonical v1 serialization preserves optional observations", async () => {
+    const serialized = await serializePortableBundle(
+      buildPortableBundle(snapshot, false),
+    );
+    const parsed = await verifyPortableTourBytes(
+      serialized.manifest,
+      serialized.tourBytes,
+    );
+    expect(parsed.dresses[0]).toMatchObject({
+      coreRecordedAt: now,
+      customOptions: snapshot.dresses[0].customOptions,
+      quickTags: ["신부 픽"],
+    });
   });
   it("keeps legacy option IDs raw in portable v1 payloads", () => {
     const source: TourSnapshot = {

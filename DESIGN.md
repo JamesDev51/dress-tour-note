@@ -1,210 +1,199 @@
 # 드레스노트 Design System
 
-## 1. Atmosphere & Identity
+## Supersession
 
-드레스노트는 피팅룸에서 손이 먼저 움직이는 조용한 기록 도구다. Clean white surfaces, Pretendard Korean typography, restrained blush accents, and generous square garment artwork keep attention on the shape being remembered. The signature is a clear white canvas with one blush selection language: the chosen dress detail should feel marked, not decorated.
+드레스노트는 사진을 대신하는 **드레스 기억 스케치** 기록 도구다. 이 contract는 이전의 raster mannequin, photoreal virtual try-on, 그리고 245-combination structure-raster mandate를 명시적으로 폐기한다. 이들은 구현 요구사항이 아니며, 새 구조 조합 생성, 사실적인 신체 비율 약속, 소재를 전신에 덮는 표현을 다시 도입해서는 안 된다. 이 문서는 런타임 동작을 추가하지 않는 design contract다.
 
-This document extracts the existing visual system before the option-asset and selector work described in `.omo/plans/dress-note-option-assets-branding.md`. It is a preservation contract, not a broad visual rebrand.
+변하지 않는 정체성은 절제된 blush 선택 언어 (`#fff2ee`, `#b96e63`), local Pretendard, 흰 shell, 4px spacing rhythm, 44px target, visible focus, reduced motion, 320–480px 모바일 전용 범위다. image는 인식 보조물이며 공식 한국어 용어가 항상 accessible name이다.
 
-## 2. Color
+## Five-component topology
 
-### Palette
+| Component                | Outcome                                     | Boundary and states                                                                                                                           |
+| ------------------------ | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalog`                | 선택지를 눈으로 구별한다                    | local image → official Korean term → plain one-line description → common aliases. loading, loaded, error fallback, selected, disabled, focus. |
+| `fast-record`            | 네 핵심 선택을 한 mounted flow에서 끝낸다   | 아래 4-step state machine만 core path. back/next, saving, write-error/retry, completion.                                                      |
+| `memory-sketch`          | 기록을 과장 없이 도형으로 보여 준다         | full/upper/back, unknown, unsupported annotation, no-face/face-enabled.                                                                       |
+| `details-and-exceptions` | 선택 밖의 차이와 detail을 선택적으로 남긴다 | collapsed, expanded, empty, edited, validation-error; core path를 막지 않는다.                                                                |
+| `decision-and-backup`    | 이후 비교·회고·PDF에서 결정을 찾는다        | shop, review, compare, export, import/privacy에서 같은 formatter와 local-only v1 원칙을 사용한다.                                             |
 
-| Role                | Token                                     | Value                                         | Usage                                                                              |
-| ------------------- | ----------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
-| App canvas          | `--color-canvas`                          | `#eef0f2`                                     | Fixed clean app canvas                                                             |
-| Shell surface       | `--color-shell`                           | `#ffffff`                                     | Fixed clean app shell and elevated cards                                           |
-| Soft accent surface | `--color-accent-soft`                     | `#fff2ee`                                     | Selected cards, warm callouts                                                      |
-| Artwork surface     | `--color-artwork-surface`                 | `#faf7f5`                                     | Image and unknown-artwork backing                                                  |
-| Preview surface     | `--color-preview-surface`                 | `#fbf8f6`                                     | Dress preview frame and SVG backdrop                                               |
-| Mannequin base      | `--color-mannequin`                       | `#e5c3ad`                                     | Warm peach articulated shoulder, neck, and arm form behind the dress               |
-| Garment white       | `dressRenderTokens.garmentColor`          | `#f7f5f3` / `#ffffff` / `#fffaf0` / `#f4e6d1` | Unknown, pure white, ivory, and champagne raster fills                             |
-| Garment edge        | `dressRenderTokens.garmentEdge`           | `#ddd6d2` / `#d9d3cf` / `#dfd3c4` / `#cdb99e` | Per-color raster edge and soft outline                                             |
-| Garment light       | `dressRenderTokens.garmentHighlight`      | `#ffffff`                                     | Satin center light, beads, face feather mask                                       |
-| Garment shadow      | `dressRenderTokens.garmentDropShadow`     | `#7b6256`                                     | Low-opacity dress depth shadow                                                     |
-| Volume shadows      | `dressRenderTokens.volume`                | `#6f584d` / `#76584d` / `#75584d` / `#73564b` | Side, contour, seam, and mermaid raster-volume source layers                       |
-| Preview floor       | `dressRenderTokens.floorShadow`           | `#d8cbc5`                                     | Soft floor ellipse beneath the mannequin                                           |
-| Bead shadow         | `dressRenderTokens.*BeadShadow`           | `#bfa89b` / `#b99f92`                         | Subtle and ornate bead contrast                                                    |
-| Export canvas       | `dressRenderTokens.exportCanvas`          | `#ffffff`                                     | JPEG/PDF canvas behind the composed dress                                          |
-| Primary text        | `--color-ink`                             | `#211d1c` / Tailwind `stone-900`              | Main copy and controls                                                             |
-| Secondary text      | `--color-ink-secondary`                   | Tailwind `stone-500`                          | Supporting copy                                                                    |
-| Muted text          | `--color-ink-muted`                       | `#6f6662`                                     | Metadata, hints, disabled-adjacent copy; the global override keeps contrast usable |
-| Accent              | `--color-accent`                          | `#b96e63`                                     | Selection, primary blush action, progress                                          |
-| Accent dark         | `--color-accent-dark`                     | `#a75e55` / `#a85f55`                         | Small labels, links, icon accents                                                  |
-| Accent copy         | `--color-accent-copy`                     | `#8b5750`                                     | Warm callout text                                                                  |
-| Selection tint      | `--color-selection`                       | `#f1d5ce`                                     | Text selection                                                                     |
-| Error surface/copy  | `--color-error-surface` / `--color-error` | Tailwind `red-50` / `red-700`                 | Destructive and import errors                                                      |
+별도 companion identity, account, sync, analytics, remote image/face upload, 새 route는 만들지 않는다.
 
-The executable source for these semantic tokens is the `:root` `--ds-*` map in
-`src/styles/index.css`; its `@theme inline` bridge exposes the palette and
-component radii as Tailwind utilities such as `bg-accent-soft`, `text-error`,
-`rounded-card`, and `rounded-preview`. The spacing and typography scales remain
-Tailwind's existing 4px-based utilities, with the documented body and section
-sizes available as `text-body` and `text-section` when a semantic name is useful.
+## Four-step core state machine
 
-### Rules
+한 editor route 안에서 한 번에 하나의 step만 mount한다. 각 step의 `기억 안 남`은 유효한 명시 선택이다.
 
-- The palette is clear and low-saturation. Blush is the single interactive accent; it is not used as decorative noise.
-- Existing Tailwind stone/amber/red/emerald utility colors remain semantic status colors. New work must use an existing token or add the semantic token here first.
-- Surfaces use a mixed depth strategy: tonal difference first, a one-pixel border for control boundaries, and soft tinted shadows only for genuinely elevated content.
-- The dress SVG uses the same warm preview surface and neutral garment shadow family so the browser preview and derived PDF remain visually related. A painterly raster mannequin supplies human proportions while dynamic SVG garment layers preserve editable options.
+| State              | Required decision                    | Entry / exit and persistence                                                                                           |
+| ------------------ | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Step 1 — 어깨/상의 | top/shoulder                         | 새 dress에서 시작하고 선택 후 Step 2. saving 중 중복 tap을 막고 실패 시 선택·step을 유지해 재시도한다.                 |
+| Step 2 — 네크라인  | neckline                             | Step 1 다음, back은 Step 1. Step 1 값과 독립 저장한다.                                                                 |
+| Step 3 — 실루엣    | silhouette                           | Step 2 다음, back은 Step 2. unknown을 known form으로 추측하지 않는다.                                                  |
+| Step 4 — 후보 결정 | `isFavorite`, 선택 rating/첫인상 tag | Step 3 다음, back은 Step 3. 후보 여부만 core; `다음 드레스 기록`은 모든 write를 await하고 새 dress Step 1로 reset한다. |
 
-## 3. Typography
+정확히 네 결정은 top/shoulder → neckline → silhouette → candidate decision이다. fabric, color, waistline, back style, train, details, comfort/body-effect, memo, face는 `상세 기록`에만 둔다.
 
-### Scale
+## Card-grid and content hierarchy
 
-| Level        | Existing value       | Weight/leading      | Usage                                          |
-| ------------ | -------------------- | ------------------- | ---------------------------------------------- |
-| Display      | `28px` or `1.875rem` | 900 / `1.2`         | Mobile page titles and hero heading            |
-| Section      | `20px` or `1.25rem`  | 900                 | Card/section heading                           |
-| Body         | `14px`               | 400 / `1.5–1.7`     | Explanations and normal controls               |
-| Body compact | `12px`               | 600 / `1.35`        | Option labels and compact metadata             |
-| Caption      | `10–11px`            | 500–600 / `1.3–1.5` | Technical labels, helper copy, status metadata |
+- top, neckline, silhouette, fabric, waistline, back style의 구조·소재 card는 320px와 390px에서 **2 columns**만 허용한다.
+- color, train, compact detail multi-select처럼 짧은 label의 단순 attribute만 조건부 3 columns/chips를 허용한다. 320px에서 label 또는 44px target이 맞지 않으면 2 columns/stack으로 fallback한다.
+- known card는 반드시 **representative local image → official Korean term → plain one-line description → genuinely common aliases** 순서다. alias는 secondary metadata이며 공식 용어를 대체하지 않는다.
+- selected는 blush tint/border와 text check, focus는 별도 focus ring으로 보인다. image error에도 공식 용어, 설명, alias, target, selection은 남는다.
 
-### Font Stack
+## 61 known-choice catalog inventory (62 including unknown state)
 
-- Primary: local `Pretendard`, then `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, sans-serif.
-- Font choice is fixed across the app; there is no user-facing font preference.
-- The subsetted Pretendard file is bundled locally; no runtime font CDN is allowed.
+`unknown`을 제외한 정확히 **61**개의 catalog choice는 각각 local `512×512 WebP` 이미지 하나를 가진다. 각 파일은 120KB 이하, 전체 7.5MiB 이하이며 face, text, watermark, remote URL, `unknown.webp`를 포함하지 않는다. 하나의 generic `unknown` text-only state가 모든 category에 적용되므로 catalog entry는 62개지만 image inventory는 61개다. 아래 모든 known 항목은 `image asset | official Korean term | plain one-line description | common aliases` 순서다.
 
-### Rules
+### Top — 9
 
-- Korean copy uses sentence case and short, direct labels.
-- Body copy stays readable at the mobile shell width. Do not create a single-character Korean orphan or split a subject from its predicate when a natural wrap is available.
-- Small copy may use the existing 10–12px caption band only for metadata/technical text; user instructions and errors remain at body size.
-- Large headings use tight tracking (`-0.04em`) and `font-black` only where the current surface already does so.
+- `top/strapless.webp` / `strapless` | 스트랩리스 | 어깨 끈 없이 가슴선으로 지지해요. | 튜브탑
+- `top/offShoulder.webp` / `offShoulder` | 오프숄더 | 소매나 밴드가 어깨 아래에 놓여요. | 오프숄더 드레스
+- `top/strap.webp` / `strap` | 스트랩 | 일반 폭의 끈이 어깨 위를 지나가요. | 끈 드레스
+- `top/spaghetti.webp` / `spaghetti` | 스파게티 스트랩 | 아주 가는 끈으로 어깨를 지지해요. | 가는 끈
+- `top/wideStrap.webp` / `wideStrap` | 와이드 스트랩 | 넓은 끈이 어깨를 덮어요. | 넓은 끈
+- `top/halter.webp` / `halter` | 홀터넥 | 끈이나 천이 목 뒤 또는 목선을 감싸요. | 홀터
+- `top/oneShoulder.webp` / `oneShoulder` | 원숄더 | 한쪽 어깨만 덮는 비대칭 상의예요. | 한쪽 어깨
+- `top/shortSleeve.webp` / `shortSleeve` | 캡 소매 | 어깨를 짧게 덮는 작은 소매예요. | 짧은 소매
+- `top/longSleeve.webp` / `longSleeve` | 롱슬리브 | 팔을 길게 덮는 소매예요. | 긴 소매
 
-## 4. Spacing & Layout
+### Neckline — 8
 
-### Base Unit
+- `neckline/straight.webp` / `straight` | 스트레이트 네크라인 | 가슴선이 거의 수평으로 곧아요. | 일자 넥
+- `neckline/sweetheart.webp` / `sweetheart` | 스위트하트 네크라인 | 하트 윗부분처럼 가운데가 굴곡져요. | 하트 넥
+- `neckline/v.webp` / `v` | 브이넥 | 앞목이 V자 모양으로 내려가요. | V 네크라인
+- `neckline/square.webp` / `square` | 스퀘어넥 | 네모난 모서리가 보이는 목선이에요. | 사각 넥
+- `neckline/scoop.webp` / `scoop` | 스쿱넥 | U자처럼 둥글고 넓게 파였어요. | 라운드 넥
+- `neckline/high.webp` / `high` | 하이넥 | 목 가까이까지 높게 올라와요. | 목 올라오는 넥
+- `neckline/illusion.webp` / `illusion` | 일루전 네크라인 | 얇은 투명 천이 피부 위 목선을 이어 보여요. | 시스루 넥
+- `neckline/asymmetric.webp` / `asymmetric` | 비대칭 네크라인 | 좌우 높이나 선이 다른 목선이에요. | 사선 넥
 
-All intent-level spacing derives from a **4px base unit**.
+### Silhouette — 7
 
-| Token       | Value  | Usage                                            |
-| ----------- | ------ | ------------------------------------------------ |
-| `--space-1` | `4px`  | Icon-to-label and tight inline gaps              |
-| `--space-2` | `8px`  | Compact groups and option-grid gaps              |
-| `--space-3` | `12px` | Input/card inner padding and metadata separation |
-| `--space-4` | `16px` | Standard page and card padding                   |
-| `--space-5` | `20px` | Comfortable section/card padding                 |
-| `--space-6` | `24px` | Hero and major card padding                      |
-| `--space-7` | `28px` | Preview/card optical separation                  |
-| `--space-8` | `32px` | Page-level separation and large radius context   |
+- `silhouette/aLine.webp` / `aLine` | A라인 | 허리에서 밑단으로 자연스럽게 퍼져요. | 에이라인
+- `silhouette/ballGown.webp` / `ballGown` | 볼가운 | 잘록한 허리와 크게 풍성한 치마예요. | 벨라인
+- `silhouette/empire.webp` / `empire` | 엠파이어 실루엣 | 가슴 아래 절개선부터 치마가 퍼져요. | 하이웨이스트
+- `silhouette/fitAndFlare.webp` / `fitAndFlare` | 피트 앤 플레어 | 몸선을 따라오다 아래에서 부드럽게 퍼져요. | 세미 머메이드
+- `silhouette/mermaid.webp` / `mermaid` | 머메이드 | 무릎 부근까지 맞고 아래에서 크게 퍼져요. | 인어라인
+- `silhouette/sheath.webp` / `sheath` | 시스 실루엣 | 몸을 따라 비교적 곧게 떨어져요. | 슬림라인
+- `silhouette/teaLength.webp` / `teaLength` | 티 렝스 | 발목보다 위로 올라오는 짧은 길이예요. | 미디 길이
 
-### Grid and responsive contract
+### Fabric — 8
 
-- Product shell: `min-width: 320px`, `width: 100%`, `max-width: 480px`, centered only when the viewport is wider than the product scope.
-- Mobile editor: each active option section is a two-column CSS grid with a `--space-2`/8px gap. Cards fill their tracks; artwork is square and card-width rather than a fixed 78px thumbnail.
-- Breakpoints: 320px is the narrow boundary, 390px is the primary QA width, 480px is the shell ceiling, and 768px is support-context only. No desktop product layout is introduced.
-- Browser mechanics such as `env(safe-area-inset-*)`, `minmax()`, `aspect-ratio`, `clamp()`, and intrinsic sizing may stay raw. Product spacing decisions map to the 4px rhythm.
-- Sticky preview and bottom actions must reserve their scroll space and may become static below 768px according to the existing mobile rule.
+- `fabric/mikadoSatin.webp` / `mikadoSatin` | 미카도 새틴 | 매끈하고 탄탄한 광택이 느껴져요. | 새틴
+- `fabric/lace.webp` / `lace` | 레이스 | 실로 만든 무늬가 표면에 보여요. | 레이스 원단
+- `fabric/subtleBeaded.webp` / `subtleBeaded` | 은은한 비즈 | 작은 비즈가 드문드문 빛나요. | 잔비즈
+- `fabric/ornateBeaded.webp` / `ornateBeaded` | 화려한 비즈 | 비즈 장식이 넓고 촘촘해요. | 비즈 드레스
+- `fabric/tulle.webp` / `tulle` | 튤 | 가볍고 망사처럼 비치는 소재예요. | 망사 원단
+- `fabric/organzaChiffon.webp` / `organzaChiffon` | 오간자·쉬폰 | 얇고 하늘하늘한 투명 계열 소재예요. | 쉬폰
+- `fabric/glitterBeaded.webp` / `glitterBeaded` | 글리터 비즈 | 반짝이 입자와 비즈가 함께 보여요. | 글리터
+- `fabric/floral3D.webp` / `floral3D` | 입체 플라워 | 꽃 장식이 표면에서 도드라져요. | 3D 플라워
 
-## 5. Components
+### Color — 3
 
-### Mobile shell
+- `color/pureWhite.webp` / `pureWhite` | 퓨어 화이트 | 또렷하고 밝은 흰색이에요. | 새하얀 화이트
+- `color/ivory.webp` / `ivory` | 아이보리 | 크림기가 아주 옅게 도는 흰색이에요. | 크림 화이트
+- `color/champagne.webp` / `champagne` | 샴페인 | 베이지와 금빛이 은은하게 섞여요. | 샴페인 베이지
 
-- **Structure**: app root → centered `app-shell` → routed page; global toast/update notices are fixed overlays.
-- **Variants**: fixed clean canvas and fixed Pretendard type.
-- **Spacing**: safe-area-aware top/bottom offsets; shell width contract above.
-- **States**: default, toast/status, update-available; route loading/error states remain page-owned.
-- **Accessibility**: routed landmarks, `role=status` for transient announcements, keyboard-reachable links/buttons, no overlay blocking primary content.
-- **Motion**: existing CSS transitions only; do not add decorative shell motion.
-- **Layout**: shell primitive; document scroll owns page content; mobile sticky surfaces can be static at narrow widths.
+### Waistline — 4
 
-### Brand header
+- `waistline/natural.webp` / `natural` | 내추럴 웨이스트 | 자연 허리 위치에 절개선이 있어요. | 기본 허리선
+- `waistline/basque.webp` / `basque` | 바스크 웨이스트 | 허리선이 V자나 물결처럼 아래로 내려와요. | 바스크
+- `waistline/drop.webp` / `drop` | 드롭 웨이스트 | 허리선이 골반 쪽으로 내려가요. | 로우 웨이스트
+- `waistline/empire.webp` / `empire` | 엠파이어 웨이스트 | 허리선이 가슴 바로 아래에 있어요. | 하이 웨이스트
 
-- **Structure**: semantic `header` with home brand and privacy links.
-- **Variants**: fixed clean inherited from shell.
-- **Spacing**: 20px horizontal inset and safe-area-aware top padding.
-- **States**: default, keyboard focus, visited/current route link.
-- **Accessibility**: both text links are explicit and keep 44px hit areas; privacy is not presented as a display-settings control.
-- **Motion**: none beyond existing link behavior.
-- **Layout**: header row / cluster.
+### Back style — 6
 
-### Home action hierarchy
+- `back/openBack.webp` / `openBack` | 오픈 백 | 등이 넓게 드러나는 뒤태예요. | 등 파임
+- `back/vBack.webp` / `vBack` | 브이 백 | 등이 V자 모양으로 파였어요. | V 백
+- `back/buttonBack.webp` / `buttonBack` | 버튼 백 | 등 중앙에 단추가 줄지어 있어요. | 단추 장식
+- `back/corsetBack.webp` / `corsetBack` | 코르셋 백 | 끈을 교차해 조이는 뒤태예요. | 레이스업
+- `back/illusionBack.webp` / `illusionBack` | 일루전 백 | 투명한 천 위에 장식이 이어져요. | 시스루 백
+- `back/bowBack.webp` / `bowBack` | 리본 백 | 등이나 뒤 허리에 리본이 있어요. | 백 리본
 
-- **Primary**: `새 투어 시작` is the only full-width CTA below the hero.
-- **Secondary**: PDF import belongs to the recent-record context, rendered once as `PDF 가져오기` in the section header when records exist or `PDF에서 가져오기` inside the empty state.
-- **Accessibility**: both variants remain native links with at least a 44px touch height; the import action is never hidden in settings.
+The sixth back-style image is `back/bowBack.webp`. Therefore 9 + 8 + 7 + 8 + 3 + 4 + 6 + 4 + 12 = **61 non-unknown images**. The generic text-only `unknown` state makes 62 catalog entries; no `unknown.webp` exists.
 
-### Option tile
+### Train — 4
 
-- **Structure**: native `button` → selected check badge (when selected) → square artwork region → Korean label → optional technical label.
-- **Variants**: selected, unselected, disabled, unknown artwork, individual-image artwork, image-load error fallback.
-- **Spacing**: 8px outer padding, 8px artwork-to-label gap, artwork region square and track-sized, 8px grid gap.
-- **States**: default, hover where supported, active press (`scale(.985)`), visible keyboard focus, selected (`#fff2ee` + blush border/ring), disabled (`opacity` reduction without removing label), loading/error image fallback.
-- **Accessibility**: native button, `aria-pressed`, visible focus, disabled remains understandable, artwork is decorative because the button label is the accessible name; a broken image never removes the label or target.
-- **Motion**: 100–150ms ease-out for state/press feedback; honor reduced motion.
-- **Layout**: responsive two-column grid; target remains at least 44px even when artwork content changes.
-- **Layering**: the selected check badge sits beside the option label, outside the square artwork region; it never overlays the dress artwork.
+- `train/none.webp` / `none` | 트레인 없음 | 뒤로 끌리는 길이가 거의 없어요. | 노 트레인
+- `train/sweep.webp` / `sweep` | 스윕 트레인 | 바닥을 살짝 스치는 짧은 끌림이에요. | 브러시 트레인
+- `train/chapel.webp` / `chapel` | 채플 트레인 | 예식용으로 적당히 길게 이어져요. | 중간 트레인
+- `train/cathedral.webp` / `cathedral` | 캐서드럴 트레인 | 뒤로 길고 넓게 이어져요. | 롱 트레인
 
-### Direct option input
+### Detail — 12
 
-- **Structure**: each option section ends with a labeled `직접 적기` text field for details the fixed catalog cannot express.
-- **Persistence**: trimmed values up to 80 characters are stored in `Dress.customOptions`, included in summaries, and preserved by schema-v1 portable PDFs as optional fields.
-- **Accessibility**: native label/input pairing, readable body-sized text, and a 48px field height.
+- `detail/corset.webp` / `corset` | 코르셋 | 보디스 구조가 허리를 잡아줘요. | 본딩
+- `detail/draping.webp` / `draping` | 드레이핑 | 천이 주름을 이루며 겹쳐져요. | 셔링
+- `detail/waistBow.webp` / `waistBow` | 허리 리본 | 앞이나 옆 허리에 리본이 있어요. | 웨이스트 보우
+- `detail/backBow.webp` / `backBow` | 백 리본 | 등 또는 뒤 허리에 리본이 있어요. | 뒤 리본
+- `detail/pearl.webp` / `pearl` | 진주 장식 | 진주처럼 둥근 장식이 붙어 있어요. | 펄
+- `detail/sequin.webp` / `sequin` | 스팽글 | 납작한 반짝이 조각이 빛나요. | 시퀸
+- `detail/floral.webp` / `floral` | 플라워 장식 | 꽃 모양 장식이나 무늬가 있어요. | 꽃 장식
+- `detail/slit.webp` / `slit` | 슬릿 | 치마 한쪽이 트여 다리가 보여요. | 트임
+- `detail/sheer.webp` / `sheer` | 시어 | 피부가 비쳐 보이는 얇은 부분이 있어요. | 시스루
+- `detail/detachableSleeve.webp` / `detachableSleeve` | 탈부착 소매 | 떼거나 붙일 수 있는 소매예요. | 분리 소매
+- `detail/overskirt.webp` / `overskirt` | 오버스커트 | 치마 위에 덧입히는 추가 스커트예요. | 덧치마
+- `detail/buttons.webp` / `buttons` | 버튼 장식 | 단추가 장식이나 여밈으로 이어져요. | 단추
 
-### Dress preview
+## Unknown and unsupported choices
 
-- **Structure**: framed preview container → canonical SVG image compositor → local raster mannequin → optional portrait medallion → aligned transparent raster masks for skirt, bodice, and top/sleeves → shared volume images → fabric texture clipped inside the combined garment alpha.
-- **Variants**: no-face raster mannequin and face-included soft-mask portrait.
-- **Spacing**: 28px outer radius and existing preview padding/layout context.
-- **States**: raster-base loading/error, no-face, and face-included portrait; the uploaded face uses a feathered mask directly over the mannequin head without a circular border, backing plate, or neck-erasing mask.
-- **Accessibility**: SVG has a Korean `aria-label`; face-excluded output contains no face reference.
-- **Motion**: none required.
-- **Layout**: every garment asset uses a fixed 720×1280 transparent canvas aligned to the 360×640 compositor. All layers render at `x=0 y=0`, sit 18px above mannequin coordinates, overlap by 8–12px at the waist, and share the exact browser/PDF composition. No preview-background-colored body mask is allowed.
-- **Form**: raster alpha, rather than runtime SVG paths, owns every garment edge. The mannequin follows a couture Venus proportion: a full rounded bust, a visibly cinched waist, a planar abdomen, and a smooth S-curve into defined hips without a heavy torso. The bodice shares a 232px upper envelope and narrows to a 136px waist; standard skirts begin around 152px with 8px of side overhang and at least 16px of vertical overlap. Top/sleeve alpha covers the complete arm without cutting into the torso; fitted skirt alpha fully contains hips, knees, and calves.
-- **Sleeve distinction**: off-shoulder remains a shallow low band no deeper than 82 source pixels. Short sleeves use rounded shoulder caps and cover at least 145 source pixels vertically; at 200px preview width they remain at least 18px deeper than off-shoulder and read as sleeves rather than pointed tabs.
-- **Asset contract**: `public/assets/dress-layers/manifest.json` records six bodices, five top/sleeve layers, five skirts, and four volume layers. Each WebP is 720×1280, alpha-enabled, below 250KB, and reproducible with `scripts/generate-dress-layers.mjs`.
-- **Fabric identity**: flat 512px source textures retain recognizable material identity at the 200px preview width. Subtle beadwork uses a 110-unit texture with a sparse 60-unit highlight layer; ornate beadwork uses a denser 96-unit embroidered texture with an irregular 46-unit sparkle layer. Lace and floral motifs stay large enough to read as flowers, Mikado shows a broad satin sheen, and organza shows a cooler open weave.
-- **Mermaid geometry**: the raster skirt contains the full high hip, thigh, knee, and calf silhouette before opening into a curved floor flare; the separate mermaid volume image reinforces hips and flare without exposing mannequin pixels.
-- **Halter anatomy**: one transparent top asset contains a curved collar band and two shaped neck-to-bodice straps; never use a single triangular bib.
+| Case                          | UI and persistence                                                                                                                   | Sketch                                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Unknown (`기억 안 남`)        | First-class selectable text-only state, no fabricated image; saves canonical `unknown` and clears that category exception note.      | Neutral/dashed field labelled `미기록`; never defaults to straight, strapless, A-line, or another known form. |
+| Unsupported (`선택지에 없음`) | Pick closest canonical choice, open `비슷하지만 달라요`, save bounded category-labelled difference note or memo; no new protocol ID. | Show closest form and visibly attach the category-labelled difference; no exact reconstruction claim.         |
+| Loading/error                 | Preserve term, description, alias, target, selection; show neutral local fallback/retry.                                             | Keep safe prior state or `미기록`; never invent a detail.                                                     |
 
-### Status and destructive callouts
+## Dress memory sketch
 
-- **Structure**: semantic status/callout row with icon and text; destructive deletion remains explicit.
-- **Variants**: success, warning, error, offline/update.
-- **Spacing**: 12–16px inner padding and 8px icon/text gap.
-- **States**: default, announced status, action/focus.
-- **Accessibility**: role/status and contrast are preserved; errors explain what failed and what the user can do.
-- **Motion**: no attention-seeking animation.
-- **Layout**: stack/cluster within the shell.
+The visible label is **드레스 기억 스케치**. It is a deterministic, intentionally illustrative neutral figure built from SVG primitives/layers, not virtual try-on. Fabric is a separate swatch and details are badges, never tiled over the garment. Browser and PDF share semantic inputs, not claims of physical drape, body measurement, or photographic likeness.
 
-## 6. Motion & Interaction
+## Full / upper / back field matrix
 
-| Type     | Duration  | Easing      | Usage                              |
-| -------- | --------- | ----------- | ---------------------------------- |
-| Micro    | 100–150ms | ease-out    | Option press and state tint        |
-| Standard | 200–300ms | ease-in-out | Existing panel/control transitions |
+| View  | Required fields                                                                                                | Explicit exclusions                                       |
+| ----- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Full  | top/shoulder, neckline, silhouette, waistline, train cue, color; fabric swatch and detail badges beside sketch | Face unless separately enabled; unknowns remain `미기록`. |
+| Upper | top/shoulder, neckline, waistline, color cue; face only when explicitly enabled                                | silhouette length, train, back style, disabled face.      |
+| Back  | back style, silhouette, train cue, color; fabric swatch/detail badges beside sketch                            | Face always; front neckline is not inferred.              |
 
-Rules:
+## Face and privacy matrix
 
-- Only transform and opacity animate. The current option press feedback is `active:scale-[.985]`; preserve it while enlarging artwork.
-- Every new interactive control has native keyboard focus, selected/pressed semantics, and disabled behavior where applicable.
-- No new decorative hover or scroll animation is part of this task. `prefers-reduced-motion` removes non-essential transitions.
+| Surface / export                        | Face allowed          | Required behavior                                                       |
+| --------------------------------------- | --------------------- | ----------------------------------------------------------------------- |
+| Fast four-step record                   | No                    | Never blocks or appears in the 30-second core path.                     |
+| Optional detail and full/upper sketch   | Explicit enable only  | Browser-local source; clear include/exclude state; no default portrait. |
+| Compact shop/review/compare cards       | No                    | Full memory sketch and decision metadata without portrait.              |
+| Back sketch                             | No                    | Never render, reference, transform, or infer face.                      |
+| Face-excluded recoverable/view-only PDF | No                    | Exclude bytes, asset references, transforms; label privacy outcome.     |
+| Face-included recoverable PDF           | Explicit include only | Retain existing privacy choice; no remote upload or sharing.            |
 
-## 7. Depth & Surface
+## Cross-surface display matrix
 
-### Strategy: mixed, with warm tonal hierarchy
+| Surface       | Sketch and fields                                                   | Decision / exception treatment                                      |
+| ------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Shop          | Full sketch, up to three core official terms, candidate/rating      | Concise category-labelled exception when present.                   |
+| Review        | Full sketch, all recorded core terms, high-signal tags              | Details, exceptions, memo without hiding unknowns.                  |
+| Compare       | Both full sketches; every differing recorded field as labelled rows | Category-labelled exception notes; blanks and unknowns differ.      |
+| Per-dress PDF | Full, upper, back panels; swatch; all terms/notes/tags/memo         | Apply face matrix and show `미기록`/unsupported honestly.           |
+| Favorites PDF | Full sketch and bounded decision summary                            | Face only under explicit PDF include rule; no photoreal flattening. |
 
-- Clean canvas → shell surface → soft accent/artwork surface establishes hierarchy first.
-- Use a one-pixel neutral border for cards/frames and a tinted low-opacity shadow only for raised lists, popovers, or bottom actions.
-- Use radii by anatomy: 12px inner artwork, 16px controls, 24px cards, 28px preview, 32px hero/major surfaces. Do not apply one radius indiscriminately.
-- Avoid purple/blue gradients, remote photographic backgrounds, decorative noise, and card stacks without task hierarchy.
+## Mobile acceptance: 320px and 390px
 
-## 8. Accessibility Constraints & Accepted Debt
+| Width | Required observable state                                                                                                                                                       |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 320px | Two-column structural cards readable; three columns only where label and 44px targets fit. ≤1px horizontal overflow, no clipped Korean label/orphan, hidden nav, or focus loss. |
+| 390px | Same hierarchy and step order; extra width is spacing, not desktop layout. Validate selected, focus, loading, error, unknown, unsupported, no-face, face-enabled.               |
 
-### Constraints
+At both widths, sticky actions reserve scroll space, keyboard focus stays visible, and local assets support offline editing once available.
 
-- WCAG 2.2 AA target: 4.5:1 body text, 3:1 large text/UI boundaries, visible focus on every interactive element, full keyboard reachability, and reduced-motion respect.
-- Mobile QA must cover 320px and 390px without more than 1px horizontal overflow. Korean labels, error copy, and headings must wrap naturally without clipping or one-syllable orphans.
-- Touch targets are at least 44×44px. Image artwork is decorative and never the only accessible label.
-- Offline and privacy are accessibility-adjacent product constraints: local assets must load without a network, and face-excluded exports must be unambiguous.
+## Accessibility and interaction constraints
 
-### Accepted Debt
+- Native buttons use selected semantics and keyboard focus; detail inputs have native labels.
+- WCAG 2.2 AA target: 4.5:1 body text, 3:1 large text/UI, 44px targets, natural Korean wrapping, reduced motion.
+- Errors explain recovery; a pending save never loses a final tap or advances unpersisted.
+- No server, API, account, analytics, cloud sync, remote asset, OCR, or social sharing.
 
-| Item                                                     | Location                                                            | Why accepted                                                                                                         | Owner / Exit                                             |
-| -------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Desktop support-context note remains visible above 768px | `src/styles/index.css`                                              | Product is intentionally mobile-only; note helps desktop QA without becoming a second layout                         | Keep until product scope changes                         |
-| PDF export embeds full Pretendard while UI uses a subset | `src/lib/pdf/exportPdf.ts` / `src/assets/pretendard-{pdf,ui}.woff2` | Portable PDFs need broad glyph coverage; the interactive shell keeps a small local Pretendard subset for first paint | Revisit PDF font subsetting with a portable-glyph test   |
-| Existing `role=status` overlay does not own focus        | `src/components/MobileShell.tsx`                                    | Toast/update behavior is transient and current; changing focus policy would expand scope                             | Revisit with a dedicated notification accessibility pass |
+## Accepted debt
+
+| Item                                                                 | Why accepted now                                                                                      | Owner / exit                                          |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Product screens still implement the retired preview/editor direction | This documentation-only task changes no runtime behavior and must not be presented as a UI migration. | Todos 2–12 replace code, assets, tests, release docs. |
+| Desktop support-context note above 768px                             | Mobile-only scope; useful QA context without a desktop product layout.                                | Revisit only if scope changes.                        |
+| PDF embeds full Pretendard while UI uses subset                      | Portable PDFs need broad Korean glyph coverage; shell prioritizes first paint.                        | Revisit with portable-glyph test.                     |
+| Transient status overlay does not own focus                          | Focus-policy change exceeds documentation scope.                                                      | Dedicated notification accessibility pass.            |
