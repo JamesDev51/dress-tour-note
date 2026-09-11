@@ -24,5 +24,12 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
   },
-  projects: [{ name: "mobile-chromium", use: { browserName: "chromium" } }],
+  projects: [
+    { name: "mobile-chromium", use: { browserName: "chromium" } },
+    {
+      name: "mobile-webkit",
+      testMatch: "recall.spec.ts",
+      use: { browserName: "webkit" },
+    },
+  ],
 });

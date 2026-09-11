@@ -65,6 +65,7 @@ const pwaPlugins = VitePWA({
   workbox: {
     clientsClaim: true,
     navigateFallback: "/index.html",
+    navigateFallbackDenylist: [/^\/__review(?:\/|$)/],
     globPatterns: ["**/*.{js,css,html,svg,png,jpg,webmanifest,webp,woff2}"],
     manifestTransforms: [sortPrecacheManifest],
     maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,

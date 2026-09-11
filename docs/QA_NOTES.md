@@ -18,3 +18,5 @@ npm audit --audit-level=high
 ```
 
 The full E2E command uses the production preview at `127.0.0.1:4173`. It covers 320px and 390px layouts, all 61 option images, persistence, PDF copy restoration and invalid-file rejection, offline edit/reload/compare, direct routes, no external runtime requests, and the active axe sweep over editor, details, review, compare, import, and export.
+
+Recall journeys run in both Chromium and WebKit. They cover optional memory/liked/concern fields, immediate navigation and unblurred reload recovery, compact cards with complete detail access, semantic comparison groups, synchronized views, and deletion of interrupted drafts. Tailscale review hosting is a development-only service; it does not add a product backend or cloud storage.

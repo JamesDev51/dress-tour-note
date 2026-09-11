@@ -339,7 +339,9 @@ test("mobile core flow autosaves, reloads and compares two dresses", async ({
     .click();
   await page.getByRole("button", { name: /Dress 02/ }).click();
   await page.getByRole("button", { name: /선택한 2벌 비교하기/ }).click();
-  await expect(page.getByText("두 벌을")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "두 벌의 차이를 살펴봐요" }),
+  ).toBeVisible();
   await expect(
     page.getByText("오프숄더", { exact: true }).first(),
   ).toBeVisible();

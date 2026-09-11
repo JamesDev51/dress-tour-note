@@ -4,6 +4,11 @@ The mobile release is ready only when every item below passes on the final pull 
 
 - Exactly 61 local option WebPs across all nine categories match the catalog manifest and load offline.
 - `기억 안 남` remains a distinct, text-backed state with no image request.
+- Recall cue/reasons persist after immediate back, next-dress navigation, and direct reload without blur; optional blanks remain valid.
+- Interrupted recall drafts are bounded and revision-aware, and whole-data deletion removes them.
+- Saved cards and detail show explicit recall cues without inventing text from missing data. Full detail retains all notes and options.
+- Comparison separates observed differences, matching features, and missing information; both views switch together and stay face-free.
+- Chromium and WebKit recall journeys pass; engine testing is not physical-device testing.
 - The four-step core flow records shoulder/top, neckline, silhouette, and candidate decision; every step persists across back/next/reload.
 - The optional detail editor exposes all nine categories and persists closest-choice notes without silently replacing unsupported values.
 - Full, upper, and back previews are deterministic SVG memory sketches; unknown values remain visibly unrecorded.

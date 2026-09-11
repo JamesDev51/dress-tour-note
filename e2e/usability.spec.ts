@@ -442,18 +442,25 @@ test("three warmed core records stay functional while reporting timing", async (
     console.log(`[core-timing] run=${index + 1} elapsedMs=${elapsedMs}`);
     const readyDressUrl = page.url();
     await page.goto(completedDressUrl);
-    await expect(
-      page.getByRole("heading", { name: "핵심 기록" }),
-    ).toBeVisible();
     const summary = page
-      .getByRole("heading", { name: "핵심 기록" })
+      .getByRole("heading", { name: "전체 기록", exact: true })
       .locator("..");
-    await expect(summary.locator("dd")).toHaveText([
-      "오프숄더",
-      "스위트하트 네크라인",
-      "A라인",
-      "후보 아님",
-    ]);
+    await expect(summary).toBeVisible();
+    for (const [label, value] of [
+      ["상의 디자인", "오프숄더"],
+      ["네크라인", "스위트하트 네크라인"],
+      ["실루엣", "A라인"],
+    ]) {
+      await expect(
+        summary.getByText(label, { exact: true }).locator("..").locator("dd"),
+      ).toHaveText(value);
+    }
+    await expect(
+      page
+        .getByRole("heading", { name: "기억과 선택" })
+        .locator("..")
+        .getByText("후보 아님", { exact: true }),
+    ).toBeVisible();
     await page.goto(readyDressUrl);
     await expect(
       page.getByRole("heading", { name: /어깨\/상의는 어땠나요/ }),
@@ -479,8 +486,15 @@ test("all unknown core choices persist as deliberate decisions on re-entry", asy
     candidate: "후보 아님",
   });
   await page.reload();
-  await expect(page.getByRole("heading", { name: "핵심 기록" })).toBeVisible();
-  await expect(page.getByText("기억 안 남", { exact: true })).toHaveCount(3);
+  const summary = page
+    .getByRole("heading", { name: "전체 기록", exact: true })
+    .locator("..");
+  await expect(summary).toBeVisible();
+  for (const label of ["상의 디자인", "네크라인", "실루엣"]) {
+    await expect(
+      summary.getByText(label, { exact: true }).locator("..").locator("dd"),
+    ).toHaveText("기억 안 남");
+  }
   await page.getByRole("button", { name: "핵심 기록 수정" }).click();
   await expect(
     page.getByRole("button", { name: "기억 안 남" }),
@@ -609,7 +623,9 @@ test("offline app opens, edits, reloads, and compares saved dresses", async ({
   await page.getByRole("button", { name: /Dress 01/ }).click();
   await page.getByRole("button", { name: /Dress 02/ }).click();
   await page.getByRole("button", { name: /선택한 2벌 비교하기/ }).click();
-  await expect(page.getByRole("heading", { name: /두 벌을/ })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /두 벌의 차이/ }),
+  ).toBeVisible();
   await captureSurface(page, "offline-compare-390");
   await page.context().setOffline(false);
 });
