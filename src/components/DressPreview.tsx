@@ -50,7 +50,7 @@ function artworkStatusCopy(artwork: GarmentArtworkResult): string {
         : "기록한 특징 일부를 반영한 형태 참고 이미지예요.";
     }
     case "unavailable":
-      return "기록한 특징으로 이미지를 만들 수 없어요. 기록을 확인해 주세요.";
+      return "기록 스케치로 대신해요.";
   }
 }
 
