@@ -1,6 +1,6 @@
 # QA notes
 
-The production candidate has 61 individual local option WebPs across nine categories, a four-step core record, an optional nine-category detail editor, and deterministic SVG memory sketches for full, upper, and back views. `기억 안 남` is a deliberate text-backed state; unsupported closest-choice notes remain category-labelled instead of being converted into a known option.
+The production candidate has 61 individual local option WebPs across nine categories, a four-step core record, an optional nine-category detail editor, and prepared local garment artwork in the canonical SVG frame for full, upper, and back views. Partial/unavailable states remain explicit, with a record-sketch fallback. `기억 안 남` is a deliberate text-backed state; unsupported closest-choice notes remain category-labelled instead of being converted into a known option.
 
 PDF transfer is local-only schema v1. Recoverable PDFs carry `gudress-manifest.json`, `gudress-tour.json`, and optional `gudress-face.webp` or `gudress-face.jpg` attachments with SHA-256 checks. The importer recognizes `gudress-data-v1.json` only as a legacy fallback for older PDFs. View-only PDFs carry no restorable attachment. Face exclusion removes references, transforms, and bytes, and the back sketch excludes face data regardless of export mode.
 

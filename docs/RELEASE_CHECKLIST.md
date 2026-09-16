@@ -11,7 +11,9 @@ The mobile release is ready only when every item below passes on the final pull 
 - Chromium and WebKit recall journeys pass; engine testing is not physical-device testing.
 - The four-step core flow records shoulder/top, neckline, silhouette, and candidate decision; every step persists across back/next/reload.
 - The optional detail editor exposes all nine categories and persists closest-choice notes without silently replacing unsupported values.
-- Full, upper, and back previews are deterministic SVG memory sketches; unknown values remain visibly unrecorded.
+- Full, upper, and back previews use prepared local garment artwork in the canonical SVG frame. Partial/unavailable results are labelled, unknown values remain visibly unrecorded, and the record-sketch fallback remains usable.
+- Garment assets load offline; PDF/JPEG embeds the selected assets without changing portable v1 JSON.
+- `기록 완료하고 보기` waits for the last input and opens the saved record without adding another dress.
 - Tour, shop, and dress CRUD persist after immediate navigation and reload.
 - Face photo upload, transform, deletion, and optional PDF exclusion work locally; the back view and face-excluded output contain no face refs, transforms, or bytes.
 - Recoverable PDF v1 export imports as a copy on a clean browser profile; old v1 files without newer optional fields remain compatible.
