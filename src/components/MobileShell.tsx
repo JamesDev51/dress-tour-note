@@ -1,24 +1,11 @@
-import { useEffect, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { readPreferences, type AppPreferences } from "../lib/preferences";
 import { useUIStore } from "../stores/uiStore";
 export function MobileShell() {
   const toast = useUIStore((s) => s.toast);
   const updateAvailable = useUIStore((s) => s.pwaUpdateAvailable);
   const updateSW = useUIStore((s) => s.updateSW);
-  const [prefs, setPrefs] = useState<AppPreferences>(() => readPreferences());
-  useEffect(() => {
-    const onPrefs = (e: Event) =>
-      setPrefs((e as CustomEvent<AppPreferences>).detail);
-    window.addEventListener("gudress-preferences", onPrefs);
-    return () => window.removeEventListener("gudress-preferences", onPrefs);
-  }, []);
   return (
-    <div
-      data-theme={prefs.theme}
-      data-font={prefs.font}
-      className="app-root min-h-dvh text-stone-900"
-    >
+    <div className="app-root min-h-dvh text-stone-900">
       <div className="app-shell mx-auto min-h-dvh w-full max-w-[480px] shadow-sm">
         <Outlet />
       </div>
@@ -34,7 +21,7 @@ export function MobileShell() {
         <div className="fixed left-1/2 top-3 z-50 flex w-[min(92vw,440px)] -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3 text-sm shadow-lg">
           <span>새 버전이 있어요.</span>
           <button
-            className="font-semibold text-[#a85f55]"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center font-semibold text-accent-dark"
             onClick={() => updateSW?.()}
           >
             저장 후 업데이트
@@ -47,11 +34,17 @@ export function MobileShell() {
 export function BrandHeader() {
   return (
     <header className="flex items-center justify-between px-5 pb-3 pt-[calc(18px+env(safe-area-inset-top))]">
-      <Link to="/" className="font-black tracking-[-0.04em]">
-        그드레스
+      <Link
+        to="/"
+        className="inline-flex min-h-11 min-w-11 items-center font-black tracking-[-0.04em]"
+      >
+        드레스노트
       </Link>
-      <Link to="/privacy" className="text-xs text-stone-400">
-        설정
+      <Link
+        to="/privacy"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center text-xs text-stone-400"
+      >
+        개인정보
       </Link>
     </header>
   );

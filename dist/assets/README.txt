@@ -1,1 +1,1 @@
-Generated image asset atlas. Source image was created with ChatGPT image generation in this project conversation, then cropped and packed locally into a deterministic 8-column by 10-row atlas for mobile option cards.
+The option catalog is stored as exactly 61 local, square WebP files under `options/`, covering the nine dress-detail categories. Unknown choices remain text-backed and do not request an image. The files are cropped for mobile option cards, tracked by `options/manifest.json`, and precached for offline use.

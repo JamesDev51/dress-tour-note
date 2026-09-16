@@ -12,6 +12,7 @@ declare global {
         }>;
       }>;
     };
+    __dressNoteDownloadBlob: Blob | undefined;
   }
 }
 

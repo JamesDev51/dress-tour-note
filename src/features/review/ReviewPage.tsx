@@ -1,17 +1,9 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import {
-  ArrowLeft,
-  Check,
-  FileDown,
-  GitCompareArrows,
-  Heart,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Check, FileDown, GitCompareArrows, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { DressPreview } from "../../components/DressPreview";
+import { DressDecisionCard } from "../../components/DressDecisionCard";
 import { db } from "../../db/database";
-import { summarizeDress } from "../../lib/dress/options";
 
 export function ReviewPage() {
   const { tourId = "" } = useParams();
@@ -28,10 +20,7 @@ export function ReviewPage() {
     const dresses = (
       await db.dresses.where("tourId").equals(tourId).toArray()
     ).sort((a, b) => a.order - b.order);
-    const face = tour.faceAssetId
-      ? await db.assets.get(tour.faceAssetId)
-      : undefined;
-    return { tour, shops, dresses, face };
+    return { tour, shops, dresses };
   }, [tourId]);
   if (!data)
     return (
@@ -64,7 +53,7 @@ export function ReviewPage() {
           </button>
           {data.dresses.length >= 2 && (
             <button
-              className={`inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ${selecting ? "bg-[#fff2ee] text-[#a75e55]" : "bg-stone-50 text-stone-600"}`}
+              className={`inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold ${selecting ? "bg-accent-soft text-accent-copy" : "bg-stone-50 text-stone-600"}`}
               onClick={() => {
                 const next = !selecting;
                 setSelecting(next);
@@ -77,12 +66,12 @@ export function ReviewPage() {
             </button>
           )}
         </div>
-        <p className="mt-7 text-xs font-semibold text-[#a75e55]">RESULT</p>
+        <p className="mt-7 text-xs font-semibold text-accent-dark">RESULT</p>
         <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
           {data.tour.title}
         </h1>
         {selecting ? (
-          <div className="mt-4 rounded-2xl bg-[#fff2ee] px-4 py-3 text-sm text-[#8b5750]">
+          <div className="mt-4 rounded-2xl bg-accent-soft px-4 py-3 text-sm text-accent-copy">
             비교할 드레스 2벌을 눌러주세요. <b>{compareIds.length}/2</b>
           </div>
         ) : (
@@ -104,9 +93,10 @@ export function ReviewPage() {
       </header>
       <section className="mt-7 px-5">
         {shown.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-stone-200 p-8 text-center text-sm text-stone-400">
-            아직 하트한 드레스가 없어요. 전체 기록을 다시 살펴보세요.
-          </div>
+          <EmptyReviewState
+            filter={filter}
+            onAdd={() => nav(`/tour/${tourId}`)}
+          />
         ) : (
           data.shops.map((shop) => {
             const dresses = shown.filter((d) => d.shopId === shop.id);
@@ -121,54 +111,26 @@ export function ReviewPage() {
                       <button
                         key={d.id}
                         aria-pressed={selecting ? selected : undefined}
-                        className={`relative flex w-full gap-3 rounded-3xl border bg-white p-3 text-left shadow-[0_6px_24px_rgba(60,45,40,.05)] ${selected ? "border-[#b96e63] ring-2 ring-[#b96e63]/15" : "border-stone-100"}`}
+                        className={`relative flex w-full gap-3 rounded-3xl border bg-white p-3 text-left shadow-[0_6px_24px_rgba(60,45,40,.05)] ${selected ? "border-accent ring-2 ring-accent/15" : "border-stone-100"}`}
                         onClick={() =>
                           selecting
                             ? toggle(d.id)
-                            : nav(`/tour/${tourId}/dress/${d.id}`)
+                            : nav(`/tour/${tourId}/dress/${d.id}?view=record`)
                         }
                       >
                         {selecting && (
                           <span
-                            className={`absolute right-3 top-3 z-10 grid h-7 w-7 place-items-center rounded-full border ${selected ? "border-[#b96e63] bg-[#b96e63] text-white" : "border-stone-200 bg-white text-transparent"}`}
+                            className={`absolute right-3 top-3 z-10 grid h-7 w-7 place-items-center rounded-full border ${selected ? "border-accent bg-accent text-white" : "border-stone-200 bg-white text-transparent"}`}
                           >
                             <Check size={15} />
                           </span>
                         )}
-                        <div className="w-[116px] shrink-0">
-                          <DressPreview dress={d} faceAsset={data.face} />
-                        </div>
-                        <div className="min-w-0 flex-1 py-2 pr-5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold">{d.label}</span>
-                            {d.isFavorite && (
-                              <Heart
-                                size={14}
-                                fill="#b96e63"
-                                className="text-[#b96e63]"
-                              />
-                            )}
-                          </div>
-                          <p className="mt-2 text-xs leading-5 text-stone-400">
-                            {summarizeDress(d).join(" · ") || "형태 기록 없음"}
-                          </p>
-                          {d.quickTags.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-1">
-                              {d.quickTags.slice(0, 3).map((t) => (
-                                <span
-                                  key={t}
-                                  className="rounded-full bg-[#fff2ee] px-2 py-1 text-[10px] text-[#a75e55]"
-                                >
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                          {d.memo && (
-                            <p className="mt-3 line-clamp-2 text-xs leading-5 text-stone-500">
-                              {d.memo}
-                            </p>
-                          )}
+                        <div className="min-w-0 flex-1 pr-5">
+                          <DressDecisionCard
+                            dress={d}
+                            variant="review"
+                            shopName={shop.name}
+                          />
                         </div>
                       </button>
                     );
@@ -179,7 +141,7 @@ export function ReviewPage() {
           })
         )}
       </section>
-      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         {selecting ? (
           <button
             disabled={compareIds.length !== 2}
@@ -204,5 +166,33 @@ export function ReviewPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function EmptyReviewState({
+  filter,
+  onAdd,
+}: {
+  readonly filter: "all" | "favorite";
+  readonly onAdd: () => void;
+}) {
+  if (filter === "favorite") {
+    return (
+      <div className="rounded-3xl border border-dashed border-stone-200 p-8 text-center text-sm text-stone-500">
+        아직 후보로 남긴 드레스가 없어요.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-3xl border border-dashed border-stone-200 p-8 text-center text-sm text-stone-500">
+      <p>아직 기록한 드레스가 없어요.</p>
+      <button
+        className="mt-4 min-h-11 rounded-xl bg-stone-900 px-4 font-bold text-white"
+        onClick={onAdd}
+      >
+        투어에서 드레스 추가
+      </button>
+    </div>
   );
 }

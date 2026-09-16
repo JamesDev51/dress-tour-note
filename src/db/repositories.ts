@@ -1,20 +1,51 @@
 import { db } from "./database";
 import type {
   Dress,
+  DressOptionCategory,
   Id,
   LocalAsset,
   Shop,
   Tour,
   TourSnapshot,
 } from "../types/domain";
-import { DEFAULT_FACE_TRANSFORM } from "../types/domain";
-import { normalizeUpper } from "../lib/dress/options";
+import {
+  DEFAULT_FACE_TRANSFORM,
+  DRESS_OPTION_CATEGORIES,
+} from "../types/domain";
 import { requestPersistentStorage } from "../lib/storage/persist";
 
 const now = () => new Date().toISOString();
 const id = () => crypto.randomUUID();
 const touchTour = (tourId: string) =>
   db.tours.update(tourId, { updatedAt: now(), lastOpenedAt: now() });
+
+const normalizeCustomOptions = (
+  customOptions: Dress["customOptions"],
+): Partial<Record<DressOptionCategory, string>> | undefined => {
+  const normalized: Partial<Record<DressOptionCategory, string>> = {};
+  for (const category of DRESS_OPTION_CATEGORIES) {
+    const note = customOptions?.[category]?.trim().slice(0, 80);
+    if (note) normalized[category] = note;
+  }
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+};
+
+const mergeCustomOptions = (
+  current: Dress["customOptions"],
+  patch: NonNullable<Dress["customOptions"]>,
+) => {
+  const next = { ...current };
+  for (const category of DRESS_OPTION_CATEGORIES) {
+    if (!Object.hasOwn(patch, category)) continue;
+    const note = patch[category]?.trim().slice(0, 80);
+    if (note) next[category] = note;
+    else delete next[category];
+  }
+  return normalizeCustomOptions(next);
+};
+
+const trimRecallText = (value: string | undefined) =>
+  value?.trim() || undefined;
 
 export async function createTour(
   input: Partial<Pick<Tour, "title" | "brideName" | "tourDate">> = {},
@@ -127,6 +158,10 @@ export async function addDress(shopId: Id, seed?: Partial<Dress>) {
     order,
     label: seed?.label || `Dress ${String(order + 1).padStart(2, "0")}`,
     isFavorite: seed?.isFavorite ?? false,
+    memoryCue: trimRecallText(seed?.memoryCue),
+    likedReason: trimRecallText(seed?.likedReason),
+    concern: trimRecallText(seed?.concern),
+    customOptions: normalizeCustomOptions(seed?.customOptions),
     createdAt: now(),
     updatedAt: now(),
   };
@@ -150,20 +185,24 @@ export async function duplicateDress(dressId: Id) {
   return addDress(d.shopId, { ...seed, isFavorite: false });
 }
 export async function patchDress(dressId: Id, patch: Partial<Dress>) {
-  const d = await db.dresses.get(dressId);
-  if (!d) return;
-  const next = { ...patch } as Partial<Dress>;
-  const top = patch.topStyle ?? d.topStyle;
-  const neck = patch.neckline ?? d.neckline;
-  const normalized = normalizeUpper(top, neck);
-  next.neckline = normalized.neckline;
+  const { customOptions, memoryCue, likedReason, concern, ...rest } = patch;
+  const next: Partial<Dress> = { ...rest };
+  if (Object.hasOwn(patch, "memoryCue"))
+    next.memoryCue = trimRecallText(memoryCue);
+  if (Object.hasOwn(patch, "likedReason"))
+    next.likedReason = trimRecallText(likedReason);
+  if (Object.hasOwn(patch, "concern")) next.concern = trimRecallText(concern);
   if (next.details && next.details.length > 4)
     next.details = next.details.slice(0, 4);
   await db.transaction("rw", db.dresses, db.tours, async () => {
+    const d = await db.dresses.get(dressId);
+    if (!d) return;
+    if (customOptions) {
+      next.customOptions = mergeCustomOptions(d.customOptions, customOptions);
+    }
     await db.dresses.update(dressId, { ...next, updatedAt: now() });
     await touchTour(d.tourId);
   });
-  return normalized.changed;
 }
 export async function reorderDresses(shopId: Id, orderedIds: Id[]) {
   const shop = await db.shops.get(shopId);

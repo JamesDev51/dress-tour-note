@@ -3,3 +3,4 @@ coverage
 .vite
 *.local
 .DS_Store
+.vercel

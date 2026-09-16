@@ -96,7 +96,7 @@ export function TourDashboardPage() {
             void patchTour(tourId, { title: e.target.value });
             setSave("saved");
           }}
-          className="mt-7 w-full bg-transparent text-3xl font-black tracking-[-.04em] outline-none"
+          className="mt-7 w-full bg-transparent text-3xl font-black tracking-[-.04em]"
         />
         <div className="mt-2 flex items-center gap-2 text-xs text-stone-400">
           <span>{data.tour.tourDate || "날짜 없음"}</span>
@@ -110,21 +110,21 @@ export function TourDashboardPage() {
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-bold">드레스샵</h2>
           <button
-            className="inline-flex h-10 items-center gap-1 rounded-xl bg-[#fff2ee] px-3 text-sm font-semibold text-[#a75e55]"
+            className="inline-flex min-h-11 items-center gap-1 rounded-xl bg-accent-soft px-3 text-sm font-semibold text-accent-copy"
             onClick={() => setAdding((v) => !v)}
           >
             <Plus size={16} />샵 추가
           </button>
         </div>
         {adding && (
-          <div className="mb-4 rounded-2xl border border-[#eadbd6] bg-white p-3">
+          <div className="mb-4 rounded-2xl border border-stone-200 bg-white p-3">
             <input
               autoFocus
               maxLength={50}
               value={shopName}
               onChange={(e) => setShopName(e.target.value)}
               placeholder="드레스샵 이름"
-              className="h-12 w-full rounded-xl bg-stone-50 px-3 outline-none"
+              className="h-12 w-full rounded-xl bg-stone-50 px-3"
             />
             <p className="mt-2 text-xs text-stone-400">
               샵 이름을 입력하면 기록을 시작할 수 있어요.
@@ -171,7 +171,7 @@ export function TourDashboardPage() {
                   className="flex w-full items-center gap-3 text-left"
                   onClick={() => nav(`/tour/${tourId}/shop/${s.id}`)}
                 >
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#fff2ee] text-sm font-black text-[#a75e55]">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-accent-soft text-sm font-black text-accent-copy">
                     {i + 1}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -186,7 +186,7 @@ export function TourDashboardPage() {
                   <button
                     aria-label={`${s.name} 위로 이동`}
                     disabled={i === 0}
-                    className="grid h-9 w-10 place-items-center rounded-lg text-stone-400 disabled:opacity-20"
+                    className="grid h-11 w-11 place-items-center rounded-lg text-stone-400 disabled:opacity-20"
                     onClick={() => move(i, -1)}
                   >
                     <ArrowUp size={15} />
@@ -194,14 +194,14 @@ export function TourDashboardPage() {
                   <button
                     aria-label={`${s.name} 아래로 이동`}
                     disabled={i === data.shops.length - 1}
-                    className="grid h-9 w-10 place-items-center rounded-lg text-stone-400 disabled:opacity-20"
+                    className="grid h-11 w-11 place-items-center rounded-lg text-stone-400 disabled:opacity-20"
                     onClick={() => move(i, 1)}
                   >
                     <ArrowDown size={15} />
                   </button>
                   <button
                     aria-label={`${s.name} 삭제`}
-                    className="ml-auto grid h-9 w-10 place-items-center rounded-lg text-stone-300"
+                    className="ml-auto grid h-11 w-11 place-items-center rounded-lg text-stone-300"
                     onClick={async () => {
                       if (
                         confirm(
@@ -221,7 +221,7 @@ export function TourDashboardPage() {
           </div>
         )}
       </section>
-      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         <Link
           to={`/tour/${tourId}/review`}
           className={`flex h-14 items-center justify-center rounded-2xl font-bold ${data.total ? "bg-stone-900 text-white" : "pointer-events-none bg-stone-100 text-stone-300"}`}

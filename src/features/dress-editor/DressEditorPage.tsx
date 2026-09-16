@@ -1,539 +1,364 @@
-import { useEffect, useRef, useState } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
 import {
-  ArrowLeft,
-  ChevronDown,
-  Heart,
-  ImagePlus,
-  RotateCcw,
-  Trash2,
-} from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+  acknowledgeRecallDraft,
+  readRecallDraft,
+} from "../../lib/storage/recallDraft";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { useDressEditorData } from "./useDressEditorData";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { RecallDressDetail } from "../../components/RecallDressDetail";
 import { DressPreview } from "../../components/DressPreview";
-import {
-  OptionArtwork,
-  type OptionArtworkCategory,
-} from "../../components/OptionArtwork";
-import { OptionTile } from "../../components/OptionTile";
-import { SaveStatus } from "../../components/SaveStatus";
-import { db } from "../../db/database";
 import {
   addDress,
   patchDress,
   removeFaceAsset,
   setFaceAsset,
 } from "../../db/repositories";
-import {
-  backStyleOptions,
-  colorOptions,
-  detailOptions,
-  fabricOptions,
-  isNecklineCompatible,
-  necklineOptions,
-  quickTagOptions,
-  silhouetteOptions,
-  topStyleOptions,
-  trainOptions,
-  waistlineOptions,
-} from "../../lib/dress/options";
 import { processFaceFile } from "../../lib/image/processFace";
+import { useUIStore } from "../../stores/uiStore";
 import {
   DEFAULT_FACE_TRANSFORM,
   type Dress,
-  type FaceTransform,
+  type DressOptionCategory,
 } from "../../types/domain";
-import { useUIStore } from "../../stores/uiStore";
+import { DressRecallNotes } from "./DressRecallNotes";
+import { DressDetailsPanel } from "./DressDetailsPanel";
+import { DressEditorHeader } from "./DressEditorHeader";
+import { FastRecordFlow } from "./FastRecordFlow";
+import { useDressEditorDraft } from "./useDressEditorDraft";
+import { usePendingWrites } from "./usePendingWrites";
+
+const patchFields = (patch: Partial<Dress>) => {
+  const fields: string[] = [];
+  for (const field of Object.keys(patch)) {
+    if (field === "customOptions") {
+      for (const category of Object.keys(patch.customOptions ?? {}))
+        fields.push(`customOptions.${category}`);
+    } else fields.push(field);
+  }
+  return fields;
+};
 
 export function DressEditorPage() {
   const { tourId = "", dressId = "" } = useParams();
   const nav = useNavigate();
-  const setSave = useUIStore((s) => s.setSaveStatus);
-  const toast = useUIStore((s) => s.showToast);
-  const data = useLiveQuery(async () => {
-    const dress = await db.dresses.get(dressId);
-    if (!dress) return undefined;
-    const tour = await db.tours.get(dress.tourId);
-    const face = tour?.faceAssetId
-      ? await db.assets.get(tour.faceAssetId)
-      : undefined;
-    return { dress, tour, face };
+  const [searchParams] = useSearchParams();
+  const recordView = searchParams.get("view") === "record";
+  const editView = searchParams.get("view") === "edit";
+  const setSave = useUIStore((state) => state.setSaveStatus);
+  const toast = useUIStore((state) => state.showToast);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [includeFace, setIncludeFace] = useState(false);
+  const { run, waitForPending } = usePendingWrites();
+  const detailsReturnScrollTop = useRef<number | undefined>(undefined);
+  const failedPersistFields = useRef(new Set<string>());
+  useEffect(() => {
+    failedPersistFields.current.clear();
   }, [dressId]);
-  const [memo, setMemo] = useState("");
-  const [label, setLabel] = useState("");
-  const [advanced, setAdvanced] = useState(false);
-  const [transform, setTransform] = useState<FaceTransform>(
-    DEFAULT_FACE_TRANSFORM,
+  const openDetails = useCallback(() => {
+    if (detailsOpen) return;
+    detailsReturnScrollTop.current = window.scrollY;
+    setDetailsOpen(true);
+  }, [detailsOpen]);
+  useLayoutEffect(() => {
+    if (detailsOpen) return;
+    const scrollTop = detailsReturnScrollTop.current;
+    if (scrollTop === undefined) return;
+    window.scrollTo({ top: scrollTop, left: 0, behavior: "auto" });
+    detailsReturnScrollTop.current = undefined;
+  }, [detailsOpen]);
+  const data = useDressEditorData(dressId);
+  const currentData = data?.dress.id === dressId ? data : undefined;
+  const writeDress = useCallback(
+    (id: string, patch: Partial<Dress>) => run(() => patchDress(id, patch)),
+    [run],
   );
-  const initialized = useRef("");
-  const latestMemo = useRef("");
-  const latestLabel = useRef("");
-  const latestTransform = useRef<FaceTransform>(DEFAULT_FACE_TRANSFORM);
-  const hasFace = useRef(false);
-  useEffect(() => {
-    if (data?.dress && initialized.current !== data.dress.id) {
-      initialized.current = data.dress.id;
-      latestMemo.current = data.dress.memo;
-      latestLabel.current = data.dress.label;
-      latestTransform.current =
-        data.dress.faceTransform ?? DEFAULT_FACE_TRANSFORM;
-      setMemo(data.dress.memo);
-      setLabel(data.dress.label);
-      setTransform(latestTransform.current);
-    }
-    hasFace.current = Boolean(data?.face);
-  }, [data?.dress, data?.face]);
-  useEffect(() => {
-    if (!data?.dress || memo === data.dress.memo) return;
-    setSave("saving");
-    const t = window.setTimeout(async () => {
-      try {
-        await patchDress(dressId, { memo });
-        setSave("saved");
-      } catch {
-        setSave("error");
-      }
-    }, 400);
-    return () => clearTimeout(t);
-  }, [memo, dressId, data?.dress?.memo, setSave]);
-  useEffect(() => {
-    if (!data?.dress) return;
-    const current = data.dress.faceTransform ?? DEFAULT_FACE_TRANSFORM;
-    if (JSON.stringify(transform) === JSON.stringify(current)) return;
-    const t = window.setTimeout(async () => {
-      try {
-        await patchDress(dressId, { faceTransform: transform });
-        setSave("saved");
-      } catch {
-        setSave("error");
-      }
-    }, 220);
-    return () => clearTimeout(t);
-  }, [transform, dressId, data?.dress, setSave]);
-  useEffect(
-    () => () => {
-      if (initialized.current !== dressId) return;
-      const finalLabel = latestLabel.current.trim();
-      const patch: Partial<Dress> = { memo: latestMemo.current };
-      if (finalLabel) patch.label = finalLabel;
-      if (hasFace.current) patch.faceTransform = latestTransform.current;
-      void patchDress(dressId, patch);
-    },
-    [dressId],
-  );
-  if (!data?.dress || !data.tour)
+  const draft = useDressEditorDraft({
+    dressId,
+    dress: currentData?.dress,
+    face: currentData?.face,
+    onSaveStatus: setSave,
+    writeDress,
+  });
+  const {
+    recall,
+    latestRecall,
+    updateRecall,
+    memo,
+    setMemo,
+    label,
+    setLabel,
+    transform,
+    latestMemo,
+    latestLabel,
+    latestTransform,
+    hasFace,
+    updateTransform,
+    flushTransform,
+  } = draft;
+
+  if (!currentData?.dress || !currentData.tour) {
     return (
       <main className="p-8 text-center text-sm text-stone-400">
         드레스를 불러오는 중...
       </main>
     );
-  const d = data.dress;
-  const immediate = async (patch: Partial<Dress>, message?: string) => {
+  }
+  const dress = currentData.dress;
+
+  const persist = async (patch: Partial<Dress>, message?: string) => {
     setSave("saving");
+    const fields = patchFields(patch);
     try {
-      const changed = await patchDress(dressId, patch);
-      setSave("saved");
-      if (changed) toast("선택한 어깨 형태에 맞춰 가슴선을 바꿨어요.");
+      await writeDress(dressId, patch);
+      for (const field of fields) failedPersistFields.current.delete(field);
+      setSave(failedPersistFields.current.size === 0 ? "saved" : "error");
       if (message) toast(message);
-    } catch {
+    } catch (error) {
+      for (const field of fields) failedPersistFields.current.add(field);
       setSave("error");
+      throw error;
     }
   };
-  const updateTransform = (patch: Partial<FaceTransform>) =>
-    setTransform((current) => {
-      const next = { ...current, ...patch };
-      hasFace.current = true;
-      latestTransform.current = next;
-      return next;
-    });
-  const flushTransform = () => {
-    void patchDress(dressId, { faceTransform: latestTransform.current });
+  const safelyPersist = async (patch: Partial<Dress>, message?: string) => {
+    try {
+      await persist(patch, message);
+    } catch {
+      toast("저장하지 못했어요. 다시 시도해 주세요.");
+    }
   };
-  const singleSection = <T extends string>(
-    category: OptionArtworkCategory,
-    title: string,
-    options: { id: T; label: string; technical?: string }[],
-    value: T,
-    onPick: (id: T) => void,
-    disabled?: (id: T) => boolean,
-  ) => (
-    <section className="mt-8">
-      <h2 className="mb-3 text-[15px] font-bold">{title}</h2>
-      <div className="grid grid-cols-3 gap-2">
-        {options.map((o) => (
-          <OptionTile
-            key={o.id}
-            label={o.label}
-            technical={o.technical}
-            selected={value === o.id}
-            disabled={disabled?.(o.id)}
-            onClick={() => onPick(o.id)}
-            icon={<OptionArtwork category={category} id={o.id} />}
-          />
-        ))}
-      </div>
-    </section>
+  const saveCustomOption = (category: DressOptionCategory, value: string) =>
+    void safelyPersist({
+      customOptions: {
+        [category]: value || undefined,
+      },
+    });
+  const saveDraft = async () => {
+    const pendingRecall = readRecallDraft(dressId);
+    await persist({
+      memo: latestMemo.current,
+      ...latestRecall.current,
+      label: latestLabel.current.trim() || dress.label,
+      ...(currentData.face ? { faceTransform: latestTransform.current } : {}),
+    });
+    if (pendingRecall) acknowledgeRecallDraft(dressId, pendingRecall.revision);
+  };
+  const closeDetails = () => {
+    setIncludeFace(false);
+    void (async () => {
+      try {
+        await waitForPending();
+        await saveDraft();
+        await waitForPending();
+        if (failedPersistFields.current.size > 0)
+          throw new Error("이전 저장이 완료되지 않았어요.");
+        setDetailsOpen(false);
+      } catch {
+        toast("저장하지 못했어요. 다시 시도해 주세요.");
+      }
+    })();
+  };
+  const goBack = async () => {
+    try {
+      await waitForPending();
+      await saveDraft();
+      nav(`/tour/${tourId}/shop/${dress.shopId}`);
+    } catch {
+      toast("저장하지 못했어요. 다시 시도해 주세요.");
+    }
+  };
+  const addNextDress = async () => {
+    await waitForPending();
+    await saveDraft();
+    const next = await run(() => addDress(dress.shopId));
+    nav(`/tour/${tourId}/dress/${next}`, { replace: true });
+  };
+  const finishAndView = async () => {
+    await waitForPending();
+    await saveDraft();
+    nav(`/tour/${tourId}/dress/${dressId}?view=record`, { replace: true });
+  };
+  const removeFace = async () => {
+    hasFace.current = false;
+    setIncludeFace(false);
+    await run(() => removeFaceAsset(tourId));
+    toast("얼굴 사진을 삭제했어요.");
+  };
+  const uploadFace = async (file: File) => {
+    try {
+      setSave("saving");
+      const asset = await processFaceFile(file);
+      await run(() => setFaceAsset(tourId, asset));
+      hasFace.current = true;
+      setSave("saved");
+      toast("얼굴 사진을 저장했어요.");
+    } catch (error) {
+      setSave("error");
+      toast(
+        error instanceof Error ? error.message : "사진을 처리하지 못했어요.",
+      );
+    }
+  };
+  const resetFace = () => {
+    updateTransform(DEFAULT_FACE_TRANSFORM);
+    void safelyPersist({ faceTransform: DEFAULT_FACE_TRANSFORM });
+  };
+  const changeLabel = (value: string) => {
+    setLabel(value);
+    latestLabel.current = value;
+  };
+
+  const recallEditor = (
+    <DressRecallNotes
+      values={recall}
+      onChange={updateRecall}
+      onBlur={() =>
+        void saveDraft().catch(() =>
+          toast("저장하지 못했어요. 다시 시도해 주세요."),
+        )
+      }
+    />
   );
+
   return (
-    <main className="min-h-dvh pb-32">
-      <header className="sticky top-0 z-20 border-b border-stone-100 bg-[#fffdfa]/95 px-4 pb-3 pt-[calc(12px+env(safe-area-inset-top))] backdrop-blur">
-        <div className="flex items-center gap-3">
-          <button
-            className="grid h-10 w-10 place-items-center rounded-full bg-stone-50"
-            onClick={async () => {
-              await patchDress(dressId, {
-                memo: latestMemo.current,
-                label: latestLabel.current.trim() || d.label,
-                ...(data.face ? { faceTransform: latestTransform.current } : {}),
-              });
-              nav(`/tour/${tourId}/shop/${d.shopId}`);
-            }}
-            aria-label="뒤로"
-          >
-            <ArrowLeft size={19} />
-          </button>
-          <input
-            aria-label="드레스 이름"
-            maxLength={50}
-            className="min-w-0 flex-1 bg-transparent font-bold outline-none"
-            value={label}
-            onChange={(e) => {
-              setLabel(e.target.value);
-              latestLabel.current = e.target.value;
-            }}
-            onBlur={async () => {
-              const next = label.trim();
-              if (next && next !== d.label) await immediate({ label: next });
-            }}
-          />
-          <SaveStatus />
-          <button
-            aria-label="후보"
-            className={`grid h-10 w-10 place-items-center rounded-full ${d.isFavorite ? "bg-[#fff0ec] text-[#b96e63]" : "bg-stone-50 text-stone-400"}`}
-            onClick={() => immediate({ isFavorite: !d.isFavorite })}
-          >
-            <Heart size={18} fill={d.isFavorite ? "currentColor" : "none"} />
-          </button>
-        </div>
-      </header>
-      <div className="px-5 pt-4">
-        <div className="sticky top-[72px] z-10 rounded-[32px] bg-[#fffdfa] pb-3">
-          <DressPreview
-            dress={{ ...d, faceTransform: transform }}
-            faceAsset={data.face}
-            className="mx-auto aspect-[9/13] max-h-[42dvh] w-auto"
-          />
-        </div>
-        {singleSection(
-          "top",
-          "어깨/끈은 어떻게 생겼나요?",
-          topStyleOptions,
-          d.topStyle,
-          (id) => immediate({ topStyle: id }),
-        )}
-        {singleSection(
-          "neckline",
-          "가슴선은 어떤 모양이었나요?",
-          necklineOptions,
-          d.neckline,
-          (id) => immediate({ neckline: id }),
-          (id) => id !== "unknown" && !isNecklineCompatible(d.topStyle, id),
-        )}
-        {singleSection(
-          "silhouette",
-          "치마는 어떻게 퍼졌나요?",
-          silhouetteOptions,
-          d.silhouette,
-          (id) => immediate({ silhouette: id }),
-        )}
-        {singleSection(
-          "fabric",
-          "주 소재는 어떤 느낌이었나요?",
-          fabricOptions,
-          d.fabric,
-          (id) => immediate({ fabric: id }),
-        )}
-        {singleSection(
-          "color",
-          "색은 가까운 쪽을 골라주세요",
-          colorOptions,
-          d.color,
-          (id) => immediate({ color: id }),
-        )}
-        {singleSection(
-          "train",
-          "뒤로 끌리는 길이는?",
-          trainOptions,
-          d.train,
-          (id) => immediate({ train: id }),
-        )}
-        <section className="mt-8">
-          <div className="mb-3 flex items-end justify-between">
-            <h2 className="text-[15px] font-bold">눈에 띈 디테일</h2>
-            <span className="text-xs text-stone-400">최대 4개</span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {detailOptions.map((o) => (
-              <OptionTile
-                key={o.id}
-                label={o.label}
-                selected={d.details.includes(o.id)}
-                disabled={!d.details.includes(o.id) && d.details.length >= 4}
-                onClick={() =>
-                  immediate({
-                    details: d.details.includes(o.id)
-                      ? d.details.filter((x) => x !== o.id)
-                      : [...d.details, o.id],
-                  })
-                }
-                icon={<OptionArtwork category="detail" id={o.id} />}
-              />
-            ))}
-          </div>
-        </section>
-        <button
-          className="mt-7 flex h-12 w-full items-center justify-between rounded-2xl bg-stone-50 px-4 text-sm font-semibold"
-          onClick={() => setAdvanced((v) => !v)}
-        >
-          더 자세히 기록{" "}
-          <ChevronDown size={17} className={advanced ? "rotate-180" : ""} />
-        </button>
-        {advanced && (
-          <>
-            {singleSection(
-              "waistline",
-              "허리선은 어땠나요?",
-              waistlineOptions,
-              d.waistline,
-              (id) => immediate({ waistline: id }),
-            )}
-            {singleSection(
-              "back",
-              "뒤태는 어땠나요?",
-              backStyleOptions,
-              d.backStyle ?? "unknown",
-              (id) => immediate({ backStyle: id }),
-            )}
-          </>
-        )}
-        <section className="mt-8">
-          <h2 className="mb-3 text-[15px] font-bold">입어봤을 때 어땠나요?</h2>
-          <div className="flex flex-wrap gap-2">
-            {quickTagOptions.map((o) => (
-              <button
-                key={o.id}
-                aria-pressed={d.quickTags.includes(o.id)}
-                className={`min-h-11 rounded-full border px-4 text-sm ${d.quickTags.includes(o.id) ? "border-[#b96e63] bg-[#fff2ee] text-[#a75e55]" : "border-stone-200 bg-white text-stone-500"}`}
-                onClick={() =>
-                  immediate({
-                    quickTags: d.quickTags.includes(o.id)
-                      ? d.quickTags.filter((x) => x !== o.id)
-                      : [...d.quickTags, o.id],
-                  })
-                }
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-stone-500">별점</span>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                aria-label={`${n}점`}
-                className={`grid h-10 w-10 place-items-center text-xl ${n <= (d.rating ?? 0) ? "text-amber-400" : "text-stone-200"}`}
-                onClick={() => immediate({ rating: n as 1 | 2 | 3 | 4 | 5 })}
-              >
-                ★
-              </button>
-            ))}
-          </div>
-        </section>
-        <section className="mt-8">
-          <h2 className="mb-3 text-[15px] font-bold">특이사항</h2>
-          <textarea
-            maxLength={1000}
-            value={memo}
-            onChange={(e) => {
-              setMemo(e.target.value);
-              latestMemo.current = e.target.value;
-            }}
-            onBlur={() =>
-              void patchDress(dressId, { memo: latestMemo.current })
-            }
-            placeholder="예: 허리가 제일 얇아 보였음, 치마 볼륨은 조금 아쉬움"
-            className="min-h-32 w-full resize-none rounded-2xl border border-stone-200 bg-white p-4 text-sm leading-6 outline-none focus:border-[#b96e63]"
-          />
-          <div className="mt-1 text-right text-[11px] text-stone-300">
-            {memo.length}/1000
-          </div>
-        </section>
-        <section className="mt-8 rounded-3xl border border-stone-100 bg-[#faf7f5] p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="font-bold">내 얼굴로 느낌 보기</h2>
-              <p className="mt-1 text-xs leading-5 text-stone-400">
-                사진은 이 기기에서만 처리됩니다. 가상 피팅이 아니라 분위기
-                비교용이에요.
-              </p>
-            </div>
-            {data.face && (
-              <button
-                aria-label="얼굴 사진 삭제"
-                className="grid h-10 w-10 place-items-center rounded-full bg-white text-stone-400"
-                onClick={async () => {
-                  if (confirm("얼굴 사진을 삭제할까요?")) {
-                    hasFace.current = false;
-                    await removeFaceAsset(tourId);
-                    toast("얼굴 사진을 삭제했어요.");
-                  }
-                }}
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
-          </div>
-          {!data.face ? (
-            <label className="mt-4 flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white font-semibold shadow-sm">
-              <ImagePlus size={18} />
-              얼굴 사진 추가
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  try {
-                    setSave("saving");
-                    const asset = await processFaceFile(file);
-                    await setFaceAsset(tourId, asset);
-                    hasFace.current = true;
-                    setSave("saved");
-                    toast("얼굴 사진을 저장했어요.");
-                  } catch (err) {
-                    setSave("error");
-                    toast(
-                      err instanceof Error
-                        ? err.message
-                        : "사진을 처리하지 못했어요.",
-                    );
-                  }
-                }}
-              />
-            </label>
-          ) : (
-            <div className="mt-4 space-y-3">
-              <FaceSlider
-                label="좌우"
-                min={-1}
-                max={1}
-                step={0.01}
-                value={transform.x}
-                onChange={(x) => updateTransform({ x })}
-                onCommit={flushTransform}
-              />
-              <FaceSlider
-                label="위아래"
-                min={-1}
-                max={1}
-                step={0.01}
-                value={transform.y}
-                onChange={(y) => updateTransform({ y })}
-                onCommit={flushTransform}
-              />
-              <FaceSlider
-                label="크기"
-                min={0.5}
-                max={3}
-                step={0.02}
-                value={transform.scale}
-                onChange={(scale) => updateTransform({ scale })}
-                onCommit={flushTransform}
-              />
-              <FaceSlider
-                label="회전"
-                min={-15}
-                max={15}
-                step={1}
-                value={transform.rotation}
-                onChange={(rotation) => updateTransform({ rotation })}
-                onCommit={flushTransform}
-              />
-              <button
-                className="inline-flex h-10 items-center gap-1 text-xs text-stone-400"
-                onClick={() => {
-                  latestTransform.current = DEFAULT_FACE_TRANSFORM;
-                  setTransform(DEFAULT_FACE_TRANSFORM);
-                  void patchDress(dressId, {
-                    faceTransform: DEFAULT_FACE_TRANSFORM,
-                  });
-                }}
-              >
-                <RotateCcw size={14} />
-                위치 초기화
-              </button>
-            </div>
-          )}
-        </section>
-      </div>
-      <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
-        <button
-          className="h-14 w-full rounded-2xl bg-stone-900 font-bold text-white"
-          onClick={async () => {
-            await patchDress(dressId, {
-              memo: latestMemo.current,
-              label: latestLabel.current.trim() || d.label,
-              ...(hasFace.current
-                ? { faceTransform: latestTransform.current }
-                : {}),
-            });
-            const next = await addDress(d.shopId);
-            nav(`/tour/${tourId}/dress/${next}`, { replace: true });
-          }}
-        >
-          다음 드레스 추가
-        </button>
-      </div>
-    </main>
-  );
-}
-function FaceSlider({
-  label,
-  min,
-  max,
-  step,
-  value,
-  onChange,
-  onCommit,
-}: {
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onChange: (v: number) => void;
-  onCommit: () => void;
-}) {
-  return (
-    <label className="grid grid-cols-[56px_1fr_42px] items-center gap-2 text-xs text-stone-500">
-      <span>{label}</span>
-      <input
-        aria-label={label}
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        onPointerUp={onCommit}
-        onKeyUp={onCommit}
-        onBlur={onCommit}
-        className="accent-[#b96e63]"
+    <main className="min-h-dvh">
+      <DressEditorHeader
+        label={label}
+        isFavorite={dress.isFavorite}
+        onBack={goBack}
+        onLabelChange={changeLabel}
+        onLabelBlur={() =>
+          safelyPersist({ label: label.trim() || dress.label })
+        }
+        onToggleFavorite={() =>
+          safelyPersist({ isFavorite: !dress.isFavorite })
+        }
       />
-      <span className="text-right text-[10px] text-stone-400">
-        {value.toFixed(step < 1 ? 2 : 0)}
-      </span>
-    </label>
+      <div className="core-details-nav sticky top-0 z-10 border-b border-stone-100 bg-shell/95 px-5 py-2 backdrop-blur">
+        <button
+          type="button"
+          className="min-h-11 w-full rounded-control border border-accent/30 bg-accent-soft px-4 text-sm font-bold text-accent-copy"
+          onClick={detailsOpen ? closeDetails : openDetails}
+        >
+          {detailsOpen ? "핵심 기록으로 돌아가기" : "상세 기록"}
+        </button>
+      </div>
+      {detailsOpen && (
+        <div className="px-5 pt-4">
+          <DressPreview
+            dress={{ ...dress, faceTransform: transform }}
+            mode="visual"
+            faceAsset={currentData.face}
+            includeFace={detailsOpen && includeFace}
+            className="mx-auto aspect-[9/16] max-h-[34dvh] w-auto"
+          />
+        </div>
+      )}
+      {recordView ? (
+        <>
+          <div hidden={detailsOpen} aria-hidden={detailsOpen}>
+            <RecallDressDetail
+              dress={dress}
+              shopName={currentData.shop?.name}
+              onEditCore={() =>
+                nav(`/tour/${tourId}/dress/${dressId}?view=edit`)
+              }
+              onOpenDetails={openDetails}
+            />
+          </div>
+          {detailsOpen && (
+            <>
+              <div className="px-5">{recallEditor}</div>
+              <DressDetailsPanel
+                dress={dress}
+                memo={memo}
+                transform={transform}
+                face={currentData.face}
+                includeFace={includeFace}
+                onPatch={safelyPersist}
+                onCustomCommit={saveCustomOption}
+                onMemoChange={(value) => {
+                  setMemo(value);
+                  latestMemo.current = value;
+                }}
+                onMemoBlur={() =>
+                  void safelyPersist({ memo: latestMemo.current })
+                }
+                onRemoveFace={removeFace}
+                onUploadFace={uploadFace}
+                onIncludeFaceChange={setIncludeFace}
+                onTransformPatch={updateTransform}
+                onTransformCommit={flushTransform}
+                onResetFace={resetFace}
+                onClose={closeDetails}
+              />
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <div hidden={detailsOpen} aria-hidden={detailsOpen}>
+            <FastRecordFlow
+              dress={dress}
+              initialView={editView ? "steps" : undefined}
+              recallEditor={detailsOpen ? undefined : recallEditor}
+              corePreview={
+                <DressPreview
+                  dress={dress}
+                  mode="visual"
+                  className="mx-auto mt-6 max-w-40"
+                />
+              }
+              renderSummary={(onEditCore) => (
+                <RecallDressDetail
+                  dress={dress}
+                  shopName={currentData.shop?.name}
+                  onEditCore={onEditCore}
+                  onOpenDetails={openDetails}
+                />
+              )}
+              onPatch={persist}
+              onComplete={addNextDress}
+              onFinishAndView={finishAndView}
+              onOpenDetails={openDetails}
+              showDetailsAction={false}
+            />
+          </div>
+          {detailsOpen && (
+            <>
+              <div className="px-5">{recallEditor}</div>
+              <DressDetailsPanel
+                dress={dress}
+                memo={memo}
+                transform={transform}
+                face={currentData.face}
+                includeFace={includeFace}
+                onPatch={safelyPersist}
+                onCustomCommit={saveCustomOption}
+                onMemoChange={(value) => {
+                  setMemo(value);
+                  latestMemo.current = value;
+                }}
+                onMemoBlur={() =>
+                  void safelyPersist({ memo: latestMemo.current })
+                }
+                onRemoveFace={removeFace}
+                onUploadFace={uploadFace}
+                onIncludeFaceChange={setIncludeFace}
+                onTransformPatch={updateTransform}
+                onTransformCommit={flushTransform}
+                onResetFace={resetFace}
+                onClose={closeDetails}
+              />
+            </>
+          )}
+        </>
+      )}
+    </main>
   );
 }

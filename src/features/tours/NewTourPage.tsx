@@ -7,7 +7,7 @@ const today = () => new Date().toLocaleDateString("sv-SE");
 export function NewTourPage() {
   const nav = useNavigate();
   const [brideName, setBride] = useState("");
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState(today);
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -23,14 +23,14 @@ export function NewTourPage() {
         <ArrowLeft />
       </button>
       <div className="mt-10">
-        <p className="text-xs font-semibold text-[#a75e55]">새 드레스투어</p>
+        <p className="text-xs font-semibold text-accent-dark">새 드레스투어</p>
         <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
           오늘 기록을
           <br />
           만들어볼까요?
         </h1>
         <p className="mt-3 text-sm text-stone-400">
-          모든 항목은 선택이에요. 바로 시작해도 됩니다.
+          모든 항목은 선택이에요. 바로 시작해도 돼요.
         </p>
       </div>
       <div className="mt-9 space-y-5">
@@ -41,7 +41,7 @@ export function NewTourPage() {
             value={brideName}
             onChange={(e) => setBride(e.target.value)}
             placeholder="예: 히똥"
-            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 outline-none focus:border-[#bd7469]"
+            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 focus:border-accent"
           />
         </label>
         <label className="block text-sm font-semibold">
@@ -50,7 +50,7 @@ export function NewTourPage() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 outline-none focus:border-[#bd7469]"
+            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 focus:border-accent"
           />
         </label>
         <label className="block text-sm font-semibold">
@@ -60,7 +60,7 @@ export function NewTourPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="비워두면 자동으로 만들어요"
-            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 outline-none focus:border-[#bd7469]"
+            className="mt-2 h-14 w-full rounded-2xl border border-stone-200 px-4 focus:border-accent"
           />
         </label>
         {error && (
@@ -72,7 +72,7 @@ export function NewTourPage() {
           </p>
         )}
       </div>
-      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-[#fffdfa]/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         <button
           disabled={busy}
           className="h-14 w-full rounded-2xl bg-stone-900 font-bold text-white disabled:opacity-50"
@@ -92,6 +92,7 @@ export function NewTourPage() {
               setSave("error");
               setError(message);
               toast(message);
+            } finally {
               setBusy(false);
             }
           }}

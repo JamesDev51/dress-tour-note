@@ -20,6 +20,27 @@ export const faceTransformSchema = z.object({
   scale: z.number().min(0.5).max(3),
   rotation: z.number().min(-15).max(15),
 });
+const customOptionNoteSchema = z.string().trim().min(1).max(80);
+const optionalRecallTextSchema = (maxLength: number) =>
+  z
+    .string()
+    .trim()
+    .max(maxLength)
+    .transform((value) => value || undefined)
+    .optional();
+const customOptionsSchema = z
+  .object({
+    top: customOptionNoteSchema.optional(),
+    neckline: customOptionNoteSchema.optional(),
+    silhouette: customOptionNoteSchema.optional(),
+    fabric: customOptionNoteSchema.optional(),
+    color: customOptionNoteSchema.optional(),
+    waistline: customOptionNoteSchema.optional(),
+    backStyle: customOptionNoteSchema.optional(),
+    train: customOptionNoteSchema.optional(),
+    details: customOptionNoteSchema.optional(),
+  })
+  .strict();
 export const tourSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(50),
@@ -71,9 +92,14 @@ export const dressSchema = z.object({
       z.literal(5),
     ])
     .optional(),
+  memoryCue: optionalRecallTextSchema(80),
+  likedReason: optionalRecallTextSchema(160),
+  concern: optionalRecallTextSchema(160),
   memo: z.string().max(1000),
   isFavorite: z.boolean(),
+  coreRecordedAt: z.string().datetime().optional(),
   faceTransform: faceTransformSchema.optional(),
+  customOptions: customOptionsSchema.optional(),
   createdAt: iso,
   updatedAt: iso,
 });

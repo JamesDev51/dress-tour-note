@@ -1,173 +1,448 @@
-import type { Dress, FaceTransform } from "../../types/domain";
-import { colorHex } from "../dress/options";
+import type { Dress } from "../../types/domain";
+import {
+  backStyleOptions,
+  colorOptions,
+  fabricOptions,
+  optionLabel,
+} from "../dress/options";
+import { dressRenderTokens } from "../dress/renderTokens";
+import { fabricMarks, trainLengths, waistY } from "./memorySketchPrimitives";
+import {
+  neutralProfile,
+  profileForSilhouette,
+  type DressProfile,
+} from "./dressProfiles";
+import {
+  backConstructionMarkup,
+  necklinePathFor,
+  sleeveMaskPathFor,
+  topConstructionMarkup,
+} from "./dressProfileDetails";
+import {
+  createSvgIds,
+  escapeXml,
+  renderAnnotations,
+  renderDefinitions,
+  renderFields,
+  renderMannequin,
+  renderVolumeLayers,
+  preparedArtworkFrameTransform,
+  preparedArtworkVerticalBounds,
+} from "./dressSvgSupport";
+import type { GarmentArtworkResult } from "./garment";
 
-const esc = (v: string) =>
-  v.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ]!,
-  );
-const skirtPath: Record<Dress["silhouette"], string> = {
-  unknown: "M145 250 L215 250 L250 570 L110 570 Z",
-  aLine: "M148 250 L212 250 L295 590 L65 590 Z",
-  ballGown:
-    "M145 250 L215 250 C255 285 315 410 330 590 L30 590 C45 410 105 285 145 250 Z",
-  fitAndFlare:
-    "M148 250 L212 250 C205 330 220 390 275 590 L85 590 C140 390 155 330 148 250 Z",
-  mermaid:
-    "M150 250 L210 250 C205 355 208 430 220 470 C245 490 285 530 305 590 L55 590 C75 530 115 490 140 470 C152 430 155 355 150 250 Z",
-  sheath: "M150 250 L210 250 L225 590 L135 590 Z",
-  teaLength: "M148 250 L212 250 L270 500 L90 500 Z",
+export type DressSketchView = "full" | "upper" | "back";
+export type DressSketchMode = "annotated" | "visual";
+
+export type DressSvgMarkupOptions = {
+  readonly preparedArtwork?: GarmentArtworkResult;
+  readonly namespace?: string;
 };
-function necklinePath(type: Dress["neckline"]) {
-  switch (type) {
-    case "sweetheart":
-      return "M150 180 C162 165 174 170 180 184 C186 170 198 165 210 180 L210 258 L150 258 Z";
-    case "v":
-      return "M150 174 L180 205 L210 174 L210 258 L150 258 Z";
-    case "square":
-      return "M150 172 L164 172 L164 195 L196 195 L196 172 L210 172 L210 258 L150 258 Z";
-    case "scoop":
-      return "M150 174 C160 208 200 208 210 174 L210 258 L150 258 Z";
-    case "high":
-      return "M158 128 L202 128 L210 258 L150 258 Z";
-    case "illusion":
-      return "M156 138 L204 138 L210 258 L150 258 Z";
-    case "asymmetric":
-      return "M150 162 L210 190 L210 258 L150 258 Z";
-    case "straight":
-    default:
-      return "M150 178 L210 178 L210 258 L150 258 Z";
-  }
+
+const neutralWaistY = 268;
+
+function numberText(value: number) {
+  return Number(value.toFixed(4))
+    .toString()
+    .replace(/^(-?)0\./, "$1.");
 }
-function upperExtras(top: Dress["topStyle"], base: string, shadow: string) {
-  switch (top) {
-    case "offShoulder":
-      return `<path d="M149 176 C126 174 112 186 103 205" fill="none" stroke="${base}" stroke-width="18" stroke-linecap="round"/><path d="M211 176 C234 174 248 186 257 205" fill="none" stroke="${base}" stroke-width="18" stroke-linecap="round"/>`;
-    case "spaghetti":
-      return `<path d="M157 181 L150 124 M203 181 L210 124" stroke="${shadow}" stroke-width="5"/>`;
-    case "wideStrap":
-      return `<path d="M158 183 L148 123 M202 183 L212 123" stroke="${base}" stroke-width="16"/>`;
-    case "halter":
-      return `<path d="M160 178 Q180 135 200 178 M165 172 Q180 145 195 172" fill="none" stroke="${base}" stroke-width="13" stroke-linecap="round"/>`;
-    case "oneShoulder":
-      return `<path d="M158 181 L207 120" stroke="${base}" stroke-width="18" stroke-linecap="round"/>`;
-    case "shortSleeve":
-      return `<path d="M151 173 Q125 167 112 193 L121 220 Q136 201 152 201 Z" fill="${base}"/><path d="M209 173 Q235 167 248 193 L239 220 Q224 201 208 201 Z" fill="${base}"/>`;
-    case "longSleeve":
-      return `<path d="M151 170 Q126 166 114 190 L96 320 Q108 328 120 320 L141 207 Z" fill="${base}" opacity=".9"/><path d="M209 170 Q234 166 246 190 L264 320 Q252 328 240 320 L219 207 Z" fill="${base}" opacity=".9"/>`;
-    case "strapless":
-    case "unknown":
-    default:
-      return "";
-  }
+
+function waistFor(dress: Dress) {
+  return dress.waistline === "unknown"
+    ? neutralWaistY
+    : waistY[dress.waistline];
 }
-function trainPath(type: Dress["train"], base: string) {
-  if (type === "none" || type === "unknown") return "";
-  const ext = type === "sweep" ? 40 : type === "chapel" ? 85 : 145;
-  return `<path d="M180 470 C240 500 ${260 + ext} 545 ${280 + ext} 596 C230 606 175 602 130 588 C175 560 190 520 180 470 Z" fill="${base}" opacity=".8"/>`;
+
+function profileFor(dress: Dress): DressProfile {
+  return dress.silhouette === "unknown"
+    ? neutralProfile
+    : profileForSilhouette(dress.silhouette);
 }
-function pattern(dress: Dress, id: string) {
-  switch (dress.fabric) {
-    case "lace":
-      return `<pattern id="p-${id}" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="4" fill="none" stroke="#d7cdc8" stroke-width="1"/><path d="M12 12q6-8 12 0q-6 8-12 0" fill="none" stroke="#d7cdc8"/></pattern>`;
-    case "tulle":
-      return `<pattern id="p-${id}" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0 10L10 0" stroke="#ded8d4" stroke-width=".7"/></pattern>`;
-    case "glitterBeaded":
-      return `<pattern id="p-${id}" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2" fill="#ddd0c6"/><circle cx="16" cy="13" r="1.5" fill="#c7b4a7"/></pattern>`;
-    case "floral3D":
-      return `<pattern id="p-${id}" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M17 8c4 2 6 5 3 9c4 1 5 5 2 8c-4 2-7 0-8-3c-3 3-8 2-9-2c0-4 3-6 6-6c-1-4 2-7 6-6Z" fill="#efe6e1"/></pattern>`;
-    case "organzaChiffon":
-      return `<linearGradient id="p-${id}" x1="0" x2="1"><stop stop-color="#fff" stop-opacity=".9"/><stop offset=".5" stop-color="#e8ded9" stop-opacity=".4"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/></linearGradient>`;
-    case "mikadoSatin":
-      return `<linearGradient id="p-${id}" x1="0" x2="1"><stop stop-color="#fff"/><stop offset=".45" stop-color="#ded5cf"/><stop offset=".6" stop-color="#fff"/></linearGradient>`;
-    default:
-      return "";
-  }
+
+function garmentPath(
+  dress: Dress,
+  view: DressSketchView,
+  waist: number,
+  profile = profileFor(dress),
+) {
+  const backStyle =
+    view === "back" ? (dress.backStyle ?? "unknown") : undefined;
+  return view === "upper"
+    ? profile.upperPath(waist, dress.topStyle, dress.neckline, backStyle)
+    : profile.bodyPath(waist, dress.topStyle, dress.neckline, backStyle);
 }
-function detailOverlays(dress: Dress, base: string) {
-  let out = "";
-  if (dress.details.includes("waistBow"))
-    out += `<g transform="translate(180 260)"><path d="M0 0C-18-18-38-13-35 7C-25 18-10 12 0 4C10 12 25 18 35 7C38-13 18-18 0 0Z" fill="#eaded8"/><circle r="6" fill="#d6c4bb"/></g>`;
-  if (dress.details.includes("buttons"))
-    out += Array.from(
-      { length: 7 },
-      (_, i) =>
-        `<circle cx="180" cy="${205 + i * 16}" r="2.4" fill="#cdbdb4"/>`,
-    ).join("");
-  if (dress.details.includes("pearl"))
-    out += `<path d="M145 245 Q180 275 215 245" fill="none" stroke="#cfbfb5" stroke-width="5" stroke-dasharray="2 8" stroke-linecap="round"/>`;
-  if (dress.details.includes("slit"))
-    out += `<path d="M202 330 L205 565" stroke="#c9bbb3" stroke-width="2"/>`;
-  if (dress.details.includes("draping"))
-    out += `<path d="M145 210Q180 225 215 208M143 230Q180 245 217 228" fill="none" stroke="#d8cec8" stroke-width="2"/>`;
-  if (dress.details.includes("corset"))
-    out += `<path d="M160 195L170 252M200 195L190 252M180 195V252" stroke="#d8cec8" stroke-width="1.5"/>`;
-  if (dress.details.includes("floral"))
-    out += `<g fill="#eee2dc"><circle cx="155" cy="230" r="7"/><circle cx="205" cy="215" r="6"/><circle cx="220" cy="320" r="8"/></g>`;
-  if (dress.details.includes("sequin"))
-    out += `<g fill="#d6c1b6">${Array.from({ length: 18 }, (_, i) => `<circle cx="${135 + ((i * 23) % 105)}" cy="${280 + ((i * 37) % 220)}" r="1.5"/>`).join("")}</g>`;
-  if (dress.details.includes("overskirt"))
-    out += `<path d="M145 260C90 330 62 470 52 585M215 260C270 330 298 470 308 585" fill="none" stroke="${base}" stroke-width="5" opacity=".55"/>`;
-  return out;
+
+type TrainGeometry = {
+  readonly outline: string;
+  readonly fold: string;
+  readonly attachment: string;
+  readonly reach: number;
+  readonly baseInset: number;
+};
+
+function trainGeometry(dress: Dress): TrainGeometry | undefined {
+  if (dress.train === "unknown" || dress.train === "none") return undefined;
+  const metric = profileFor(dress).metric;
+  const length = trainLengths[dress.train];
+  const hemWidth = metric.hemRight - metric.hemLeft;
+  const baseInset = Math.max(36, Math.min(64, Math.round(hemWidth * 0.34)));
+  const baseLeft = metric.hemRight - baseInset;
+  const extension = Math.min(72, Math.max(24, Math.round(length * 1.45)));
+  const endX = Math.min(306, metric.hemRight + extension);
+  const floorY = Math.min(603, metric.hemY + 34 + Math.round(length * 0.2));
+  const attachment = `M${baseLeft} ${metric.hemY + 1} C${baseLeft + 18} ${metric.hemY - 3} ${metric.hemRight - 12} ${metric.hemY + 1} ${metric.hemRight + 4} ${metric.hemY + 8}`;
+  return {
+    outline: `${attachment} C${metric.hemRight + extension * 0.25} ${metric.hemY + 10} ${metric.hemRight + extension * 0.72} ${metric.hemY + 16} ${endX} ${metric.hemY + 23} C${endX + 6} ${metric.hemY + 34} ${endX - 4} ${floorY - 2} ${endX - 22} ${floorY + 1} C${metric.hemRight + extension * 0.52} ${floorY + 5} ${metric.hemRight + extension * 0.2} ${metric.hemY + 34} ${baseLeft + 12} ${metric.hemY + 18} C${baseLeft + 2} ${metric.hemY + 12} ${baseLeft - 3} ${metric.hemY + 6} ${baseLeft} ${metric.hemY + 1} Z`,
+    fold: `M${baseLeft + 10} ${metric.hemY + 7} C${metric.hemRight + extension * 0.18} ${metric.hemY + 17} ${metric.hemRight + extension * 0.54} ${floorY - 9} ${endX - 16} ${floorY - 5} C${endX - 43} ${floorY - 5} ${metric.hemRight + extension * 0.28} ${metric.hemY + 26} ${baseLeft + 10} ${metric.hemY + 7} Z`,
+    attachment,
+    reach: length,
+    baseInset,
+  };
 }
+
+function bodiceStructureMarkup(
+  profile: DressProfile,
+  transition: number,
+  edge: string,
+  view: DressSketchView,
+) {
+  if (view === "back") return "";
+  const a = profile.anchors;
+  return `<g data-layer="bodice-structure" data-profile-anchors="local"><path d="M${a.shoulderLeft + 10} ${a.topY + 15} C${a.shoulderLeft + 6} ${a.bustY - 3} ${a.waistLeft + 1} ${transition - 19} ${a.waistLeft + 2} ${transition - 4}" fill="none" stroke="${edge}" stroke-opacity=".14" stroke-width="1.4" stroke-linecap="round"/><path d="M${a.shoulderRight - 10} ${a.topY + 15} C${a.shoulderRight - 6} ${a.bustY - 3} ${a.waistRight - 1} ${transition - 19} ${a.waistRight - 2} ${transition - 4}" fill="none" stroke="${edge}" stroke-opacity=".14" stroke-width="1.4" stroke-linecap="round"/></g>`;
+}
+
+function garment(
+  dress: Dress,
+  view: DressSketchView,
+  visual: boolean,
+  ids: ReturnType<typeof createSvgIds>,
+  train: TrainGeometry | undefined,
+) {
+  const edge = visual
+    ? dressRenderTokens.volume.contourShadow
+    : dressRenderTokens.garmentEdge[dress.color];
+  const fill = dressRenderTokens.garmentColor[dress.color];
+  const waist = waistFor(dress);
+  const profile = profileFor(dress);
+  const profileKey =
+    dress.silhouette === "unknown" ? "neutral" : dress.silhouette;
+  const transition = profile.transitionY(waist);
+  const bodyPath = garmentPath(dress, view, waist, profile);
+  const bodyContourPath =
+    view === "upper"
+      ? profile.upperContourPath(waist, dress.topStyle, dress.neckline)
+      : profile.bodyContourPath(
+          waist,
+          dress.topStyle,
+          dress.neckline,
+          view === "back" ? (dress.backStyle ?? "unknown") : undefined,
+        );
+  const knownSilhouette = dress.silhouette !== "unknown" && view !== "upper";
+  const contourUncertainty =
+    dress.silhouette === "unknown"
+      ? ' stroke-dasharray="6 5" stroke-opacity=".68"'
+      : "";
+  const silhouettePathMarkup = `<path data-layer="garment-base"${knownSilhouette ? ` data-shape="${dress.silhouette}"` : ' data-state="unknown"'} d="${bodyPath}" fill="url(#${ids.garmentGradient})" fill-rule="evenodd" stroke="none"/><path data-layer="garment-contour" d="${bodyContourPath}" fill="none" stroke="${edge}"${contourUncertainty} stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const top =
+    view === "back"
+      ? ""
+      : dress.topStyle === "unknown"
+        ? `<path data-layer="top-unknown" d="M${profile.anchors.shoulderLeft} ${profile.anchors.topY + 4} Q135 ${profile.anchors.topY - 5} ${profile.anchors.shoulderRight} ${profile.anchors.topY + 4}" fill="none" stroke="${edge}" stroke-width="2" stroke-dasharray="6 5"/>`
+        : topConstructionMarkup({
+            style: dress.topStyle,
+            anchors: profile.anchors,
+            edge,
+            gradientId: ids.garmentGradient,
+          });
+  const neckline =
+    view === "back"
+      ? dress.backStyle && dress.backStyle !== "unknown"
+        ? backConstructionMarkup({
+            style: dress.backStyle,
+            anchors: profile.anchors,
+            edge,
+            fill,
+          })
+        : `<path data-layer="back-unknown" d="M${profile.anchors.necklineLeft - 1} ${profile.anchors.backTop} Q135 ${profile.anchors.backBottom - 4} ${profile.anchors.necklineRight + 1} ${profile.anchors.backTop}" fill="none" stroke="${edge}" stroke-width="2" stroke-dasharray="6 5"/>`
+      : dress.neckline === "unknown"
+        ? `<path data-layer="neckline-unknown" d="M${profile.anchors.necklineLeft} ${profile.anchors.bustY - 10} Q135 ${profile.anchors.bustY + 8} ${profile.anchors.necklineRight} ${profile.anchors.bustY - 10}" fill="none" stroke="${edge}" stroke-width="2" stroke-dasharray="6 5"/>`
+        : `<path data-layer="neckline-detail" data-shape="${dress.neckline}" d="${necklinePathFor(dress.neckline, profile.anchors)}" fill="none" stroke="${edge}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const waistCueY = waist;
+  const waistCue =
+    dress.waistline === "unknown" || view === "back"
+      ? ""
+      : `<path data-layer="waist-detail" data-shape="${dress.waistline}" d="M${profile.anchors.waistLeft} ${waistCueY} Q135 ${dress.waistline === "basque" ? waistCueY + 8 : waistCueY + 3} ${profile.anchors.waistRight} ${waistCueY}" fill="none" stroke="${edge}" stroke-opacity=".58" stroke-width="1.8" stroke-linecap="round"/>`;
+  const trainMarkup =
+    view === "upper" || !train
+      ? ""
+      : `<path data-layer="train" data-shape="${dress.train}" data-attachment="hem" data-reach="${train.reach}" data-base-inset="${train.baseInset}" d="${train.outline}" fill="url(#${ids.garmentGradient})" fill-opacity=".82" stroke="${edge}" stroke-opacity=".55" stroke-width="1.35" stroke-linejoin="round"/><path data-layer="train-attachment" d="${train.attachment}" fill="none" stroke="${edge}" stroke-opacity=".2" stroke-width="1.2" stroke-linecap="round"/><path data-layer="train-fold" clip-path="url(#${ids.trainMask})" d="${train.fold}" fill="${dressRenderTokens.garmentHighlight}" fill-opacity=".24" stroke="none"/>`;
+  return `<g data-layer="garment" data-profile="${profileKey}">${silhouettePathMarkup}${renderVolumeLayers({ ids, volume: profile.volume(waist), profileKey, anchors: profile.anchors, transition, fabric: dress.fabric })}${bodiceStructureMarkup(profile, transition, edge, view)}${top}${neckline}${waistCue}${trainMarkup}</g>`;
+}
+
+function allUnknown(dress: Dress, view: DressSketchView) {
+  const values =
+    view === "full"
+      ? [
+          dress.topStyle,
+          dress.neckline,
+          dress.silhouette,
+          dress.waistline,
+          dress.color,
+          dress.train,
+        ]
+      : view === "upper"
+        ? [dress.topStyle, dress.neckline, dress.waistline, dress.color]
+        : [
+            dress.backStyle ?? "unknown",
+            dress.silhouette,
+            dress.train,
+            dress.color,
+          ];
+  return values.every((value) => value === "unknown");
+}
+
+type PreparedArtworkMarkup = {
+  readonly definitions: string;
+  readonly content: string;
+};
+
+function preparedArtworkMarkup(
+  artwork: GarmentArtworkResult | undefined,
+  view: DressSketchView,
+  viewportClipId: string,
+): PreparedArtworkMarkup {
+  if (!artwork || artwork.view !== view)
+    return { definitions: "", content: "" };
+  const openEnd = artwork.markup.indexOf(">", artwork.markup.indexOf("<svg"));
+  const closeStart = artwork.markup.lastIndexOf("</svg>");
+  if (openEnd < 0 || closeStart <= openEnd)
+    return { definitions: "", content: "" };
+  const inner = artwork.markup.slice(openEnd + 1, closeStart);
+  const definitions =
+    inner.match(/<defs(?:\s[^>]*)?>[\s\S]*?<\/defs>/)?.[0] ?? "";
+  const content = inner
+    .replace(definitions, "")
+    .replace(/<title>[\s\S]*?<\/title>/g, "")
+    .trim();
+  if (!content) return { definitions, content: "" };
+
+  const source = artwork.viewBox;
+  const sourceCenterX = artwork.layers[0]?.asset.anchors.centerX ?? 180;
+  const targetCenterX = view === "upper" ? source.x + source.width / 2 : 135;
+  const registration = Number((targetCenterX - sourceCenterX).toFixed(4));
+  const viewportClip = `<clipPath id="${viewportClipId}" clipPathUnits="userSpaceOnUse"><rect x="${source.x}" y="${source.y}" width="${source.width}" height="${source.height}"/></clipPath>`;
+  const viewport = `<g data-layer="prepared-viewport" data-viewbox="${source.x} ${source.y} ${source.width} ${source.height}" clip-path="url(#${viewportClipId})">${content}</g>`;
+  const assetIds = artwork.assetIds.join(",");
+  const missingFields = artwork.missingFields.join(",");
+  return {
+    definitions: `${definitions}${viewportClip}`,
+    content: `<g data-layer="prepared-garment" data-view="${artwork.view}" data-state="${artwork.status}" data-asset-ids="${escapeXml(assetIds)}" data-missing-fields="${escapeXml(missingFields)}" transform="translate(${registration} 0)">${viewport}</g>`,
+  };
+}
+
 export function dressSvgMarkup(
   dress: Dress,
   faceDataUrl?: string,
-  includeFace = true,
+  includeFace = false,
+  view: DressSketchView = "full",
+  mode: DressSketchMode = "annotated",
+  options: DressSvgMarkupOptions = {},
 ) {
-  const id = esc(
-    dress.id.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 18) || "dress",
+  const faceAllowed = view !== "back" && includeFace && Boolean(faceDataUrl);
+  const ids = createSvgIds(dress, view, mode, options.namespace);
+  const waist = waistFor(dress);
+  const profile = profileFor(dress);
+  const bodyPath = garmentPath(dress, view, waist, profile);
+  const train = view === "upper" ? undefined : trainGeometry(dress);
+  const sleeveMaskPath =
+    view === "back" || dress.topStyle === "unknown"
+      ? undefined
+      : sleeveMaskPathFor(dress.topStyle, profile.anchors);
+  const prepared = preparedArtworkMarkup(
+    options.preparedArtwork,
+    view,
+    `${ids.garmentMask}-prepared-viewport`,
   );
-  const base = colorHex[dress.color];
-  const shadow = "#d7cbc5";
-  const pat = pattern(dress, id);
-  const fill = pat ? `url(#p-${id})` : base;
-  const ft: FaceTransform = dress.faceTransform ?? {
+  const hasExplicitArtwork = options.preparedArtwork?.view === view;
+  const usesPreparedArtwork =
+    hasExplicitArtwork &&
+    options.preparedArtwork.assetIds.length > 0 &&
+    prepared.content.length > 0;
+  const usesPreparedPlaceholder =
+    hasExplicitArtwork &&
+    options.preparedArtwork.status === "partial" &&
+    !usesPreparedArtwork;
+  const faceAnchorX =
+    usesPreparedArtwork && view === "upper"
+      ? options.preparedArtwork.viewBox.x +
+        options.preparedArtwork.viewBox.width / 2
+      : mode === "visual" && usesPreparedPlaceholder && view === "full"
+        ? 180
+        : 135;
+  const defs = `${usesPreparedArtwork ? prepared.definitions : ""}${renderDefinitions({ ids, bodyPath, fill: dressRenderTokens.garmentColor[dress.color], sleeveMaskPath, trainPath: train?.outline })}${faceAllowed ? `<defs>${`<clipPath id="${ids.faceMask}"><ellipse cx="${faceAnchorX}" cy="116" rx="28" ry="32"/></clipPath>`}</defs>` : ""}`;
+  const faceTransform = faceAllowed ? dress.faceTransform : undefined;
+  const face =
+    faceAllowed && faceDataUrl
+      ? `<g data-layer="face" clip-path="url(#${ids.faceMask})"><image href="${escapeXml(faceDataUrl)}" x="${faceAnchorX - 36}" y="79" width="72" height="76" preserveAspectRatio="xMidYMid slice" transform="translate(${(faceTransform?.x ?? 0) * 18} ${(faceTransform?.y ?? 0) * 15}) rotate(${faceTransform?.rotation ?? 0} ${faceAnchorX} 117) translate(${faceAnchorX} 117) scale(${faceTransform?.scale ?? 1}) translate(-${faceAnchorX} -117)"/></g>`
+      : "";
+  const fabricKnown = dress.fabric !== "unknown";
+  const fabricMark =
+    dress.fabric === "unknown" ? "" : fabricMarks[dress.fabric];
+  const supportingAnnotations =
+    mode === "visual" || view === "upper"
+      ? ""
+      : `<g data-layer="fabric-swatch" data-material="${dress.fabric}"${fabricKnown ? "" : ' data-state="unknown"'} color="${dressRenderTokens.garmentEdge[dress.color]}"><circle cx="270" cy="352" r="17" fill="${dressRenderTokens.garmentColor[dress.color]}" stroke="${dressRenderTokens.garmentEdge[dress.color]}"${fabricKnown ? "" : ' stroke-dasharray="4 3"'}/>${fabricMark}<text x="294" y="348" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">소재</text><text x="294" y="363" font-size="10" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">${escapeXml(fabricKnown ? optionLabel(fabricOptions, dress.fabric) : "미기록")}</text></g>${renderAnnotations(dress, view)}`;
+  const visual = mode === "visual";
+  const visualPreparedUpper =
+    visual &&
+    view === "upper" &&
+    (usesPreparedArtwork || usesPreparedPlaceholder);
+  const visualPreparedFull =
+    visual &&
+    view === "full" &&
+    (usesPreparedArtwork || usesPreparedPlaceholder);
+  const visualPreparedBack =
+    visual &&
+    view === "back" &&
+    (usesPreparedArtwork || usesPreparedPlaceholder);
+  const preparedFullScale = usesPreparedArtwork ? 0.7 : 0.68;
+  const preparedFullBounds =
+    visualPreparedFull && options.preparedArtwork
+      ? preparedArtworkVerticalBounds(options.preparedArtwork, faceAllowed)
+      : undefined;
+  const preparedFullTransform = preparedFullBounds
+    ? `translate(${numberText(usesPreparedArtwork ? 65.5 : 37.6)} ${numberText(213.5 - preparedFullScale * ((preparedFullBounds.top + preparedFullBounds.bottom) / 2))}) scale(${numberText(preparedFullScale)})`
+    : undefined;
+  const preparedBackBounds =
+    visualPreparedBack && options.preparedArtwork
+      ? preparedArtworkVerticalBounds(options.preparedArtwork)
+      : undefined;
+  const preparedBackFrame = preparedBackBounds
+    ? preparedArtworkFrameTransform({
+        bounds: preparedBackBounds,
+        sourceCenterX: usesPreparedArtwork ? 135 : 180,
+        baseScale: 0.8,
+        safeInset: 8,
+      })
+    : undefined;
+  const preparedBackTransform = preparedBackFrame
+    ? `translate(${numberText(preparedBackFrame.translateX)} ${numberText(preparedBackFrame.translateY)}) scale(${numberText(preparedBackFrame.scale)})`
+    : undefined;
+  const viewBox = visual
+    ? visualPreparedUpper
+      ? `${options.preparedArtwork.viewBox.x} ${options.preparedArtwork.viewBox.y} ${options.preparedArtwork.viewBox.width} ${options.preparedArtwork.viewBox.height}`
+      : "0 0 320 427"
+    : "0 0 360 640";
+  const figureTransform = visual
+    ? visualPreparedUpper
+      ? undefined
+      : visualPreparedFull
+        ? preparedFullTransform
+        : visualPreparedBack
+          ? preparedBackTransform
+          : view === "upper"
+            ? "translate(-42 -130) scale(1.5)"
+            : "translate(22 -58) scale(.8)"
+    : view === "upper"
+      ? "translate(0 74) scale(1.18)"
+      : undefined;
+  const heading = visual
+    ? ""
+    : `<text x="24" y="34" font-size="15" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">드레스 기억 스케치</text><text x="24" y="51" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">${view === "full" ? "전체" : view === "upper" ? "상체" : "뒤태"} · 선택한 기록을 단순화한 그림</text>`;
+  const background = visual
+    ? `<rect width="100%" height="100%" fill="${dressRenderTokens.previewSurface}"/>`
+    : `<rect width="360" height="640" fill="${dressRenderTokens.previewSurface}"/>`;
+  const mannequin =
+    usesPreparedArtwork || usesPreparedPlaceholder
+      ? renderMannequin(undefined, false, {
+          includeBody: false,
+          includeNeck: false,
+          includeArms: false,
+          includeHead: false,
+          includeFloorShadow: false,
+        })
+      : renderMannequin(
+          sleeveMaskPath ? ids.sleeveMask : undefined,
+          dress.silhouette === "teaLength" && view !== "upper",
+        );
+  const placeholderBounds = options.preparedArtwork?.viewBox ?? {
     x: 0,
     y: 0,
-    scale: 1,
-    rotation: 0,
+    width: 320,
+    height: 427,
   };
-  const face =
-    includeFace && faceDataUrl
-      ? `<g clip-path="url(#face-${id})"><image href="${esc(faceDataUrl)}" x="120" y="10" width="120" height="126" preserveAspectRatio="xMidYMid slice" transform="translate(${ft.x * 34} ${ft.y * 28}) rotate(${ft.rotation} 180 72) translate(${180 * (1 - ft.scale)} ${72 * (1 - ft.scale)}) scale(${ft.scale})"/></g>`
-      : `<circle cx="180" cy="70" r="42" fill="#f0d8c9"/><path d="M142 61Q180 14 218 61Q210 25 180 22Q150 25 142 61" fill="#4f3a35"/>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-label="${esc(dress.label)} 드레스 미리보기"><defs><clipPath id="face-${id}"><ellipse cx="180" cy="70" rx="43" ry="49"/></clipPath>${pat}</defs><rect width="360" height="640" fill="#fbf8f6"/>${trainPath(dress.train, base)}<g opacity=".75"><path d="M151 116Q180 137 209 116L216 185L144 185Z" fill="#f0d8c9"/><path d="M146 186Q118 196 112 250M214 186Q242 196 248 250" fill="none" stroke="#f0d8c9" stroke-width="23" stroke-linecap="round"/></g>${face}<path d="${necklinePath(dress.neckline)}" fill="${fill}" stroke="${shadow}" stroke-width="2"/>${upperExtras(dress.topStyle, base, shadow)}<path d="${skirtPath[dress.silhouette]}" fill="${fill}" stroke="${shadow}" stroke-width="2"/>${dress.waistline === "basque" ? '<path d="M148 252L180 274L212 252" fill="none" stroke="#cdbfb7" stroke-width="4"/>' : dress.waistline === "empire" ? '<path d="M151 216H209" stroke="#cdbfb7" stroke-width="4"/>' : dress.waistline === "drop" ? '<path d="M150 288H210" stroke="#cdbfb7" stroke-width="4"/>' : '<path d="M148 258H212" stroke="#cdbfb7" stroke-width="3"/>'}${detailOverlays(dress, base)}</svg>`;
+  const placeholderInset = Math.min(
+    12,
+    Math.max(
+      2,
+      Math.min(placeholderBounds.width, placeholderBounds.height) / 10,
+    ),
+  );
+  const placeholder = usesPreparedPlaceholder
+    ? `<g data-layer="prepared-placeholder" data-view="${view}" data-state="${options.preparedArtwork?.status ?? "unavailable"}"><rect x="${placeholderBounds.x + placeholderInset}" y="${placeholderBounds.y + placeholderInset}" width="${Math.max(1, placeholderBounds.width - placeholderInset * 2)}" height="${Math.max(1, placeholderBounds.height - placeholderInset * 2)}" rx="8" fill="none" stroke="${dressRenderTokens.volume.contourShadow}" stroke-opacity=".45" stroke-width="2" stroke-dasharray="7 6"/><path d="M${placeholderBounds.x + placeholderBounds.width / 2} ${placeholderBounds.y + placeholderInset * 2} V${placeholderBounds.y + placeholderBounds.height - placeholderInset * 2}" stroke="${dressRenderTokens.volume.contourShadow}" stroke-opacity=".16" stroke-width="1" stroke-dasharray="3 5"/></g>`
+    : "";
+  const figureArtwork = usesPreparedArtwork
+    ? `${prepared.content}${face}`
+    : usesPreparedPlaceholder
+      ? `${face}${placeholder}`
+      : `${face}${garment(dress, view, visual, ids, train)}`;
+  const preparedState =
+    options.preparedArtwork?.view === view
+      ? ` data-garment-state="${options.preparedArtwork.status}"`
+      : "";
+  const preparedReferenceMode =
+    options.preparedArtwork?.view === view &&
+    options.preparedArtwork.status === "partial" &&
+    options.preparedArtwork.assetIds.length > 0
+      ? ' data-reference-mode="form"'
+      : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" role="img" aria-label="${escapeXml(dress.label)} 드레스 기억 스케치" data-renderer="memory-sketch" data-view="${view}"${visual ? ' data-mode="visual"' : ""}${allUnknown(dress, view) ? ' data-state="unknown"' : ""}${preparedState}${preparedReferenceMode}>${defs}${background}${heading}<g data-layer="figure"${figureTransform ? ` transform="${figureTransform}"` : ""}>${mannequin}${figureArtwork}</g>${visual ? "" : renderFields(dress, view)}${supportingAnnotations}</svg>`;
 }
 
 export async function dressSvgToJpeg(
   dress: Dress,
   faceDataUrl?: string,
-  includeFace = true,
+  includeFace = false,
   width = 720,
   height = 1280,
+  view: DressSketchView = "full",
+  options: DressSvgMarkupOptions = {},
 ): Promise<Uint8Array> {
-  const svg = dressSvgMarkup(dress, faceDataUrl, includeFace);
-  const blob = new Blob([svg], { type: "image/svg+xml" });
+  const blob = new Blob(
+    [
+      dressSvgMarkup(
+        dress,
+        faceDataUrl,
+        includeFace,
+        view,
+        "annotated",
+        options,
+      ),
+    ],
+    { type: "image/svg+xml" },
+  );
   const url = URL.createObjectURL(blob);
   try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const i = new Image();
-      i.onload = () => resolve(i);
-      i.onerror = () => reject(new Error("드레스 이미지를 만들 수 없어요."));
-      i.src = url;
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () =>
+        reject(new Error("드레스 이미지를 만들 수 없어요."));
+      element.src = url;
     });
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas를 사용할 수 없어요.");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(img, 0, 0, width, height);
-    const jpg = await new Promise<Blob | null>((r) =>
-      canvas.toBlob(r, "image/jpeg", 0.9),
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Canvas를 사용할 수 없어요.");
+    context.fillStyle = dressRenderTokens.exportCanvas;
+    context.fillRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+    const jpeg = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.9),
     );
-    if (!jpg) throw new Error("JPEG 변환에 실패했어요.");
-    return new Uint8Array(await jpg.arrayBuffer());
+    if (!jpeg) throw new Error("JPEG 변환에 실패했어요.");
+    return new Uint8Array(await jpeg.arrayBuffer());
   } finally {
     URL.revokeObjectURL(url);
   }

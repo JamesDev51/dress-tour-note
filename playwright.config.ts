@@ -16,6 +16,7 @@ export default defineConfig({
     timezoneId: "Asia/Seoul",
     screenshot: "only-on-failure",
     trace: "on-first-retry",
+    video: process.env.PW_VIDEO === "1" ? "on" : "off",
   },
   webServer: {
     command: "npm run preview -- --host 127.0.0.1 --port 4173",
@@ -23,5 +24,12 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
   },
-  projects: [{ name: "mobile-chromium", use: { browserName: "chromium" } }],
+  projects: [
+    { name: "mobile-chromium", use: { browserName: "chromium" } },
+    {
+      name: "mobile-webkit",
+      testMatch: "recall.spec.ts",
+      use: { browserName: "webkit" },
+    },
+  ],
 });
