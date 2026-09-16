@@ -261,6 +261,145 @@ describe("FastRecordFlow", () => {
     expect(screen.getByRole("button", { name: "상세 기록" })).toBeVisible();
   });
 
+  it("finishes the current record into summary without adding the next dress", async () => {
+    const onComplete = vi.fn(async () => undefined);
+    const onFinishAndView = vi.fn(async () => undefined);
+    render(
+      <FastRecordFlow
+        dress={{
+          ...dress,
+          topStyle: "offShoulder",
+          neckline: "sweetheart",
+          silhouette: "aLine",
+          coreRecordedAt,
+        }}
+        onPatch={vi.fn(async () => undefined)}
+        onComplete={onComplete}
+        onFinishAndView={onFinishAndView}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    fireEvent.click(screen.getByRole("button", { name: "기록 완료하고 보기" }));
+
+    await waitFor(() => expect(onFinishAndView).toHaveBeenCalledOnce());
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { name: "핵심 기록" })).toBeVisible();
+  });
+
+  it("keeps the current step and syncs persisted core edits after details return", () => {
+    const completed = {
+      ...dress,
+      topStyle: "offShoulder" as const,
+      neckline: "sweetheart" as const,
+      silhouette: "aLine" as const,
+      coreRecordedAt,
+    };
+    const { rerender } = render(
+      <FastRecordFlow
+        dress={completed}
+        onPatch={vi.fn(async () => undefined)}
+        onComplete={vi.fn(async () => undefined)}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
+    for (let step = 0; step < 3; step += 1) {
+      fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    }
+    expect(screen.getByText("4/4")).toBeVisible();
+
+    rerender(
+      <FastRecordFlow
+        dress={{ ...completed, topStyle: "strapless" }}
+        onPatch={vi.fn(async () => undefined)}
+        onComplete={vi.fn(async () => undefined)}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("4/4")).toBeVisible();
+
+    for (let step = 0; step < 3; step += 1) {
+      fireEvent.click(screen.getByRole("button", { name: "이전" }));
+    }
+    expect(screen.getByRole("button", { name: /스트랩리스/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("places 상세 기록 before the long recall editor", () => {
+    const completed = {
+      ...dress,
+      topStyle: "offShoulder" as const,
+      neckline: "sweetheart" as const,
+      silhouette: "aLine" as const,
+      coreRecordedAt,
+    };
+    render(
+      <FastRecordFlow
+        dress={completed}
+        recallEditor={<div data-testid="long-recall-editor" />}
+        onPatch={vi.fn(async () => undefined)}
+        onComplete={vi.fn(async () => undefined)}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
+    for (let step = 0; step < 3; step += 1) {
+      fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    }
+    const details = screen.getByRole("button", {
+      name: "상세 기록",
+    });
+    const recall = screen.getByTestId("long-recall-editor");
+    expect(details.compareDocumentPosition(recall)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it("keeps explicit completion retryable when the awaited flush fails", async () => {
+    const onFinishAndView = vi
+      .fn<() => Promise<void>>()
+      .mockRejectedValueOnce(new Error("flush failed"))
+      .mockResolvedValue(undefined);
+    render(
+      <FastRecordFlow
+        dress={{
+          ...dress,
+          topStyle: "offShoulder",
+          neckline: "sweetheart",
+          silhouette: "aLine",
+          coreRecordedAt,
+        }}
+        onPatch={vi.fn(async () => undefined)}
+        onComplete={vi.fn(async () => undefined)}
+        onFinishAndView={onFinishAndView}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
+    for (let step = 1; step < 4; step += 1) {
+      fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    }
+    const finish = screen.getByRole("button", {
+      name: "기록 완료하고 보기",
+    });
+    fireEvent.click(finish);
+    await waitFor(() => expect(screen.getByRole("alert")).toBeVisible());
+    expect(finish).toBeEnabled();
+
+    fireEvent.click(finish);
+    await waitFor(() => expect(onFinishAndView).toHaveBeenCalledTimes(2));
+  });
+
   it("does not acknowledge core recording while the candidate write is pending or rejected", async () => {
     const write = deferred();
     let writes = 0;

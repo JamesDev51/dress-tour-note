@@ -43,6 +43,7 @@ export function useDressEditorDraft({
   const latestLabel = useRef("");
   const latestTransform = useRef<FaceTransform>(DEFAULT_FACE_TRANSFORM);
   const hasFace = useRef(false);
+  const [hydratedDressId, setHydratedDressId] = useState("");
 
   useEffect(() => {
     if (dress && initialized.current !== dress.id) {
@@ -64,19 +65,20 @@ export function useDressEditorDraft({
           },
           () => onSaveStatus("error"),
         );
-      }
+      } else onSaveStatus("saved");
       latestMemo.current = dress.memo;
       latestLabel.current = dress.label;
       latestTransform.current = dress.faceTransform ?? DEFAULT_FACE_TRANSFORM;
       setMemo(dress.memo);
       setLabel(dress.label);
       setTransform(latestTransform.current);
+      setHydratedDressId(dress.id);
     }
     hasFace.current = Boolean(face);
   }, [dress, face, onSaveStatus, writeDress]);
 
   useEffect(() => {
-    if (!dress || memo === dress.memo) return;
+    if (!dress || hydratedDressId !== dress.id || memo === dress.memo) return;
     onSaveStatus("saving");
     const timeout = window.setTimeout(async () => {
       try {
@@ -87,10 +89,10 @@ export function useDressEditorDraft({
       }
     }, 400);
     return () => clearTimeout(timeout);
-  }, [memo, dressId, dress?.memo, onSaveStatus, writeDress]);
+  }, [memo, dressId, dress?.memo, hydratedDressId, onSaveStatus, writeDress]);
 
   useEffect(() => {
-    if (!dress) return;
+    if (!dress || hydratedDressId !== dress.id) return;
     const current = dress.faceTransform ?? DEFAULT_FACE_TRANSFORM;
     if (JSON.stringify(transform) === JSON.stringify(current)) return;
     const timeout = window.setTimeout(async () => {
@@ -102,7 +104,7 @@ export function useDressEditorDraft({
       }
     }, 220);
     return () => clearTimeout(timeout);
-  }, [transform, dressId, dress, onSaveStatus, writeDress]);
+  }, [transform, dressId, dress, hydratedDressId, onSaveStatus, writeDress]);
 
   useEffect(
     () => () => {

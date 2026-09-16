@@ -2,166 +2,242 @@ import type { Dress } from "../../types/domain";
 import {
   backStyleOptions,
   colorOptions,
-  detailOptions,
   fabricOptions,
-  necklineOptions,
   optionLabel,
-  silhouetteOptions,
-  topStyleOptions,
-  trainOptions,
-  waistlineOptions,
 } from "../dress/options";
 import { dressRenderTokens } from "../dress/renderTokens";
+import { fabricMarks, trainLengths, waistY } from "./memorySketchPrimitives";
 import {
-  backPaths,
-  fabricMarks,
-  necklinePaths,
-  silhouettePaths,
-  topPaths,
-  trainLengths,
-  waistY,
-} from "./memorySketchPrimitives";
+  neutralProfile,
+  profileForSilhouette,
+  type DressProfile,
+} from "./dressProfiles";
+import {
+  backConstructionMarkup,
+  necklinePathFor,
+  sleeveMaskPathFor,
+  topConstructionMarkup,
+} from "./dressProfileDetails";
+import {
+  createSvgIds,
+  escapeXml,
+  renderAnnotations,
+  renderDefinitions,
+  renderFields,
+  renderMannequin,
+  renderVolumeLayers,
+  preparedArtworkFrameTransform,
+  preparedArtworkVerticalBounds,
+} from "./dressSvgSupport";
+import type { GarmentArtworkResult } from "./garment";
 
 export type DressSketchView = "full" | "upper" | "back";
 export type DressSketchMode = "annotated" | "visual";
 
-const escapeXml = (value: string) =>
-  value.replace(
-    /[&<>"']/g,
-    (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        character
-      ] ?? character,
-  );
+export type DressSvgMarkupOptions = {
+  readonly preparedArtwork?: GarmentArtworkResult;
+  readonly namespace?: string;
+};
 
-const field = (label: string, value: string, known: boolean, y: number) =>
-  `<g data-field="${escapeXml(label)}"${known ? "" : ' data-state="unknown"'}><text x="254" y="${y}" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">${escapeXml(label)}</text><text x="254" y="${y + 15}" font-size="9" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">${escapeXml(known ? value : "미기록")}</text></g>`;
+const neutralWaistY = 268;
 
-function fieldsFor(dress: Dress, view: DressSketchView) {
-  const top = field(
-    "상의",
-    optionLabel(topStyleOptions, dress.topStyle),
-    dress.topStyle !== "unknown",
-    92,
-  );
-  const neckline = field(
-    "네크라인",
-    optionLabel(necklineOptions, dress.neckline),
-    dress.neckline !== "unknown",
-    132,
-  );
-  const silhouette = field(
-    "실루엣",
-    optionLabel(silhouetteOptions, dress.silhouette),
-    dress.silhouette !== "unknown",
-    172,
-  );
-  const waist = field(
-    "허리선",
-    optionLabel(waistlineOptions, dress.waistline),
-    dress.waistline !== "unknown",
-    212,
-  );
-  const train = field(
-    "트레인",
-    optionLabel(trainOptions, dress.train),
-    dress.train !== "unknown",
-    252,
-  );
-  const color = field(
-    "색상",
-    optionLabel(colorOptions, dress.color),
-    dress.color !== "unknown",
-    292,
-  );
-  const back = field(
-    "등 디자인",
-    optionLabel(backStyleOptions, dress.backStyle),
-    Boolean(dress.backStyle && dress.backStyle !== "unknown"),
-    132,
-  );
-  switch (view) {
-    case "full":
-      return `${top}${neckline}${silhouette}${waist}${train}${color}`;
-    case "upper":
-      return `${top}${neckline}${waist}${color}`;
-    case "back":
-      return `${back}${silhouette}${train}${color}`;
-  }
+function numberText(value: number) {
+  return Number(value.toFixed(4))
+    .toString()
+    .replace(/^(-?)0\./, "$1.");
 }
 
-function garment(dress: Dress, view: DressSketchView, visual = false) {
+function waistFor(dress: Dress) {
+  return dress.waistline === "unknown"
+    ? neutralWaistY
+    : waistY[dress.waistline];
+}
+
+function profileFor(dress: Dress): DressProfile {
+  return dress.silhouette === "unknown"
+    ? neutralProfile
+    : profileForSilhouette(dress.silhouette);
+}
+
+function garmentPath(
+  dress: Dress,
+  view: DressSketchView,
+  waist: number,
+  profile = profileFor(dress),
+) {
+  const backStyle =
+    view === "back" ? (dress.backStyle ?? "unknown") : undefined;
+  return view === "upper"
+    ? profile.upperPath(waist, dress.topStyle, dress.neckline, backStyle)
+    : profile.bodyPath(waist, dress.topStyle, dress.neckline, backStyle);
+}
+
+type TrainGeometry = {
+  readonly outline: string;
+  readonly fold: string;
+  readonly attachment: string;
+  readonly reach: number;
+  readonly baseInset: number;
+};
+
+function trainGeometry(dress: Dress): TrainGeometry | undefined {
+  if (dress.train === "unknown" || dress.train === "none") return undefined;
+  const metric = profileFor(dress).metric;
+  const length = trainLengths[dress.train];
+  const hemWidth = metric.hemRight - metric.hemLeft;
+  const baseInset = Math.max(36, Math.min(64, Math.round(hemWidth * 0.34)));
+  const baseLeft = metric.hemRight - baseInset;
+  const extension = Math.min(72, Math.max(24, Math.round(length * 1.45)));
+  const endX = Math.min(306, metric.hemRight + extension);
+  const floorY = Math.min(603, metric.hemY + 34 + Math.round(length * 0.2));
+  const attachment = `M${baseLeft} ${metric.hemY + 1} C${baseLeft + 18} ${metric.hemY - 3} ${metric.hemRight - 12} ${metric.hemY + 1} ${metric.hemRight + 4} ${metric.hemY + 8}`;
+  return {
+    outline: `${attachment} C${metric.hemRight + extension * 0.25} ${metric.hemY + 10} ${metric.hemRight + extension * 0.72} ${metric.hemY + 16} ${endX} ${metric.hemY + 23} C${endX + 6} ${metric.hemY + 34} ${endX - 4} ${floorY - 2} ${endX - 22} ${floorY + 1} C${metric.hemRight + extension * 0.52} ${floorY + 5} ${metric.hemRight + extension * 0.2} ${metric.hemY + 34} ${baseLeft + 12} ${metric.hemY + 18} C${baseLeft + 2} ${metric.hemY + 12} ${baseLeft - 3} ${metric.hemY + 6} ${baseLeft} ${metric.hemY + 1} Z`,
+    fold: `M${baseLeft + 10} ${metric.hemY + 7} C${metric.hemRight + extension * 0.18} ${metric.hemY + 17} ${metric.hemRight + extension * 0.54} ${floorY - 9} ${endX - 16} ${floorY - 5} C${endX - 43} ${floorY - 5} ${metric.hemRight + extension * 0.28} ${metric.hemY + 26} ${baseLeft + 10} ${metric.hemY + 7} Z`,
+    attachment,
+    reach: length,
+    baseInset,
+  };
+}
+
+function bodiceStructureMarkup(
+  profile: DressProfile,
+  transition: number,
+  edge: string,
+  view: DressSketchView,
+) {
+  if (view === "back") return "";
+  const a = profile.anchors;
+  return `<g data-layer="bodice-structure" data-profile-anchors="local"><path d="M${a.shoulderLeft + 10} ${a.topY + 15} C${a.shoulderLeft + 6} ${a.bustY - 3} ${a.waistLeft + 1} ${transition - 19} ${a.waistLeft + 2} ${transition - 4}" fill="none" stroke="${edge}" stroke-opacity=".14" stroke-width="1.4" stroke-linecap="round"/><path d="M${a.shoulderRight - 10} ${a.topY + 15} C${a.shoulderRight - 6} ${a.bustY - 3} ${a.waistRight - 1} ${transition - 19} ${a.waistRight - 2} ${transition - 4}" fill="none" stroke="${edge}" stroke-opacity=".14" stroke-width="1.4" stroke-linecap="round"/></g>`;
+}
+
+function garment(
+  dress: Dress,
+  view: DressSketchView,
+  visual: boolean,
+  ids: ReturnType<typeof createSvgIds>,
+  train: TrainGeometry | undefined,
+) {
   const edge = visual
     ? dressRenderTokens.volume.contourShadow
     : dressRenderTokens.garmentEdge[dress.color];
   const fill = dressRenderTokens.garmentColor[dress.color];
-  const dash = ' stroke-dasharray="6 5" data-state="unknown"';
-  const skirt =
-    view !== "upper"
-      ? dress.silhouette === "unknown"
-        ? `<path d="M111 284 Q88 420 70 558 Q135 582 200 558 Q182 420 159 284 Z" fill="${fill}" stroke="${edge}"${dash}/>`
-        : `<path data-shape="${dress.silhouette}" d="${silhouettePaths[dress.silhouette]}" fill="${fill}" stroke="${edge}" stroke-width="2"/>`
+  const waist = waistFor(dress);
+  const profile = profileFor(dress);
+  const profileKey =
+    dress.silhouette === "unknown" ? "neutral" : dress.silhouette;
+  const transition = profile.transitionY(waist);
+  const bodyPath = garmentPath(dress, view, waist, profile);
+  const bodyContourPath =
+    view === "upper"
+      ? profile.upperContourPath(waist, dress.topStyle, dress.neckline)
+      : profile.bodyContourPath(
+          waist,
+          dress.topStyle,
+          dress.neckline,
+          view === "back" ? (dress.backStyle ?? "unknown") : undefined,
+        );
+  const knownSilhouette = dress.silhouette !== "unknown" && view !== "upper";
+  const contourUncertainty =
+    dress.silhouette === "unknown"
+      ? ' stroke-dasharray="6 5" stroke-opacity=".68"'
       : "";
+  const silhouettePathMarkup = `<path data-layer="garment-base"${knownSilhouette ? ` data-shape="${dress.silhouette}"` : ' data-state="unknown"'} d="${bodyPath}" fill="url(#${ids.garmentGradient})" fill-rule="evenodd" stroke="none"/><path data-layer="garment-contour" d="${bodyContourPath}" fill="none" stroke="${edge}"${contourUncertainty} stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
   const top =
     view === "back"
-      ? `<path d="M105 204 Q96 236 105 284 L165 284 Q174 236 165 204" fill="${fill}" stroke="${edge}" stroke-width="2"/>`
+      ? ""
       : dress.topStyle === "unknown"
-        ? `<path d="M105 204 Q96 236 105 284 L165 284 Q174 236 165 204" fill="${fill}" stroke="${edge}"${dash}/>`
-        : `<path data-shape="${dress.topStyle}" d="${topPaths[dress.topStyle]}" fill="${fill}" stroke="${edge}" stroke-width="2"/>`;
+        ? `<path data-layer="top-unknown" d="M${profile.anchors.shoulderLeft} ${profile.anchors.topY + 4} Q135 ${profile.anchors.topY - 5} ${profile.anchors.shoulderRight} ${profile.anchors.topY + 4}" fill="none" stroke="${edge}" stroke-width="2" stroke-dasharray="6 5"/>`
+        : topConstructionMarkup({
+            style: dress.topStyle,
+            anchors: profile.anchors,
+            edge,
+            gradientId: ids.garmentGradient,
+          });
   const neckline =
     view === "back"
       ? dress.backStyle && dress.backStyle !== "unknown"
-        ? `<path data-shape="${dress.backStyle}" d="${backPaths[dress.backStyle]}" fill="none" stroke="${edge}" stroke-width="3"/>`
-        : `<path d="M110 198 Q135 218 160 198" fill="none" stroke="${edge}"${dash}/>`
+        ? backConstructionMarkup({
+            style: dress.backStyle,
+            anchors: profile.anchors,
+            edge,
+            fill,
+          })
+        : `<path data-layer="back-unknown" d="M${profile.anchors.necklineLeft - 1} ${profile.anchors.backTop} Q135 ${profile.anchors.backBottom - 4} ${profile.anchors.necklineRight + 1} ${profile.anchors.backTop}" fill="none" stroke="${edge}" stroke-width="2" stroke-dasharray="6 5"/>`
       : dress.neckline === "unknown"
-        ? `<path d="M112 201 Q135 214 158 201" fill="none" stroke="${edge}"${dash}/>`
-        : `<path data-shape="${dress.neckline}" d="${necklinePaths[dress.neckline]}" fill="none" stroke="${edge}" stroke-width="3"/>`;
-  const waist =
+        ? `<path data-layer="neckline-unknown" d="M${profile.anchors.necklineLeft} ${profile.anchors.bustY - 10} Q135 ${profile.anchors.bustY + 8} ${profile.anchors.necklineRight} ${profile.anchors.bustY - 10}" fill="none" stroke="${edge}" stroke-width="2" stroke-dasharray="6 5"/>`
+        : `<path data-layer="neckline-detail" data-shape="${dress.neckline}" d="${necklinePathFor(dress.neckline, profile.anchors)}" fill="none" stroke="${edge}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const waistCueY = waist;
+  const waistCue =
     dress.waistline === "unknown" || view === "back"
       ? ""
-      : `<path data-shape="${dress.waistline}" d="M108 ${waistY[dress.waistline]} Q135 ${dress.waistline === "basque" ? 306 : waistY[dress.waistline]} 162 ${waistY[dress.waistline]}" fill="none" stroke="${edge}" stroke-width="2"/>`;
-  const train =
-    view !== "upper" && dress.train !== "unknown" && dress.train !== "none"
-      ? `<path data-shape="${dress.train}" d="M180 552 Q${220 + trainLengths[dress.train]} 565 ${220 + trainLengths[dress.train]} 590" fill="none" stroke="${edge}" stroke-width="4" stroke-linecap="round"/>`
-      : "";
-  return `<g data-layer="garment">${skirt}${top}${neckline}${waist}${train}</g>`;
+      : `<path data-layer="waist-detail" data-shape="${dress.waistline}" d="M${profile.anchors.waistLeft} ${waistCueY} Q135 ${dress.waistline === "basque" ? waistCueY + 8 : waistCueY + 3} ${profile.anchors.waistRight} ${waistCueY}" fill="none" stroke="${edge}" stroke-opacity=".58" stroke-width="1.8" stroke-linecap="round"/>`;
+  const trainMarkup =
+    view === "upper" || !train
+      ? ""
+      : `<path data-layer="train" data-shape="${dress.train}" data-attachment="hem" data-reach="${train.reach}" data-base-inset="${train.baseInset}" d="${train.outline}" fill="url(#${ids.garmentGradient})" fill-opacity=".82" stroke="${edge}" stroke-opacity=".55" stroke-width="1.35" stroke-linejoin="round"/><path data-layer="train-attachment" d="${train.attachment}" fill="none" stroke="${edge}" stroke-opacity=".2" stroke-width="1.2" stroke-linecap="round"/><path data-layer="train-fold" clip-path="url(#${ids.trainMask})" d="${train.fold}" fill="${dressRenderTokens.garmentHighlight}" fill-opacity=".24" stroke="none"/>`;
+  return `<g data-layer="garment" data-profile="${profileKey}">${silhouettePathMarkup}${renderVolumeLayers({ ids, volume: profile.volume(waist), profileKey, anchors: profile.anchors, transition, fabric: dress.fabric })}${bodiceStructureMarkup(profile, transition, edge, view)}${top}${neckline}${waistCue}${trainMarkup}</g>`;
 }
 
-function annotations(dress: Dress, view: DressSketchView) {
-  const detailLabels = dress.details.map((detail) =>
-    optionLabel(detailOptions, detail),
-  );
-  const notes = Object.entries(dress.customOptions ?? {}).flatMap(
-    ([category, note]) => {
-      if (
-        view === "back" &&
-        ["top", "neckline", "waistline"].includes(category)
-      )
-        return [];
-      const categoryLabel: Readonly<Record<string, string>> = {
-        top: "상의",
-        neckline: "네크라인",
-        silhouette: "실루엣",
-        fabric: "소재",
-        color: "색상",
-        waistline: "허리선",
-        backStyle: "등 디자인",
-        train: "트레인",
-        details: "디테일",
-      };
-      return note ? [{ label: categoryLabel[category] ?? category, note }] : [];
-    },
-  );
-  const badges = detailLabels.slice(0, 2).map((text, index) => {
-    const y = 402 + index * 30;
-    return `<g data-layer="detail-badge"><rect x="254" y="${y}" width="92" height="22" rx="11" fill="${dressRenderTokens.garmentColor.ivory}" stroke="${dressRenderTokens.garmentEdge.ivory}"/><text x="300" y="${y + 14}" text-anchor="middle" font-size="8" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">${escapeXml(text)}</text></g>`;
-  });
-  const noteLabels = notes.slice(0, 2).map(({ label, note }, index) => {
-    const y = 472 + index * 42;
-    const visibleNote = note.length > 13 ? `${note.slice(0, 13)}…` : note;
-    return `<g data-layer="unsupported-note"><text x="254" y="${y}" font-size="7" font-weight="700" fill="${dressRenderTokens.volume.contourShadow}">${escapeXml(label)} · 비슷하지만 달라요</text><text x="254" y="${y + 14}" font-size="8" fill="${dressRenderTokens.garmentDropShadow}">${escapeXml(visibleNote)}</text><title>${escapeXml(note)}</title></g>`;
-  });
-  return [...badges, ...noteLabels].join("");
+function allUnknown(dress: Dress, view: DressSketchView) {
+  const values =
+    view === "full"
+      ? [
+          dress.topStyle,
+          dress.neckline,
+          dress.silhouette,
+          dress.waistline,
+          dress.color,
+          dress.train,
+        ]
+      : view === "upper"
+        ? [dress.topStyle, dress.neckline, dress.waistline, dress.color]
+        : [
+            dress.backStyle ?? "unknown",
+            dress.silhouette,
+            dress.train,
+            dress.color,
+          ];
+  return values.every((value) => value === "unknown");
+}
+
+type PreparedArtworkMarkup = {
+  readonly definitions: string;
+  readonly content: string;
+};
+
+function preparedArtworkMarkup(
+  artwork: GarmentArtworkResult | undefined,
+  view: DressSketchView,
+  viewportClipId: string,
+): PreparedArtworkMarkup {
+  if (!artwork || artwork.view !== view)
+    return { definitions: "", content: "" };
+  const openEnd = artwork.markup.indexOf(">", artwork.markup.indexOf("<svg"));
+  const closeStart = artwork.markup.lastIndexOf("</svg>");
+  if (openEnd < 0 || closeStart <= openEnd)
+    return { definitions: "", content: "" };
+  const inner = artwork.markup.slice(openEnd + 1, closeStart);
+  const definitions =
+    inner.match(/<defs(?:\s[^>]*)?>[\s\S]*?<\/defs>/)?.[0] ?? "";
+  const content = inner
+    .replace(definitions, "")
+    .replace(/<title>[\s\S]*?<\/title>/g, "")
+    .trim();
+  if (!content) return { definitions, content: "" };
+
+  const source = artwork.viewBox;
+  const sourceCenterX = artwork.layers[0]?.asset.anchors.centerX ?? 180;
+  const targetCenterX = view === "upper" ? source.x + source.width / 2 : 135;
+  const registration = Number((targetCenterX - sourceCenterX).toFixed(4));
+  const viewportClip = `<clipPath id="${viewportClipId}" clipPathUnits="userSpaceOnUse"><rect x="${source.x}" y="${source.y}" width="${source.width}" height="${source.height}"/></clipPath>`;
+  const viewport = `<g data-layer="prepared-viewport" data-viewbox="${source.x} ${source.y} ${source.width} ${source.height}" clip-path="url(#${viewportClipId})">${content}</g>`;
+  const assetIds = artwork.assetIds.join(",");
+  const missingFields = artwork.missingFields.join(",");
+  return {
+    definitions: `${definitions}${viewportClip}`,
+    content: `<g data-layer="prepared-garment" data-view="${artwork.view}" data-state="${artwork.status}" data-asset-ids="${escapeXml(assetIds)}" data-missing-fields="${escapeXml(missingFields)}" transform="translate(${registration} 0)">${viewport}</g>`,
+  };
 }
 
 export function dressSvgMarkup(
@@ -170,70 +246,157 @@ export function dressSvgMarkup(
   includeFace = false,
   view: DressSketchView = "full",
   mode: DressSketchMode = "annotated",
+  options: DressSvgMarkupOptions = {},
 ) {
   const faceAllowed = view !== "back" && includeFace && Boolean(faceDataUrl);
+  const ids = createSvgIds(dress, view, mode, options.namespace);
+  const waist = waistFor(dress);
+  const profile = profileFor(dress);
+  const bodyPath = garmentPath(dress, view, waist, profile);
+  const train = view === "upper" ? undefined : trainGeometry(dress);
+  const sleeveMaskPath =
+    view === "back" || dress.topStyle === "unknown"
+      ? undefined
+      : sleeveMaskPathFor(dress.topStyle, profile.anchors);
+  const prepared = preparedArtworkMarkup(
+    options.preparedArtwork,
+    view,
+    `${ids.garmentMask}-prepared-viewport`,
+  );
+  const hasExplicitArtwork = options.preparedArtwork?.view === view;
+  const usesPreparedArtwork =
+    hasExplicitArtwork &&
+    options.preparedArtwork.assetIds.length > 0 &&
+    prepared.content.length > 0;
+  const usesPreparedPlaceholder =
+    hasExplicitArtwork &&
+    options.preparedArtwork.status === "partial" &&
+    !usesPreparedArtwork;
+  const faceAnchorX =
+    usesPreparedArtwork && view === "upper"
+      ? options.preparedArtwork.viewBox.x +
+        options.preparedArtwork.viewBox.width / 2
+      : mode === "visual" && usesPreparedPlaceholder && view === "full"
+        ? 180
+        : 135;
+  const defs = `${usesPreparedArtwork ? prepared.definitions : ""}${renderDefinitions({ ids, bodyPath, fill: dressRenderTokens.garmentColor[dress.color], sleeveMaskPath, trainPath: train?.outline })}${faceAllowed ? `<defs>${`<clipPath id="${ids.faceMask}"><ellipse cx="${faceAnchorX}" cy="116" rx="28" ry="32"/></clipPath>`}</defs>` : ""}`;
   const faceTransform = faceAllowed ? dress.faceTransform : undefined;
-  const faceDefs = faceAllowed
-    ? '<defs><clipPath id="face-mask"><ellipse cx="135" cy="116" rx="28" ry="32"/></clipPath></defs>'
-    : "";
   const face =
     faceAllowed && faceDataUrl
-      ? `<g data-layer="face" clip-path="url(#face-mask)"><image href="${escapeXml(faceDataUrl)}" x="99" y="79" width="72" height="76" preserveAspectRatio="xMidYMid slice" transform="translate(${(faceTransform?.x ?? 0) * 18} ${(faceTransform?.y ?? 0) * 15}) rotate(${faceTransform?.rotation ?? 0} 135 117) translate(135 117) scale(${faceTransform?.scale ?? 1}) translate(-135 -117)"/></g>`
+      ? `<g data-layer="face" clip-path="url(#${ids.faceMask})"><image href="${escapeXml(faceDataUrl)}" x="${faceAnchorX - 36}" y="79" width="72" height="76" preserveAspectRatio="xMidYMid slice" transform="translate(${(faceTransform?.x ?? 0) * 18} ${(faceTransform?.y ?? 0) * 15}) rotate(${faceTransform?.rotation ?? 0} ${faceAnchorX} 117) translate(${faceAnchorX} 117) scale(${faceTransform?.scale ?? 1}) translate(-${faceAnchorX} -117)"/></g>`
       : "";
-  const allUnknown = (() => {
-    switch (view) {
-      case "full":
-        return [
-          dress.topStyle,
-          dress.neckline,
-          dress.silhouette,
-          dress.waistline,
-          dress.color,
-          dress.train,
-        ].every((value) => value === "unknown");
-      case "upper":
-        return [
-          dress.topStyle,
-          dress.neckline,
-          dress.waistline,
-          dress.color,
-        ].every((value) => value === "unknown");
-      case "back":
-        return [
-          dress.backStyle ?? "unknown",
-          dress.silhouette,
-          dress.train,
-          dress.color,
-        ].every((value) => value === "unknown");
-    }
-  })();
   const fabricKnown = dress.fabric !== "unknown";
   const fabricMark =
     dress.fabric === "unknown" ? "" : fabricMarks[dress.fabric];
   const supportingAnnotations =
     mode === "visual" || view === "upper"
       ? ""
-      : `<g data-layer="fabric-swatch" data-material="${dress.fabric}"${fabricKnown ? "" : ' data-state="unknown"'} color="${dressRenderTokens.garmentEdge[dress.color]}"><circle cx="270" cy="352" r="17" fill="${dressRenderTokens.garmentColor[dress.color]}" stroke="${dressRenderTokens.garmentEdge[dress.color]}"${fabricKnown ? "" : ' stroke-dasharray="4 3"'}/>${fabricMark}<text x="294" y="348" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">소재</text><text x="294" y="363" font-size="10" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">${escapeXml(fabricKnown ? optionLabel(fabricOptions, dress.fabric) : "미기록")}</text></g>${annotations(dress, view)}`;
+      : `<g data-layer="fabric-swatch" data-material="${dress.fabric}"${fabricKnown ? "" : ' data-state="unknown"'} color="${dressRenderTokens.garmentEdge[dress.color]}"><circle cx="270" cy="352" r="17" fill="${dressRenderTokens.garmentColor[dress.color]}" stroke="${dressRenderTokens.garmentEdge[dress.color]}"${fabricKnown ? "" : ' stroke-dasharray="4 3"'}/>${fabricMark}<text x="294" y="348" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">소재</text><text x="294" y="363" font-size="10" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">${escapeXml(fabricKnown ? optionLabel(fabricOptions, dress.fabric) : "미기록")}</text></g>${renderAnnotations(dress, view)}`;
   const visual = mode === "visual";
-  const viewBox = visual ? "0 0 320 427" : "0 0 360 640";
+  const visualPreparedUpper =
+    visual &&
+    view === "upper" &&
+    (usesPreparedArtwork || usesPreparedPlaceholder);
+  const visualPreparedFull =
+    visual &&
+    view === "full" &&
+    (usesPreparedArtwork || usesPreparedPlaceholder);
+  const visualPreparedBack =
+    visual &&
+    view === "back" &&
+    (usesPreparedArtwork || usesPreparedPlaceholder);
+  const preparedFullScale = usesPreparedArtwork ? 0.7 : 0.68;
+  const preparedFullBounds =
+    visualPreparedFull && options.preparedArtwork
+      ? preparedArtworkVerticalBounds(options.preparedArtwork, faceAllowed)
+      : undefined;
+  const preparedFullTransform = preparedFullBounds
+    ? `translate(${numberText(usesPreparedArtwork ? 65.5 : 37.6)} ${numberText(213.5 - preparedFullScale * ((preparedFullBounds.top + preparedFullBounds.bottom) / 2))}) scale(${numberText(preparedFullScale)})`
+    : undefined;
+  const preparedBackBounds =
+    visualPreparedBack && options.preparedArtwork
+      ? preparedArtworkVerticalBounds(options.preparedArtwork)
+      : undefined;
+  const preparedBackFrame = preparedBackBounds
+    ? preparedArtworkFrameTransform({
+        bounds: preparedBackBounds,
+        sourceCenterX: usesPreparedArtwork ? 135 : 180,
+        baseScale: 0.8,
+        safeInset: 8,
+      })
+    : undefined;
+  const preparedBackTransform = preparedBackFrame
+    ? `translate(${numberText(preparedBackFrame.translateX)} ${numberText(preparedBackFrame.translateY)}) scale(${numberText(preparedBackFrame.scale)})`
+    : undefined;
+  const viewBox = visual
+    ? visualPreparedUpper
+      ? `${options.preparedArtwork.viewBox.x} ${options.preparedArtwork.viewBox.y} ${options.preparedArtwork.viewBox.width} ${options.preparedArtwork.viewBox.height}`
+      : "0 0 320 427"
+    : "0 0 360 640";
   const figureTransform = visual
-    ? view === "upper"
-      ? "translate(-42 -130) scale(1.5)"
-      : "translate(22 -58) scale(.8)"
+    ? visualPreparedUpper
+      ? undefined
+      : visualPreparedFull
+        ? preparedFullTransform
+        : visualPreparedBack
+          ? preparedBackTransform
+          : view === "upper"
+            ? "translate(-42 -130) scale(1.5)"
+            : "translate(22 -58) scale(.8)"
     : view === "upper"
       ? "translate(0 74) scale(1.18)"
       : undefined;
   const heading = visual
     ? ""
     : `<text x="24" y="34" font-size="15" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">드레스 기억 스케치</text><text x="24" y="51" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">${view === "full" ? "전체" : view === "upper" ? "상체" : "뒤태"} · 선택한 기록을 단순화한 그림</text>`;
-  const visibleFields = visual ? "" : fieldsFor(dress, view);
   const background = visual
     ? `<rect width="100%" height="100%" fill="${dressRenderTokens.previewSurface}"/>`
     : `<rect width="360" height="640" fill="${dressRenderTokens.previewSurface}"/>`;
-  const mannequin = visual
-    ? `<g data-layer="mannequin"><circle cx="135" cy="116" r="31" fill="${dressRenderTokens.floorShadow}" stroke="${dressRenderTokens.garmentDropShadow}" stroke-opacity=".18" stroke-width="2"/><path data-layer="neck" d="M126 145 L126 161 Q111 166 104 183 L106 204 M144 145 L144 161 Q159 166 166 183 L164 204" fill="none" stroke="${dressRenderTokens.garmentDropShadow}" stroke-opacity=".28" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g>`
-    : `<circle cx="135" cy="116" r="31" fill="${dressRenderTokens.floorShadow}" opacity=".7"/><path d="M105 174 Q135 153 165 174" fill="none" stroke="${dressRenderTokens.floorShadow}" stroke-width="12" stroke-linecap="round"/>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" role="img" aria-label="${escapeXml(dress.label)} 드레스 기억 스케치" data-renderer="memory-sketch" data-view="${view}"${visual ? ' data-mode="visual"' : ""}${allUnknown ? ' data-state="unknown"' : ""}>${faceDefs}${background}${heading}<g data-layer="figure"${figureTransform ? ` transform="${figureTransform}"` : ""}>${mannequin}${face}${garment(dress, view, visual)}</g>${visibleFields}${supportingAnnotations}</svg>`;
+  const mannequin =
+    usesPreparedArtwork || usesPreparedPlaceholder
+      ? renderMannequin(undefined, false, {
+          includeBody: false,
+          includeNeck: false,
+          includeArms: false,
+          includeHead: false,
+          includeFloorShadow: false,
+        })
+      : renderMannequin(
+          sleeveMaskPath ? ids.sleeveMask : undefined,
+          dress.silhouette === "teaLength" && view !== "upper",
+        );
+  const placeholderBounds = options.preparedArtwork?.viewBox ?? {
+    x: 0,
+    y: 0,
+    width: 320,
+    height: 427,
+  };
+  const placeholderInset = Math.min(
+    12,
+    Math.max(
+      2,
+      Math.min(placeholderBounds.width, placeholderBounds.height) / 10,
+    ),
+  );
+  const placeholder = usesPreparedPlaceholder
+    ? `<g data-layer="prepared-placeholder" data-view="${view}" data-state="${options.preparedArtwork?.status ?? "unavailable"}"><rect x="${placeholderBounds.x + placeholderInset}" y="${placeholderBounds.y + placeholderInset}" width="${Math.max(1, placeholderBounds.width - placeholderInset * 2)}" height="${Math.max(1, placeholderBounds.height - placeholderInset * 2)}" rx="8" fill="none" stroke="${dressRenderTokens.volume.contourShadow}" stroke-opacity=".45" stroke-width="2" stroke-dasharray="7 6"/><path d="M${placeholderBounds.x + placeholderBounds.width / 2} ${placeholderBounds.y + placeholderInset * 2} V${placeholderBounds.y + placeholderBounds.height - placeholderInset * 2}" stroke="${dressRenderTokens.volume.contourShadow}" stroke-opacity=".16" stroke-width="1" stroke-dasharray="3 5"/></g>`
+    : "";
+  const figureArtwork = usesPreparedArtwork
+    ? `${prepared.content}${face}`
+    : usesPreparedPlaceholder
+      ? `${face}${placeholder}`
+      : `${face}${garment(dress, view, visual, ids, train)}`;
+  const preparedState =
+    options.preparedArtwork?.view === view
+      ? ` data-garment-state="${options.preparedArtwork.status}"`
+      : "";
+  const preparedReferenceMode =
+    options.preparedArtwork?.view === view &&
+    options.preparedArtwork.status === "partial" &&
+    options.preparedArtwork.assetIds.length > 0
+      ? ' data-reference-mode="form"'
+      : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" role="img" aria-label="${escapeXml(dress.label)} 드레스 기억 스케치" data-renderer="memory-sketch" data-view="${view}"${visual ? ' data-mode="visual"' : ""}${allUnknown(dress, view) ? ' data-state="unknown"' : ""}${preparedState}${preparedReferenceMode}>${defs}${background}${heading}<g data-layer="figure"${figureTransform ? ` transform="${figureTransform}"` : ""}>${mannequin}${figureArtwork}</g>${visual ? "" : renderFields(dress, view)}${supportingAnnotations}</svg>`;
 }
 
 export async function dressSvgToJpeg(
@@ -243,9 +406,19 @@ export async function dressSvgToJpeg(
   width = 720,
   height = 1280,
   view: DressSketchView = "full",
+  options: DressSvgMarkupOptions = {},
 ): Promise<Uint8Array> {
   const blob = new Blob(
-    [dressSvgMarkup(dress, faceDataUrl, includeFace, view)],
+    [
+      dressSvgMarkup(
+        dress,
+        faceDataUrl,
+        includeFace,
+        view,
+        "annotated",
+        options,
+      ),
+    ],
     { type: "image/svg+xml" },
   );
   const url = URL.createObjectURL(blob);

@@ -133,6 +133,12 @@ input[type="range"] {
     position: static !important;
     top: auto !important;
   }
+  .app-shell main div.core-details-nav {
+    position: sticky !important;
+  }
+}
+.app-shell main div.core-details-nav {
+  top: calc(68px + env(safe-area-inset-top)) !important;
 }
 @media (min-width: 768px) {
   body::before {

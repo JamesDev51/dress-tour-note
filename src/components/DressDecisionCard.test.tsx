@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Dress } from "../types/domain";
 import { DressDecisionCard } from "./DressDecisionCard";
@@ -30,7 +30,7 @@ const dress: Dress = {
 };
 
 describe("DressDecisionCard", () => {
-  it("renders a no-face full memory sketch and the compact shop decision summary", () => {
+  it("renders the selection-aware image and the compact shop decision summary", async () => {
     const { container } = render(
       <DressDecisionCard dress={dress} variant="shop" />,
     );
@@ -44,16 +44,23 @@ describe("DressDecisionCard", () => {
     expect(screen.getByText("5 / 5")).toBeInTheDocument();
     expect(screen.queryByText(/네크라인 차이/)).not.toBeInTheDocument();
     expect(screen.queryByText("기억 안 남")).not.toBeInTheDocument();
-    expect(container.querySelector("svg")).toHaveAttribute("data-view", "full");
-    expect(container.querySelector("svg")).toHaveAttribute(
-      "data-mode",
-      "visual",
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toBeInTheDocument(),
     );
-    expect(container.querySelector("image")).not.toBeInTheDocument();
+    expect(
+      container.querySelector("[data-reference-gown]"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /드레스 형태를 기록하면|형태 참고 이미지예요|선택한 특징으로 재구성한 이미지예요/,
+      ),
+    ).toBeInTheDocument();
     expect(container.querySelector("button")).not.toBeInTheDocument();
   });
 
-  it("keeps review cards concise while retaining recall and local visual cues", () => {
+  it("keeps review cards concise while retaining recall and selection-aware visual cues", async () => {
     const { container } = render(
       <DressDecisionCard dress={dress} variant="review" />,
     );
@@ -66,6 +73,14 @@ describe("DressDecisionCard", () => {
     expect(screen.queryByText("상의 디자인")).not.toBeInTheDocument();
     expect(screen.queryByText("나".repeat(80))).not.toBeInTheDocument();
     expect(screen.queryByText("가".repeat(80))).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      container.querySelector("[data-reference-gown]"),
+    ).not.toBeInTheDocument();
     expect(container.querySelector("button")).not.toBeInTheDocument();
   });
 });

@@ -120,6 +120,15 @@ export function ShopPage() {
                 </button>
                 <div className="mt-3 flex items-center border-t border-stone-50 pt-2">
                   <button
+                    aria-label={`${d.label} 기록 보기`}
+                    className="min-h-11 rounded-lg px-2 text-xs font-semibold text-accent-copy"
+                    onClick={() =>
+                      nav(`/tour/${tourId}/dress/${d.id}?view=record`)
+                    }
+                  >
+                    기록 보기
+                  </button>
+                  <button
                     disabled={i === 0}
                     aria-label={`${d.label} 위로 이동`}
                     className="grid h-11 w-11 place-items-center text-stone-400 disabled:opacity-20"

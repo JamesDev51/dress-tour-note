@@ -35,22 +35,28 @@ export function FastRecordFlow({
   dress,
   onPatch,
   onComplete,
+  onFinishAndView,
   onOpenDetails,
   recallEditor,
   corePreview,
   renderSummary,
+  initialView,
+  showDetailsAction = true,
 }: {
   dress: CoreDress;
   onPatch: (patch: Partial<Dress>) => Promise<void>;
   onComplete: () => Promise<void>;
+  onFinishAndView?: () => Promise<void>;
   onOpenDetails: () => void;
   recallEditor?: ReactNode;
   corePreview?: ReactNode;
   renderSummary?: (onEditCore: () => void) => ReactNode;
+  initialView?: "summary" | "steps";
+  showDetailsAction?: boolean;
 }) {
   const recorded = hasRecordedCore(dress);
   const [view, setView] = useState<"summary" | "steps">(
-    recorded ? "summary" : "steps",
+    initialView ?? (recorded ? "summary" : "steps"),
   );
   const [step, setStep] = useState<Step>(1);
   const [topStyle, setTopStyle] = useState<TopStyle>(dress.topStyle);
@@ -72,7 +78,7 @@ export function FastRecordFlow({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setView(hasRecordedCore(dress) ? "summary" : "steps");
+    setView(initialView ?? (hasRecordedCore(dress) ? "summary" : "steps"));
     setStep(1);
     setTopStyle(dress.topStyle);
     setNeckline(dress.neckline);
@@ -90,11 +96,31 @@ export function FastRecordFlow({
     setSaving(false);
     busyRef.current = false;
     setError("");
-  }, [dress.id]);
+  }, [dress.id, initialView]);
 
   useEffect(() => {
+    setTopStyle(dress.topStyle);
+    setNeckline(dress.neckline);
+    setSilhouette(dress.silhouette);
     setIsFavorite(dress.isFavorite);
-  }, [dress.isFavorite]);
+    setRating(dress.rating);
+    setQuickTags(dress.quickTags);
+    const nextRecorded = hasRecordedCore(dress);
+    setAcknowledged((current) => [
+      current[0] || nextRecorded || dress.topStyle !== "unknown",
+      current[1] || nextRecorded || dress.neckline !== "unknown",
+      current[2] || nextRecorded || dress.silhouette !== "unknown",
+      current[3] || nextRecorded,
+    ]);
+  }, [
+    dress.coreRecordedAt,
+    dress.isFavorite,
+    dress.neckline,
+    dress.quickTags,
+    dress.rating,
+    dress.silhouette,
+    dress.topStyle,
+  ]);
 
   const persist = async (patch: Partial<Dress>, acknowledgeStep = false) => {
     if (busyRef.current) return false;
@@ -158,6 +184,20 @@ export function FastRecordFlow({
       setSaving(false);
     }
   };
+  const finishAndView = async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setSaving(true);
+    setError("");
+    try {
+      await onFinishAndView?.();
+      setView("summary");
+    } catch {
+      setError("저장하지 못했어요. 다시 시도해 주세요.");
+      busyRef.current = false;
+      setSaving(false);
+    }
+  };
 
   if (view === "summary") {
     if (renderSummary) return renderSummary(() => setView("steps"));
@@ -177,7 +217,7 @@ export function FastRecordFlow({
   }
 
   return (
-    <section className="px-5 pb-32 pt-4">
+    <section className={`px-5 pt-4 ${step === 4 ? "pb-48" : "pb-32"}`}>
       <h1 className="sr-only">드레스 핵심 기록</h1>
       <div className="flex items-center justify-between text-sm font-bold">
         <span>{step}/4</span>
@@ -209,6 +249,17 @@ export function FastRecordFlow({
           onSilhouette={(value) => void pickSilhouette(value)}
         />
       )}
+      {showDetailsAction && step === 4 && acknowledged[3] && (
+        <button
+          type="button"
+          className="mt-5 min-h-12 w-full rounded-control border border-accent/30 bg-accent-soft px-4 font-bold text-accent-copy"
+          disabled={saving}
+          onClick={onOpenDetails}
+        >
+          상세 기록
+        </button>
+      )}
+
       {step === 4 && corePreview}
       {step === 4 && (
         <FastRecordDecisionStep
@@ -237,21 +288,12 @@ export function FastRecordFlow({
           {error}
         </p>
       )}
-      {step === 4 && acknowledged[3] && (
-        <button
-          type="button"
-          className="mt-6 min-h-12 w-full rounded-control border border-stone-200 bg-white px-4 font-bold"
-          disabled={saving}
-          onClick={onOpenDetails}
-        >
-          상세 기록
-        </button>
-      )}
       <FastRecordNavigation
         step={step}
         canAdvance={acknowledged[step - 1] === true}
         saving={saving}
         onPrevious={() => setStep((current) => PREVIOUS_STEP[current])}
+        onFinishAndView={() => void finishAndView()}
         onNext={() => {
           if (step === 4) void finish();
           else setStep((current) => NEXT_STEP[current]);

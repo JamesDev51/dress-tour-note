@@ -1,10 +1,17 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { db } from "../../db/database";
 import { addDress, addShop, createTour } from "../../db/repositories";
 import { useDressEditorDraft } from "./useDressEditorDraft";
 
 const onSaveStatus = () => undefined;
+function deferred() {
+  let resolve: () => void = () => undefined;
+  const promise = new Promise<void>((accept) => {
+    resolve = accept;
+  });
+  return { promise, resolve };
+}
 afterEach(async () => {
   sessionStorage.clear();
   await db.delete();
@@ -69,6 +76,77 @@ describe("recall draft persistence", () => {
       expect(saved?.concern).toBe("무거움");
     });
   });
+
+  it("does not autosave a hydrated legacy memo or mark it as saving", async () => {
+    const dress = { ...(await createRecord()), memo: "예전 메모" };
+    const statuses: string[] = [];
+    const writeDress = vi.fn(async () => undefined);
+    const hook = renderHook(() =>
+      useDressEditorDraft({
+        dressId: dress.id,
+        dress,
+        face: undefined,
+        onSaveStatus: (status) => statuses.push(status),
+        writeDress,
+      }),
+    );
+
+    await waitFor(() => expect(hook.result.current.memo).toBe("예전 메모"));
+    expect(writeDress).not.toHaveBeenCalled();
+    expect(statuses).not.toContain("saving");
+    hook.unmount();
+  });
+
+  it("keeps a real memo edit in saving state until the write resolves", async () => {
+    const dress = await createRecord();
+    const write = deferred();
+    const statuses: string[] = [];
+    const writeDress = vi.fn(() => write.promise);
+    const hook = renderHook(() =>
+      useDressEditorDraft({
+        dressId: dress.id,
+        dress,
+        face: undefined,
+        onSaveStatus: (status) => statuses.push(status),
+        writeDress,
+      }),
+    );
+
+    await waitFor(() => expect(hook.result.current.memo).toBe(dress.memo));
+    act(() => hook.result.current.setMemo("새 메모"));
+    await waitFor(() =>
+      expect(writeDress).toHaveBeenCalledWith(dress.id, { memo: "새 메모" }),
+    );
+    expect(statuses.at(-1)).toBe("saving");
+
+    write.resolve();
+    await waitFor(() => expect(statuses.at(-1)).toBe("saved"));
+    hook.unmount();
+  });
+
+  it("reports an actual memo write failure instead of settling it as saved", async () => {
+    const dress = await createRecord();
+    const statuses: string[] = [];
+    const writeDress = vi.fn(async () => {
+      throw new Error("write failed");
+    });
+    const hook = renderHook(() =>
+      useDressEditorDraft({
+        dressId: dress.id,
+        dress,
+        face: undefined,
+        onSaveStatus: (status) => statuses.push(status),
+        writeDress,
+      }),
+    );
+
+    await waitFor(() => expect(hook.result.current.memo).toBe(dress.memo));
+    act(() => hook.result.current.setMemo("실패할 메모"));
+    await waitFor(() => expect(statuses.at(-1)).toBe("error"));
+    expect(writeDress).toHaveBeenCalledWith(dress.id, { memo: "실패할 메모" });
+    hook.unmount();
+  });
+
   it("recovers the last uncommitted recall snapshot after a reload", async () => {
     const dress = await createRecord();
     sessionStorage.setItem(

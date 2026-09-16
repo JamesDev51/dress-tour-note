@@ -15,6 +15,12 @@ import { fabricOptions, optionLabel, summarizeDress } from "../dress/options";
 import { dressRenderTokens } from "../dress/renderTokens";
 import { dressSvgToJpeg, type DressSketchView } from "../renderer/dressSvg";
 import {
+  buildGarmentArtworkMarkup,
+  prepareGarmentArtwork,
+  type GarmentArtworkResult,
+  type GarmentAsset,
+} from "../renderer/garment";
+import {
   buildPortableBundle,
   PORTABLE_MANIFEST_FILE_NAME,
   serializePortableBundle,
@@ -262,6 +268,62 @@ function drawSketchPanel(
   });
 }
 
+function artworkAssets(artwork: GarmentArtworkResult): readonly GarmentAsset[] {
+  return [
+    ...artwork.layers.map(({ asset }) => asset),
+    ...artwork.textures.map(({ asset }) => asset),
+    ...(artwork.detailAssets ?? []),
+  ].filter(
+    (asset, index, assets) =>
+      assets.findIndex((candidate) => candidate.assetId === asset.assetId) ===
+      index,
+  );
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  const chunks: string[] = [];
+  for (let offset = 0; offset < bytes.length; offset += 0x8000)
+    chunks.push(
+      String.fromCharCode(...bytes.subarray(offset, offset + 0x8000)),
+    );
+  return btoa(chunks.join(""));
+}
+
+async function embedRemainingGarmentAssets(
+  artwork: GarmentArtworkResult,
+  namespace: string,
+): Promise<GarmentArtworkResult> {
+  if (!artwork.markup.includes('href="/assets/garment/')) return artwork;
+  const loaded = await Promise.all(
+    artworkAssets(artwork).map(async (asset) => {
+      if (!asset.path.startsWith("/assets/garment/"))
+        throw new Error("드레스 이미지 경로가 올바르지 않아요.");
+      const response = await fetch(asset.path);
+      if (!response.ok)
+        throw new Error("드레스 이미지를 PDF에 포함하지 못했어요.");
+      return [
+        asset.assetId,
+        `data:image/webp;base64,${bytesToBase64(
+          new Uint8Array(await response.arrayBuffer()),
+        )}`,
+      ] as const;
+    }),
+  );
+  const hrefs = new Map(loaded);
+  return {
+    ...artwork,
+    markup: buildGarmentArtworkMarkup(artwork, {
+      namespace,
+      assetHrefs: hrefs,
+    }),
+  };
+}
+
+function assertEmbeddedGarmentArtwork(markup: string): void {
+  if (markup.includes('href="/assets/garment/'))
+    throw new Error("드레스 이미지를 PDF에 포함하지 못했어요.");
+}
+
 export async function exportPortablePdf(
   tourId: string,
   options: ExportOptions,
@@ -281,9 +343,22 @@ export async function exportPortablePdf(
 
   onProgress?.({ step: "render", percent: 15, label: "드레스 이미지 생성" });
   const rendered = new Map<string, Uint8Array>();
+  const artworkStates = new Map<string, "ready" | "partial" | "unavailable">();
   for (let index = 0; index < snapshot.dresses.length; index += 1) {
     const dress = snapshot.dresses[index];
     for (const view of sketchViews) {
+      const artworkNamespace = `pdf-${dress.id}-${view}`;
+      const prepared = await prepareGarmentArtwork(dress, {
+        view,
+        embedAssets: true,
+        namespace: artworkNamespace,
+      });
+      const artwork = await embedRemainingGarmentAssets(
+        prepared,
+        artworkNamespace,
+      );
+      assertEmbeddedGarmentArtwork(artwork.markup);
+      artworkStates.set(`${dress.id}:${view}`, artwork.status);
       rendered.set(
         `${dress.id}:${view}`,
         await dressSvgToJpeg(
@@ -293,6 +368,7 @@ export async function exportPortablePdf(
           360,
           640,
           view,
+          { preparedArtwork: artwork, namespace: artworkNamespace },
         ),
       );
     }
@@ -429,7 +505,15 @@ export async function exportPortablePdf(
       if (!image) throw new Error("드레스 이미지가 손상됐어요.");
       drawSketchPanel(page, font, image, view, margin + index * 170);
     });
-    page.drawText("기록을 바탕으로 만든 드레스 기억 스케치", {
+    const dressArtworkStatuses = sketchViews.map(
+      (view) => artworkStates.get(`${dress.id}:${view}`) ?? "unavailable",
+    );
+    const artworkCaption = dressArtworkStatuses.includes("unavailable")
+      ? "사진 조합을 만들지 못한 보기는 기록 스케치로 표시했어요."
+      : dressArtworkStatuses.includes("partial")
+        ? "기록한 특징 일부를 반영했어요. 미기록 항목은 비워 두었어요."
+        : "선택한 특징으로 재구성한 이미지예요.";
+    page.drawText(artworkCaption, {
       x: margin,
       y: 402,
       size: 9,
@@ -537,6 +621,21 @@ export async function exportPortablePdf(
         width: 210,
         height: 373,
       });
+      const favoriteArtworkStatus = artworkStates.get(`${dress.id}:full`);
+      if (favoriteArtworkStatus && favoriteArtworkStatus !== "ready") {
+        page.drawText(
+          favoriteArtworkStatus === "partial"
+            ? "일부 기록만 반영했어요."
+            : "사진 조합을 만들지 못해 기록 스케치로 표시했어요.",
+          {
+            x: margin,
+            y: 309,
+            size: 8,
+            font,
+            color: pdfColors.inkLight,
+          },
+        );
+      }
       const summaryX = 280;
       page.drawText("후보 결정 요약", {
         x: summaryX,

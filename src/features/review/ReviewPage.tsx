@@ -115,7 +115,7 @@ export function ReviewPage() {
                         onClick={() =>
                           selecting
                             ? toggle(d.id)
-                            : nav(`/tour/${tourId}/dress/${d.id}`)
+                            : nav(`/tour/${tourId}/dress/${d.id}?view=record`)
                         }
                       >
                         {selecting && (

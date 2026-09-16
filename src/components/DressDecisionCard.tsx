@@ -31,13 +31,18 @@ function CompareCard({
 }) {
   return (
     <div className="min-w-0">
-      <DressPreview dress={presentation.dress} view="full" mode="visual" />
+      <DressPreview
+        dress={presentation.dress}
+        view="full"
+        mode="visual"
+        className="aspect-[3/4]"
+      />
       <div className="min-w-0 px-1 pb-2 pt-3">
         <p className="truncate text-xs leading-[18px] text-stone-400">
           {metadata}
         </p>
         <div className="mt-1 flex min-w-0 items-center gap-1">
-          <p className="min-w-0 break-keep text-sm font-bold [overflow-wrap:anywhere]">
+          <p className="min-w-0 break-keep text-sm font-bold [text-wrap:balance] [overflow-wrap:break-word]">
             {title}
           </p>
           {dress.isFavorite && <FavoriteMark size={12} />}
@@ -69,14 +74,19 @@ function StandardCard({
     <div className="min-w-0">
       <div className="flex min-w-0 gap-3">
         <div className="w-[40%] min-w-[108px] max-w-[140px] shrink-0">
-          <DressPreview dress={presentation.dress} view="full" mode="visual" />
+          <DressPreview
+            dress={presentation.dress}
+            view="full"
+            mode="visual"
+            className="aspect-[3/4]"
+          />
         </div>
         <div className="min-w-0 flex-1 py-1">
           <p className="truncate text-xs leading-[18px] text-stone-400">
             {metadata}
           </p>
           <div className="flex min-w-0 items-center gap-1.5">
-            <h3 className="min-w-0 break-keep font-bold leading-6 [overflow-wrap:anywhere]">
+            <h3 className="min-w-0 break-keep font-bold leading-6 [text-wrap:balance] [overflow-wrap:break-word]">
               {title}
             </h3>
             {dress.isFavorite && <FavoriteMark size={14} />}

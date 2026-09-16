@@ -2,12 +2,15 @@ import {
   backStyleOptions,
   detailOptions,
   fabricOptions,
+  necklineOptions,
   optionLabel,
+  topStyleOptions,
 } from "../lib/dress/options";
 import type { Dress } from "../types/domain";
 import { OptionArtwork, type OptionArtworkCategory } from "./OptionArtwork";
 
-export type SelectedDressArtworkCategory = "fabric" | "backStyle" | "details";
+export type SelectedDressArtworkCategory =
+  "top" | "neckline" | "fabric" | "backStyle" | "details";
 
 type ArtworkItem = {
   readonly category: OptionArtworkCategory;
@@ -23,6 +26,26 @@ function artworkItems(
 ): readonly ArtworkItem[] {
   return categories.flatMap((category): readonly ArtworkItem[] => {
     switch (category) {
+      case "top":
+        return dress.topStyle === "unknown"
+          ? []
+          : [
+              {
+                category,
+                id: dress.topStyle,
+                label: optionLabel(topStyleOptions, dress.topStyle),
+              },
+            ];
+      case "neckline":
+        return dress.neckline === "unknown"
+          ? []
+          : [
+              {
+                category,
+                id: dress.neckline,
+                label: optionLabel(necklineOptions, dress.neckline),
+              },
+            ];
       case "fabric":
         return dress.fabric === "unknown"
           ? []

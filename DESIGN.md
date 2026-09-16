@@ -7,20 +7,48 @@
 - 기록은 네 단계로 유지한다. 마지막 단계에서 `기억할 특징`(80자), `좋았던 점`(160자), `아쉬운 점`(160자)을 선택적으로 남긴다. 소재·디테일 전체 목록을 거쳐야 이유를 적을 수 있는 구조를 피한다. 입은 사람의 느낌은 당사자에게 물어서 기록하도록 안내한다.
 - 다시 보는 목록은 기억할 특징을 첫 제목으로 보여 주고, 없으면 기존 드레스 이름을 사용한다. 업체·착용 순서/드레스 이름은 함께 남겨 기록의 출처를 잃지 않는다. 문장 생성이나 메모를 임의로 별명으로 바꾸는 것은 금지한다.
 - 저장한 드레스를 열면 큰 그림, 기억할 특징, 이유, 선택한 실제 옵션 예시, 전체 기록을 확인한다. 수정 동작은 명시적이며 새 드레스는 빠른 입력으로 시작한다. 이전 v1 기록도 모든 원래 입력값에 접근할 수 있어야 한다.
+- 핵심 기록 4단계에서는 `기록 완료하고 보기`가 현재 드레스 저장·보기 동작이고, `다음 드레스 기록`은 새 빈 드레스를 추가하는 별도 이어쓰기 동작이다. 완료 동작은 마지막 메모 입력까지 기다리며 새 드레스를 만들지 않는다.
+- 샵·결과 카드의 `기록 보기`는 `?view=record` UI 경로로 기존 기록을 먼저 보여 준다. `coreRecordedAt`이 없는 v1 기록도 완료 상태로 추정하거나 저장값을 바꾸지 않고, 기록 보기와 핵심 기록 수정 동작을 분리한다.
 - 브라우저의 작은 스케치 안에는 글자를 넣지 않는다. 동일한 SVG 형태를 넓게 보여 주고 제목·기록 상태·설명은 읽을 수 있는 HTML로 밖에 둔다. PDF의 기존 설명형 렌더링과 face 제외 계약은 유지한다.
+- 얼굴을 명시적으로 포함하는 상체 스케치는 기존 기준점 `(135, 116)`과 clip 타원 `rx=28, ry=32`를 사용하며, 중립 마네킹 머리의 반지름은 `31`이다. 얼굴 변환값과 뒤태·제외 출력의 얼굴 없음 규칙은 그대로 보존한다.
 - 선택한 소재·뒤태·디테일은 기존 local WebP 예시를 재사용하며 `선택한 특징 · 예시 이미지`라고 설명한다. 예시의 다른 부위를 실제 기록으로 오인하게 하지 않는다. 미기록 항목에는 이미지를 만들어 넣지 않는다.
 - 비교는 선택 이유/착용감 → 관찰된 외형 차이 → 기록이 부족한 항목 순서다. 알려진 값끼리 다른 것과 한쪽을 기록하지 않은 것은 서로 다른 구역에 둔다. 같은 특징도 필요할 때 펼쳐 확인할 수 있다. 전체/상체/뒤태를 나란히 전환한다.
 - 모든 기록을 보존한다. 요약에서 생략된 메모·디테일은 상세에서 전체를 읽을 수 있어야 한다. 저장 실패에는 재시도를 제공하고 마지막 입력 직후 이동해도 저장을 기다린다.
 
+### Illustration contract — 2026-09-11
+
+- `memory-sketch` is a quiet fashion illustration, not a fitting or fabric-reconstruction promise. The neutral head, shoulders, arms, and torso stay continuous behind one continuous garment contour.
+- Silhouette IDs use seven authored, complete bodice-to-hem profiles with profile-local waist, shoulder, neckline, sleeve, back-panel, hem, and train anchors. Top, neckline, waistline, back, and train cues must attach to those anchors; the train is a connected tapered shape. Two or three broad light/shadow layers provide structural volume without guessed textile texture.
+- The seven profiles must be distinguishable from the contour and release point at card scale: ball gown gathers into rounded fullness below a defined waist, empire releases under the bust while preserving the selected waist cue, fit-and-flare holds the hip before a lower flare, mermaid holds the thigh before a knee turn, sheath stays slim with restrained folds, and tea-length ends above neutral mannequin shins/feet with a deliberate ground relationship. These lower-body cues are profile-local filled planes, never repeated rails.
+- Structural light may vary by profile and known satin/lace records may retain restrained tonal cues, but no unrecorded material texture is painted onto the garment. The `unknown` profile remains neutral/dashed and never confirms a known silhouette or textile.
+- Visual and annotated SVGs share the same geometry; visual mode suppresses copy only. Unknown values retain neutral/dashed cues and never select a known form. Full/upper/back view bounds and the face matrix remain unchanged, with back always face-free.
+- Back body closure is composed from back style, silhouette, and waist geometry only; front top and neckline values are never inferred into the back view. Unknown top and neckline values use explicit unfinished neutral boundaries, and unknown silhouette contours stay dashed.
+- Keep the existing warm render tokens and local catalog images. Do not add raster combinations, remote assets, new option IDs, or body-measurement claims.
+
+### Silhouette reference state — 2026-09-12
+
+- `silhouette-reference` is a browser-only recall aid. It reuses one existing local silhouette catalog image for the saved `silhouette` value and is always labelled **실루엣 참고**.
+- The reference image is a complete-gown visual cue for silhouette only. It does not claim to reproduce the saved top, neckline, fabric, color, waistline, back, train, details, custom note, body, or face. The saved values remain visible as official Korean labels and local option examples beside the image.
+- `silhouette-reference` is a secondary full/front visual opened explicitly from saved recall detail. Unknown or custom silhouette values show an honest text state and never select another silhouette image.
+- `garment-artwork` is the default selection-aware visual on saved recall details, shop/review decision cards, and all compare views. It uses only same-origin prepared local assets and reports `ready`, `partial`, or `unavailable` beside the image; it never presents a partial or unavailable result as complete.
+
+### Prepared garment artwork bridge — 2026-09-12
+
+- `dressSvgMarkup` remains the canonical SVG composition. When a prepared `garment-artwork` result is supplied, its namespaced fragment is fitted to the existing logical frame and replaces the legacy garment/body stack; annotated labels and category notes remain outside the image fragment.
+- Browser previews prepare local artwork with `embedAssets: false`. JPEG and PDF rendering prepare the same views with `embedAssets: true`, so portable v1 JSON contains no garment image bytes or new asset IDs; visual JPEGs carry only the prepared artwork needed for that page.
+- `partial` results render only resolved local layers with explicit partial copy. `unavailable` results retain the bounded record sketch with an explicit unavailable message and retry when an asset load failed. Unknown fields never cause a known feature to be fabricated.
+- The neutral head and optional face crop remain separate from the garment fragment. Face bytes and transforms are excluded from back, compact cards, view-only exports, and face-off recoverable exports; full/upper face inclusion remains explicit.
+
 ### Reusable recall primitives and states
 
-| Primitive        | Anatomy                                                                 | States                                                    |
-| ---------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
-| Recall card      | 시각 전용 스케치, 특징 제목, 업체·이름, 후보·별점, 선택 이유, 선택 예시 | recorded / legacy / unknown / image-loading / image-error |
-| Recall notes     | 세 개의 짧은 레이블 입력, 선택 안내, 즉시 반영되는 글자 제한            | empty / editing / saving / saved / error-retry            |
-| Sketch viewer    | 그림, 전체·상체·뒤태 선택 버튼, 의미 있는 HTML 캡션                     | full / upper / back / unknown / optional-face             |
-| Selected artwork | 기존 이미지, 공식 용어, 쉬운 설명; 실제 사진이 아닌 선택 예시 안내      | known / unknown-text / loading / error                    |
-| Comparison group | 두 열의 동일 항목, 이유/실제 차이/정보 부족 그룹                        | observed-difference / incomplete / same / empty           |
+| Primitive            | Anatomy                                                                   | States                                                    |
+| -------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Recall card          | 선택한 특징 이미지, 특징 제목, 업체·이름, 후보·별점, 선택 이유, 선택 예시 | recorded / legacy / unknown / image-loading / image-error |
+| Recall notes         | 세 개의 짧은 레이블 입력, 선택 안내, 즉시 반영되는 글자 제한              | empty / editing / saving / saved / error-retry            |
+| Sketch viewer        | 그림, 전체·상체·뒤태 선택 버튼, 의미 있는 HTML 캡션                       | full / upper / back / unknown / optional-face             |
+| Silhouette reference | 완성 드레스 참고 이미지, `실루엣 참고` label, recorded option labels      | available / no-reference / loading / image-error          |
+| Selected artwork     | 기존 이미지, 공식 용어, 쉬운 설명; 실제 사진이 아닌 선택 예시 안내        | known / unknown-text / loading / error                    |
+| Comparison group     | 두 열의 동일 항목, 이유/실제 차이/정보 부족 그룹                          | observed-difference / incomplete / same / empty           |
 
 ### Recall tokens
 
@@ -172,7 +200,7 @@ The sixth back-style image is `back/bowBack.webp`. Therefore 9 + 8 + 7 + 8 + 3 +
 
 ## Dress memory sketch
 
-The visible label is **드레스 기억 스케치**. It is a deterministic, intentionally illustrative neutral figure built from SVG primitives/layers, not virtual try-on. Fabric is a separate swatch and details are badges, never tiled over the garment. Browser and PDF share semantic inputs, not claims of physical drape, body measurement, or photographic likeness.
+The visible label is **드레스 기억 스케치** for the deterministic fallback and annotated record view. The primary recall image is the prepared local `garment-artwork` composition described above; it is not a virtual try-on or a body-measurement claim. Unknown fields remain explicit, and no remote generation or runtime artwork is introduced.
 
 ## Full / upper / back field matrix
 
@@ -195,13 +223,13 @@ The visible label is **드레스 기억 스케치**. It is a deterministic, inte
 
 ## Cross-surface display matrix
 
-| Surface       | Sketch and fields                                                   | Decision / exception treatment                                      |
-| ------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Shop          | Full sketch, up to three core official terms, candidate/rating      | Concise category-labelled exception when present.                   |
-| Review        | Full sketch, all recorded core terms, high-signal tags              | Details, exceptions, memo without hiding unknowns.                  |
-| Compare       | Both full sketches; every differing recorded field as labelled rows | Category-labelled exception notes; blanks and unknowns differ.      |
-| Per-dress PDF | Full, upper, back panels; swatch; all terms/notes/tags/memo         | Apply face matrix and show `미기록`/unsupported honestly.           |
-| Favorites PDF | Full sketch and bounded decision summary                            | Face only under explicit PDF include rule; no photoreal flattening. |
+| Surface       | Sketch and fields                                                                                                                            | Decision / exception treatment                                                       |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Shop          | Selection-aware garment artwork, compact recorded labels, candidate/rating                                                                   | Concise category-labelled exception when present; recorded sketch remains in detail. |
+| Review        | Selection-aware garment artwork, compact recorded labels, high-signal tags                                                                   | Details, exceptions, memo without hiding unknowns.                                   |
+| Compare       | Both selection-aware garment artworks in full/upper/back; every differing recorded field as labelled rows; silhouette reference is secondary | Category-labelled exception notes; blanks and unknowns differ.                       |
+| Per-dress PDF | Prepared full, upper, back panels; swatch; all terms/notes/tags/memo                                                                         | Apply face matrix and show `미기록`/unsupported honestly.                            |
+| Favorites PDF | Prepared full artwork and bounded decision summary                                                                                           | Face only under explicit PDF include rule; no virtual try-on or likeness claim.      |
 
 ## Mobile acceptance: 320px and 390px
 

@@ -148,7 +148,10 @@ async function createBaseTour(
     candidate: "후보로 남기기",
   });
   if (options.face) {
-    await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+    await page
+      .locator(".core-details-nav")
+      .getByRole("button", { name: "상세 기록", exact: true })
+      .click();
     await page
       .locator('input[type="file"][accept*="image/heic"]')
       .setInputFiles({
@@ -264,7 +267,10 @@ test("all individual WebP artwork is available and option cards use it", async (
   ).toBe(true);
 
   await createBaseTour(page);
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await expect(
     page.locator('[data-option-art-kind="generated-image"] img'),
   ).toHaveCount(61);
@@ -381,7 +387,10 @@ test("last face position survives immediate navigation away", async ({
   await page.getByLabel("뒤로").click();
   await expect(page).toHaveURL(new RegExp(`/tour/${tourId}/shop/`));
   await page.goto(dressUrl);
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await expect(page.getByLabel("좌우")).toHaveValue("0.73");
 });
 
@@ -538,7 +547,10 @@ test("all nine detail categories and closest-choice notes persist", async ({
   page,
 }) => {
   await createBaseTour(page);
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   for (const heading of [
     "어깨/상의",
     "네크라인",
@@ -571,7 +583,10 @@ test("all nine detail categories and closest-choice notes persist", async ({
     "true",
   );
   await page.reload();
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await settleOptionArtwork(page);
   await expect(page.getByLabel("상의 디자인에서 다른 점")).toHaveValue(
     "소매가 팔꿈치까지 내려오는 가장 가까운 선택",
@@ -614,7 +629,10 @@ test("offline app opens, edits, reloads, and compares saved dresses", async ({
     /text-amber-400/,
   );
   await page.reload();
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await expect(page.getByRole("button", { name: "5점" })).toHaveClass(
     /text-amber-400/,
   );
@@ -637,7 +655,10 @@ test("editor, details, review, compare, import, and export have no serious axe v
   const editorUrl = page.url();
   await expectNoSeriousAccessibilityViolations(page);
   await captureSurface(page, "axe-editor-390");
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await settleOptionArtwork(page);
   await expectNoSeriousAccessibilityViolations(page);
   await captureSurface(page, "axe-details-390");
@@ -665,7 +686,10 @@ test("editor, details, review, compare, import, and export have no serious axe v
     await page.setViewportSize({ width, height: 844 });
     await page.goto(editorUrl);
     await expectNoHorizontalOverflow(page);
-    await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+    await page
+      .locator(".core-details-nav")
+      .getByRole("button", { name: "상세 기록", exact: true })
+      .click();
     await settleOptionArtwork(page);
     await expectNoHorizontalOverflow(page);
     await page.goto(`/tour/${tourId}/review`);

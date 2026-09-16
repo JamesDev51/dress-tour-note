@@ -112,7 +112,10 @@ async function createTour(
     silhouette: /A라인/,
     candidate: "후보로 남기기",
   });
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await page.getByRole("button", { name: /레이스/ }).click();
   await page.getByRole("button", { name: /아이보리/ }).click();
   await page.getByLabel("특이사항").fill("E2E 메모: 허리 라인이 가장 좋았음");
@@ -137,12 +140,7 @@ async function createTour(
     await page
       .getByRole("button", { name: "핵심 기록으로", exact: true })
       .click();
-    await page
-      .getByRole("button", { name: "핵심 기록 수정", exact: true })
-      .click();
-    await page.getByRole("button", { name: /^다음$/ }).click();
-    await page.getByRole("button", { name: /^다음$/ }).click();
-    await page.getByRole("button", { name: /^다음$/ }).click();
+    await expect(page.getByText("4/4", { exact: true })).toBeVisible();
     await page
       .getByRole("button", { name: "다음 드레스 기록", exact: true })
       .click();
@@ -152,7 +150,10 @@ async function createTour(
       silhouette: /머메이드|무릎 부근부터/,
       candidate: "후보 아님",
     });
-    await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+    await page
+      .locator(".core-details-nav")
+      .getByRole("button", { name: "상세 기록", exact: true })
+      .click();
     await page.getByRole("button", { name: /미카도 새틴|새틴/ }).click();
     await page.getByRole("button", { name: /퓨어 화이트|새하얀/ }).click();
     await page.getByLabel("특이사항").fill("E2E 두 번째 드레스");
@@ -329,7 +330,10 @@ test("mobile core flow autosaves, reloads and compares two dresses", async ({
 }) => {
   await createTour(page, { twoDresses: true });
   await page.reload();
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await expect(page.getByLabel("특이사항")).toHaveValue("E2E 두 번째 드레스");
   await editorToReview(page);
   await page.getByRole("button", { name: "2벌 비교", exact: true }).click();
@@ -384,7 +388,10 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
     .getByRole("button", { name: /Dress 01/ })
     .first()
     .click();
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "얼굴 미리보기 켜기", exact: true })
     .click();
@@ -442,6 +449,53 @@ test("old v1 recoverable PDF imports without newer optional fields", async ({
   await expect(page.getByText("예전 브라이덜", { exact: true })).toBeVisible();
 });
 
+test("legacy v1 records open through read mode with saved details intact", async ({
+  page,
+}) => {
+  await page.goto("/import");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "legacy-v1-read-mode.pdf",
+    mimeType: "application/pdf",
+    buffer: await legacyV1Pdf(),
+  });
+  await expectImportPreview(page, "예전 v1 투어");
+  await page
+    .getByRole("button", { name: "이 기록 불러오기", exact: true })
+    .click();
+  await expect(page.getByText("예전 브라이덜", { exact: true })).toBeVisible();
+  await page
+    .getByRole("button", { name: "예전 브라이덜 열기", exact: true })
+    .click();
+
+  const read = page.getByRole("button", {
+    name: "Dress 01 기록 보기",
+    exact: true,
+  });
+  await expect(read).toBeVisible();
+  await read.click();
+  await expect(page).toHaveURL(/view=record/);
+  await expect(page.getByText("예전 메모", { exact: true })).toBeVisible();
+  await expect(page.getByText("레이스 예시", { exact: true })).toBeVisible();
+  await expect(
+    page.locator("dd").filter({ hasText: "후보" }).first(),
+  ).toBeVisible();
+
+  await page
+    .getByRole("button", { name: "핵심 기록 수정", exact: true })
+    .click();
+  await expect(page).toHaveURL(/view=edit/);
+  await expect(
+    page.getByRole("heading", { name: /어깨\/상의는 어땠나요\?/ }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "뒤로", exact: true }).click();
+  await expect(page).toHaveURL(/\/shop\//);
+  await page
+    .getByRole("button", { name: "Dress 01 기록 보기", exact: true })
+    .click();
+  await expect(page.getByText("예전 메모", { exact: true })).toBeVisible();
+  await expect(page.getByText("레이스 예시", { exact: true })).toBeVisible();
+});
+
 test("face export explains full, upper, and back privacy then excludes face", async ({
   page,
 }) => {
@@ -474,12 +528,18 @@ test("direct editor URL survives a full reload", async ({ page }) => {
   await createTour(page);
   const url = page.url();
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await expect(page.getByLabel("특이사항")).toHaveValue(
     "E2E 메모: 허리 라인이 가장 좋았음",
   );
   await page.reload({ waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .click();
   await expect(page.getByRole("button", { name: /오프숄더/ })).toHaveAttribute(
     "aria-pressed",
     "true",

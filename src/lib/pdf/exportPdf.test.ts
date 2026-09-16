@@ -150,7 +150,7 @@ describe("visual PDF export", () => {
     const font = await readFile("src/assets/pretendard-pdf-static.ttf");
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(new Response(font, { status: 200 })),
+      vi.fn(async () => new Response(font, { status: 200 })),
     );
   });
 
@@ -192,6 +192,9 @@ describe("visual PDF export", () => {
       true,
       false,
     ]);
+    expect(
+      dressSvgToJpeg.mock.calls.map((call) => call[6]?.preparedArtwork?.view),
+    ).toEqual(["full", "upper", "back"]);
     const pdf = await PDFDocument.load(await blob.arrayBuffer());
     expect(pdf.getPageCount()).toBeGreaterThanOrEqual(4);
   });

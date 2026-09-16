@@ -56,6 +56,10 @@ for (const width of [320, 390]) {
     await expect(
       page.getByText("팔 올리기 불편함", { exact: true }),
     ).toBeVisible();
+    await expect(
+      page.locator('svg[data-renderer="memory-sketch"][data-view="full"]'),
+    ).toHaveCount(1);
+    await expect(page.locator("[data-reference-gown]")).toHaveCount(0);
     await page.getByRole("button", { name: "뒤태", exact: true }).click();
     await expect(page.locator('svg[data-view="back"]')).toHaveCount(1);
     await expect(page.locator("svg text, svg image")).toHaveCount(0);
@@ -66,6 +70,176 @@ for (const width of [320, 390]) {
     ).toBe(0);
   });
 }
+
+test("explicit completion shows the current dress without creating the next blank", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await startRecord(page);
+  await page
+    .getByRole("textbox", { name: "기억할 특징", exact: true })
+    .fill("등 뒤 큰 리본");
+  await page
+    .getByRole("textbox", { name: "좋았던 점", exact: true })
+    .fill("허리가 편함");
+  await page
+    .getByRole("textbox", { name: "아쉬운 점", exact: true })
+    .fill("팔 올리기 불편함");
+
+  await page
+    .getByRole("button", { name: "기록 완료하고 보기", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "등 뒤 큰 리본", exact: true }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "뒤로", exact: true }).click();
+  await expect(page).toHaveURL(/\/shop\//);
+  await expect(
+    page.getByRole("button", { name: /Dress 01 상세 편집/ }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole("button", { name: /Dress 02 상세 편집/ }),
+  ).toHaveCount(0);
+});
+
+test("details returns to the current core step and stays discoverable", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await startRecord(page);
+
+  const details = page.getByRole("button", {
+    name: "상세 기록",
+    exact: true,
+  });
+  await expect(details).toBeVisible();
+  const detailsPosition = await details.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    return { top: rect.top, bottom: rect.bottom, viewport: innerHeight };
+  });
+  expect(detailsPosition.top).toBeGreaterThanOrEqual(0);
+  expect(detailsPosition.bottom).toBeLessThanOrEqual(detailsPosition.viewport);
+  const scrollBeforeDetails = await page.evaluate(() => window.scrollY);
+
+  const detailsBox = await details.boundingBox();
+  if (!detailsBox) throw new Error("상세 기록 버튼 위치를 찾지 못했어요.");
+  await page.mouse.click(
+    detailsBox.x + detailsBox.width / 2,
+    detailsBox.y + detailsBox.height / 2,
+  );
+  const returnToCore = page
+    .getByRole("button", { name: "핵심 기록으로 돌아가기", exact: true })
+    .first();
+  await expect(returnToCore).toBeVisible();
+  await page
+    .locator('[data-option-category="fabric"]')
+    .getByRole("button", { name: /레이스/ })
+    .click();
+  await page
+    .locator('[data-option-category="top"]')
+    .getByRole("button", { name: /스트랩리스/ })
+    .click();
+  await returnToCore.click();
+
+  await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+  const scrollAfterDetails = await page.evaluate(() => window.scrollY);
+  expect(
+    Math.abs(scrollAfterDetails - scrollBeforeDetails),
+  ).toBeLessThanOrEqual(1);
+  for (let step = 0; step < 3; step += 1) {
+    await page.getByRole("button", { name: "이전", exact: true }).click();
+  }
+  await expect(
+    page.getByRole("button", { name: /스트랩리스/ }),
+  ).toHaveAttribute("aria-pressed", "true");
+});
+
+test("record summary keeps its selected preview after details return", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await startRecord(page);
+  await page.getByRole("button", { name: "기록 완료하고 보기" }).click();
+  await expect(page).toHaveURL(/view=record/);
+  await page.getByRole("button", { name: "상체", exact: true }).click();
+  await expect(page.locator('svg[data-view="upper"]')).toHaveCount(1);
+
+  await page
+    .getByRole("button", { name: "상세 기록", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "핵심 기록으로 돌아가기", exact: true })
+    .first()
+    .click();
+  await expect(
+    page.getByRole("button", { name: "상체", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('svg[data-view="upper"]')).toHaveCount(1);
+});
+
+test("a failed detail write keeps the panel open until the field is retried", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await startRecord(page);
+  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page.getByRole("heading", { name: "소재", exact: true }).waitFor();
+
+  await page.evaluate(() => {
+    const original = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (...args) {
+      IDBObjectStore.prototype.put = original;
+      throw new DOMException("QA injected rejection", "AbortError");
+    };
+  });
+  await page
+    .getByRole("button", { name: /아이보리/ })
+    .first()
+    .click();
+  await expect(page.getByText("저장 실패", { exact: true })).toBeVisible();
+
+  const returnToCore = page
+    .locator(".core-details-nav")
+    .getByRole("button", { name: "핵심 기록으로 돌아가기", exact: true });
+  await returnToCore.click();
+  await expect(
+    page.getByRole("heading", { name: "소재", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: /퓨어 화이트/ })
+    .first()
+    .click();
+  await expect(page.getByText("자동 저장됨", { exact: true })).toBeVisible();
+  await returnToCore.click();
+  await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+});
+
+test("review cards open the explicit record view", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await startRecord(page);
+  await page
+    .getByRole("textbox", { name: "기억할 특징", exact: true })
+    .fill("리뷰에서 다시 보는 드레스");
+  await page.getByRole("button", { name: "뒤로", exact: true }).click();
+  await page
+    .getByRole("button", { name: "투어로 돌아가기", exact: true })
+    .click();
+  await page.getByRole("link", { name: "결과 보기", exact: true }).click();
+  await page
+    .getByRole("button")
+    .filter({ hasText: "리뷰에서 다시 보는 드레스" })
+    .click();
+
+  await expect(page).toHaveURL(/view=record/);
+  await expect(
+    page.getByRole("heading", {
+      name: "리뷰에서 다시 보는 드레스",
+      exact: true,
+    }),
+  ).toBeVisible();
+});
 
 test("final recall input survives a direct reload without blur", async ({
   page,
@@ -136,6 +310,9 @@ test("comparison separates observed differences from missing evidence", async ({
   const missing = page.getByRole("region", { name: "더 확인하면 좋은 부분" });
   await expect(missing.getByText("소재", { exact: true })).toBeVisible();
   await expect(missing.getByText("레이스", { exact: true })).toBeVisible();
+  await expect(
+    page.locator('svg[data-renderer="memory-sketch"][data-view="full"]'),
+  ).toHaveCount(2);
   await page.getByRole("button", { name: "뒤태", exact: true }).click();
   await expect(page.locator('svg[data-view="back"]')).toHaveCount(2);
   await expect(page.locator("svg image")).toHaveCount(0);

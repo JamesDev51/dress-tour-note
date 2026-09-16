@@ -2,9 +2,15 @@ import {
   acknowledgeRecallDraft,
   readRecallDraft,
 } from "../../lib/storage/recallDraft";
-import { useCallback, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useDressEditorData } from "./useDressEditorData";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { RecallDressDetail } from "../../components/RecallDressDetail";
 import { DressPreview } from "../../components/DressPreview";
 import {
@@ -27,14 +33,45 @@ import { FastRecordFlow } from "./FastRecordFlow";
 import { useDressEditorDraft } from "./useDressEditorDraft";
 import { usePendingWrites } from "./usePendingWrites";
 
+const patchFields = (patch: Partial<Dress>) => {
+  const fields: string[] = [];
+  for (const field of Object.keys(patch)) {
+    if (field === "customOptions") {
+      for (const category of Object.keys(patch.customOptions ?? {}))
+        fields.push(`customOptions.${category}`);
+    } else fields.push(field);
+  }
+  return fields;
+};
+
 export function DressEditorPage() {
   const { tourId = "", dressId = "" } = useParams();
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const recordView = searchParams.get("view") === "record";
+  const editView = searchParams.get("view") === "edit";
   const setSave = useUIStore((state) => state.setSaveStatus);
   const toast = useUIStore((state) => state.showToast);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [includeFace, setIncludeFace] = useState(false);
   const { run, waitForPending } = usePendingWrites();
+  const detailsReturnScrollTop = useRef<number | undefined>(undefined);
+  const failedPersistFields = useRef(new Set<string>());
+  useEffect(() => {
+    failedPersistFields.current.clear();
+  }, [dressId]);
+  const openDetails = useCallback(() => {
+    if (detailsOpen) return;
+    detailsReturnScrollTop.current = window.scrollY;
+    setDetailsOpen(true);
+  }, [detailsOpen]);
+  useLayoutEffect(() => {
+    if (detailsOpen) return;
+    const scrollTop = detailsReturnScrollTop.current;
+    if (scrollTop === undefined) return;
+    window.scrollTo({ top: scrollTop, left: 0, behavior: "auto" });
+    detailsReturnScrollTop.current = undefined;
+  }, [detailsOpen]);
   const data = useDressEditorData(dressId);
   const currentData = data?.dress.id === dressId ? data : undefined;
   const writeDress = useCallback(
@@ -76,11 +113,14 @@ export function DressEditorPage() {
 
   const persist = async (patch: Partial<Dress>, message?: string) => {
     setSave("saving");
+    const fields = patchFields(patch);
     try {
       await writeDress(dressId, patch);
-      setSave("saved");
+      for (const field of fields) failedPersistFields.current.delete(field);
+      setSave(failedPersistFields.current.size === 0 ? "saved" : "error");
       if (message) toast(message);
     } catch (error) {
+      for (const field of fields) failedPersistFields.current.add(field);
       setSave("error");
       throw error;
     }
@@ -108,6 +148,21 @@ export function DressEditorPage() {
     });
     if (pendingRecall) acknowledgeRecallDraft(dressId, pendingRecall.revision);
   };
+  const closeDetails = () => {
+    setIncludeFace(false);
+    void (async () => {
+      try {
+        await waitForPending();
+        await saveDraft();
+        await waitForPending();
+        if (failedPersistFields.current.size > 0)
+          throw new Error("이전 저장이 완료되지 않았어요.");
+        setDetailsOpen(false);
+      } catch {
+        toast("저장하지 못했어요. 다시 시도해 주세요.");
+      }
+    })();
+  };
   const goBack = async () => {
     try {
       await waitForPending();
@@ -122,6 +177,11 @@ export function DressEditorPage() {
     await saveDraft();
     const next = await run(() => addDress(dress.shopId));
     nav(`/tour/${tourId}/dress/${next}`, { replace: true });
+  };
+  const finishAndView = async () => {
+    await waitForPending();
+    await saveDraft();
+    nav(`/tour/${tourId}/dress/${dressId}?view=record`, { replace: true });
   };
   const removeFace = async () => {
     hasFace.current = false;
@@ -179,6 +239,15 @@ export function DressEditorPage() {
           safelyPersist({ isFavorite: !dress.isFavorite })
         }
       />
+      <div className="core-details-nav sticky top-0 z-10 border-b border-stone-100 bg-shell/95 px-5 py-2 backdrop-blur">
+        <button
+          type="button"
+          className="min-h-11 w-full rounded-control border border-accent/30 bg-accent-soft px-4 text-sm font-bold text-accent-copy"
+          onClick={detailsOpen ? closeDetails : openDetails}
+        >
+          {detailsOpen ? "핵심 기록으로 돌아가기" : "상세 기록"}
+        </button>
+      </div>
       {detailsOpen && (
         <div className="px-5 pt-4">
           <DressPreview
@@ -190,57 +259,105 @@ export function DressEditorPage() {
           />
         </div>
       )}
-      {detailsOpen ? (
+      {recordView ? (
         <>
-          <div className="px-5">{recallEditor}</div>
-          <DressDetailsPanel
-            dress={dress}
-            memo={memo}
-            transform={transform}
-            face={currentData.face}
-            includeFace={includeFace}
-            onPatch={safelyPersist}
-            onCustomCommit={saveCustomOption}
-            onMemoChange={(value) => {
-              setMemo(value);
-              latestMemo.current = value;
-            }}
-            onMemoBlur={() => void safelyPersist({ memo: latestMemo.current })}
-            onRemoveFace={removeFace}
-            onUploadFace={uploadFace}
-            onIncludeFaceChange={setIncludeFace}
-            onTransformPatch={updateTransform}
-            onTransformCommit={flushTransform}
-            onResetFace={resetFace}
-            onClose={() => {
-              setIncludeFace(false);
-              setDetailsOpen(false);
-            }}
-          />
-        </>
-      ) : (
-        <FastRecordFlow
-          dress={dress}
-          recallEditor={recallEditor}
-          corePreview={
-            <DressPreview
-              dress={dress}
-              mode="visual"
-              className="mx-auto mt-6 max-w-40"
-            />
-          }
-          renderSummary={(onEditCore) => (
+          <div hidden={detailsOpen} aria-hidden={detailsOpen}>
             <RecallDressDetail
               dress={dress}
               shopName={currentData.shop?.name}
-              onEditCore={onEditCore}
-              onOpenDetails={() => setDetailsOpen(true)}
+              onEditCore={() =>
+                nav(`/tour/${tourId}/dress/${dressId}?view=edit`)
+              }
+              onOpenDetails={openDetails}
             />
+          </div>
+          {detailsOpen && (
+            <>
+              <div className="px-5">{recallEditor}</div>
+              <DressDetailsPanel
+                dress={dress}
+                memo={memo}
+                transform={transform}
+                face={currentData.face}
+                includeFace={includeFace}
+                onPatch={safelyPersist}
+                onCustomCommit={saveCustomOption}
+                onMemoChange={(value) => {
+                  setMemo(value);
+                  latestMemo.current = value;
+                }}
+                onMemoBlur={() =>
+                  void safelyPersist({ memo: latestMemo.current })
+                }
+                onRemoveFace={removeFace}
+                onUploadFace={uploadFace}
+                onIncludeFaceChange={setIncludeFace}
+                onTransformPatch={updateTransform}
+                onTransformCommit={flushTransform}
+                onResetFace={resetFace}
+                onClose={closeDetails}
+              />
+            </>
           )}
-          onPatch={persist}
-          onComplete={addNextDress}
-          onOpenDetails={() => setDetailsOpen(true)}
-        />
+        </>
+      ) : (
+        <>
+          <div hidden={detailsOpen} aria-hidden={detailsOpen}>
+            <FastRecordFlow
+              dress={dress}
+              initialView={editView ? "steps" : undefined}
+              recallEditor={detailsOpen ? undefined : recallEditor}
+              corePreview={
+                <DressPreview
+                  dress={dress}
+                  mode="visual"
+                  className="mx-auto mt-6 max-w-40"
+                />
+              }
+              renderSummary={(onEditCore) => (
+                <RecallDressDetail
+                  dress={dress}
+                  shopName={currentData.shop?.name}
+                  onEditCore={onEditCore}
+                  onOpenDetails={openDetails}
+                />
+              )}
+              onPatch={persist}
+              onComplete={addNextDress}
+              onFinishAndView={finishAndView}
+              onOpenDetails={openDetails}
+              showDetailsAction={false}
+            />
+          </div>
+          {detailsOpen && (
+            <>
+              <div className="px-5">{recallEditor}</div>
+              <DressDetailsPanel
+                dress={dress}
+                memo={memo}
+                transform={transform}
+                face={currentData.face}
+                includeFace={includeFace}
+                onPatch={safelyPersist}
+                onCustomCommit={saveCustomOption}
+                onMemoChange={(value) => {
+                  setMemo(value);
+                  latestMemo.current = value;
+                }}
+                onMemoBlur={() =>
+                  void safelyPersist({ memo: latestMemo.current })
+                }
+                onRemoveFace={removeFace}
+                onUploadFace={uploadFace}
+                onIncludeFaceChange={setIncludeFace}
+                onTransformPatch={updateTransform}
+                onTransformCommit={flushTransform}
+                onResetFace={resetFace}
+                onClose={closeDetails}
+              />
+            </>
+          )}
+        </>
       )}
     </main>
   );

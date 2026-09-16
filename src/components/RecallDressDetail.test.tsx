@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Dress } from "../types/domain";
 import { RecallDressDetail } from "./RecallDressDetail";
@@ -81,7 +87,7 @@ describe("RecallDressDetail", () => {
     );
   });
 
-  it("switches visual views and exposes only detail-level actions", () => {
+  it("defaults to the selection-aware image and keeps the recorded sketch views", async () => {
     const onEditCore = vi.fn();
     const onOpenDetails = vi.fn();
     const { container } = render(
@@ -93,14 +99,46 @@ describe("RecallDressDetail", () => {
     );
 
     const viewer = screen.getByLabelText("드레스 보기");
-    expect(within(viewer).getAllByRole("button")).toHaveLength(3);
-    fireEvent.click(screen.getByRole("button", { name: "뒤태" }));
-    expect(container.querySelector("svg")).toHaveAttribute("data-view", "back");
-    expect(container.querySelector("svg")).toHaveAttribute(
-      "data-mode",
-      "visual",
+    expect(within(viewer).getAllByRole("button")).toHaveLength(4);
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toBeInTheDocument(),
     );
-    expect(container.querySelector("image")).not.toBeInTheDocument();
+    expect(
+      container.querySelector("[data-reference-gown]"),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "뒤태" }));
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toHaveAttribute("data-view", "back"),
+    );
+    expect(
+      container.querySelector('svg[data-renderer="memory-sketch"]'),
+    ).toHaveAttribute("data-mode", "visual");
+    expect(
+      container.querySelector('svg[data-renderer="memory-sketch"] image'),
+    ).not.toBeInTheDocument();
+    expect(
+      container.querySelector(
+        'svg[data-renderer="memory-sketch"] [data-shape="mermaid"]',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(
+        'svg[data-renderer="memory-sketch"] [data-layer="face"]',
+      ),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "실루엣 참고" }));
+    expect(container.querySelector("[data-reference-gown]")).toHaveAttribute(
+      "data-reference-state",
+      "available",
+    );
+    expect(
+      container.querySelector('svg[data-renderer="memory-sketch"]'),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
     fireEvent.click(screen.getByRole("button", { name: "상세 기록" }));
@@ -108,8 +146,31 @@ describe("RecallDressDetail", () => {
     expect(onOpenDetails).toHaveBeenCalledOnce();
   });
 
-  it("shows known selected examples and does not invent unknown artwork", () => {
-    const { rerender } = render(
+  it("makes an unrecorded back view explicit and offers its detail action", async () => {
+    const onOpenDetails = vi.fn();
+    const { container } = render(
+      <RecallDressDetail
+        dress={{ ...dress, backStyle: "unknown" }}
+        onEditCore={vi.fn()}
+        onOpenDetails={onOpenDetails}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "뒤태" }));
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toHaveAttribute("data-view", "back"),
+    );
+    expect(
+      screen.getByText(/뒤태를 아직 기록하지 않았어요/),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "뒤태 기록하기" }));
+    expect(onOpenDetails).toHaveBeenCalledOnce();
+  });
+
+  it("shows known selected examples and does not invent unknown artwork", async () => {
+    const { container, rerender } = render(
       <RecallDressDetail
         dress={dress}
         onEditCore={vi.fn()}
@@ -117,6 +178,12 @@ describe("RecallDressDetail", () => {
       />,
     );
 
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "실루엣 참고" }));
     expect(screen.getByText("선택한 특징 · 예시 이미지")).toBeInTheDocument();
     expect(
       document.querySelector('[data-option-art="fabric-lace"]'),
@@ -169,6 +236,47 @@ describe("RecallDressDetail", () => {
     expect(
       screen.getByText("기억할 특징을 아직 적지 않았어요."),
     ).toBeInTheDocument();
+  });
+
+  it("does not substitute a silhouette reference for an unknown or custom silhouette", () => {
+    const { container, rerender } = render(
+      <RecallDressDetail
+        dress={{ ...dress, silhouette: "unknown" }}
+        onEditCore={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "실루엣 참고" }));
+    expect(container.querySelector("[data-reference-gown]")).toHaveAttribute(
+      "data-reference-state",
+      "no-reference",
+    );
+    expect(
+      container.querySelector('[data-option-art^="silhouette-"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/실루엣 참고 이미지를 표시할 수 없어요/),
+    ).toBeInTheDocument();
+
+    rerender(
+      <RecallDressDetail
+        dress={{
+          ...dress,
+          customOptions: { silhouette: "허리선이 더 길었어요" },
+        }}
+        onEditCore={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "실루엣 참고" }));
+    expect(container.querySelector("[data-reference-gown]")).toHaveAttribute(
+      "data-reference-state",
+      "no-reference",
+    );
+    expect(
+      container.querySelector('[data-option-art^="silhouette-"]'),
+    ).not.toBeInTheDocument();
   });
 });
 

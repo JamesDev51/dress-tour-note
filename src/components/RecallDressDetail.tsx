@@ -5,15 +5,16 @@ import {
 } from "../lib/dress/decisionPresentation";
 import type { Dress } from "../types/domain";
 import { DressPreview } from "./DressPreview";
+import { ReferenceGownPreview } from "./ReferenceGownPreview";
 import { SelectedDressArtwork } from "./SelectedDressArtwork";
 
-const views = [
+const sketchViews = [
   { id: "full", label: "전체" },
   { id: "upper", label: "상체" },
   { id: "back", label: "뒤태" },
 ] as const;
 
-type RecallView = (typeof views)[number]["id"];
+type RecallView = "reference" | (typeof sketchViews)[number]["id"];
 
 function Fields({ fields }: { readonly fields: readonly DecisionField[] }) {
   return (
@@ -55,7 +56,7 @@ export function RecallDressDetail({
           {shopName ? `${shopName} · ` : ""}
           {dress.order + 1}번째 · {dress.label}
         </p>
-        <h1 className="mt-1 break-keep text-xl font-bold leading-7 [overflow-wrap:anywhere]">
+        <h1 className="mt-1 break-keep text-xl font-bold leading-7 [text-wrap:balance] [overflow-wrap:break-word]">
           {title}
         </h1>
         {cue?.state === "blank" && (
@@ -71,7 +72,7 @@ export function RecallDressDetail({
           role="group"
           aria-label="그림 보기 선택"
         >
-          {views.map((item) => (
+          {sketchViews.map((item) => (
             <button
               key={item.id}
               type="button"
@@ -83,16 +84,34 @@ export function RecallDressDetail({
             </button>
           ))}
         </div>
-        <DressPreview
-          dress={presentation.dress}
-          view={view}
-          mode="visual"
-          className="mt-3"
-        />
-        <p className="mt-2 text-xs leading-[18px] text-ink-muted">
-          선택한 기록을 단순화한 드레스 기억 스케치예요.
-        </p>
+        <button
+          type="button"
+          aria-pressed={view === "reference"}
+          className={`mt-2 min-h-11 w-full rounded-control border px-3 text-sm font-semibold ${view === "reference" ? "border-accent bg-accent-soft text-accent-copy" : "border-stone-200 bg-white text-stone-600"}`}
+          onClick={() => setView("reference")}
+        >
+          실루엣 참고
+        </button>
+        {view === "reference" ? (
+          <ReferenceGownPreview dress={presentation.dress} className="mt-4" />
+        ) : (
+          <>
+            <DressPreview
+              dress={presentation.dress}
+              view={view}
+              mode="visual"
+              className="mt-3"
+              onOpenDetails={onOpenDetails}
+            />
+          </>
+        )}
       </section>
+
+      {view !== "reference" && (
+        <div className="mt-5">
+          <SelectedDressArtwork dress={presentation.dress} />
+        </div>
+      )}
 
       <section className="mt-6 rounded-card bg-accent-soft p-4">
         <h2 className="text-base font-bold leading-6">기억과 선택</h2>
@@ -103,10 +122,6 @@ export function RecallDressDetail({
           <Fields fields={presentation.decision} />
         </div>
       </section>
-
-      <div className="mt-6">
-        <SelectedDressArtwork dress={presentation.dress} />
-      </div>
 
       <section className="mt-6">
         <h2 className="text-base font-bold leading-6">전체 기록</h2>

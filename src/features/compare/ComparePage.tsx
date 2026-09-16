@@ -94,7 +94,7 @@ export function ComparePage() {
             <p className="break-keep text-xs leading-5 text-ink-muted [overflow-wrap:anywhere]">
               {shopName(dress)} · {dress.order + 1}번째
             </p>
-            <h2 className="mt-1 break-keep text-sm font-bold leading-6 [overflow-wrap:anywhere]">
+            <h2 className="mt-1 break-keep text-sm font-bold leading-6 [text-wrap:balance] [overflow-wrap:break-word]">
               {dress.memoryCue?.trim() || dress.label}
             </h2>
             {dress.memoryCue?.trim() && (
@@ -143,10 +143,6 @@ export function ComparePage() {
             />
           ))}
         </div>
-        <p className="mt-2 text-xs leading-5 text-ink-muted">
-          선택한 기록을 단순화한 스케치예요. 소재와 장식은 아래 예시로 확인해
-          주세요.
-        </p>
       </section>
       <ComparisonSection
         title="기록된 차이"
