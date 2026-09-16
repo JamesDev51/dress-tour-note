@@ -150,7 +150,12 @@ describe("visual PDF export", () => {
     const font = await readFile("src/assets/pretendard-pdf-static.ttf");
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(font, { status: 200 })),
+      vi.fn(async (input: string) => {
+        const bytes = input.startsWith("/assets/garment/")
+          ? await readFile(`public${input}`)
+          : font;
+        return new Response(bytes, { status: 200 });
+      }),
     );
   });
 
