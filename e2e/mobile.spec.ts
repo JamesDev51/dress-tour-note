@@ -396,10 +396,10 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
     .getByRole("button", { name: "얼굴 미리보기 켜기", exact: true })
     .click();
   await expect(
-    page.locator('.dress-preview g[data-layer="figure"]'),
+    page.locator('.dress-preview:visible g[data-layer="figure"]'),
   ).toHaveCount(1);
   await expect(
-    page.locator('.dress-preview g[data-layer="face"] image'),
+    page.locator('.dress-preview:visible g[data-layer="face"] image'),
   ).toHaveAttribute("href", /^data:image\/webp;base64,/);
   await expect(page.getByLabel("특이사항")).toHaveValue(
     "E2E 메모: 허리 라인이 가장 좋았음",
