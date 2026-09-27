@@ -1,0 +1,69 @@
+name: Bootstrap full source
+
+on:
+  push:
+    branches: [feat/full-prd-implementation]
+    paths:
+      - .bootstrap/complete
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/full-prd-implementation
+
+      - name: Verify and unpack source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat <<'CHECKSUMS' | sha256sum --check
+          efd199fda5df6d6e9ce17701ed50ebcced63a9e7d5cf2a46eafe5a72173b4cf7  .bootstrap/source.part-00
+          e34d07b1142c08a822958fb767ac631be57cb6152533027e5e8d2ae6c1c3c5bc  .bootstrap/source.part-01
+          4ae4d5e5b81e77d921223a10f195983351de2064eae3e43745c7220e60c36b35  .bootstrap/source.part-02
+          d25306a1a4bc340d502889beb1564fe6c55c26fc798062ef9618d82d587d57b7  .bootstrap/source.part-03
+          c6914a620b2310beff5f9e0598b796d13e828f4380c6b8d2adb76f6e1e02dbf2  .bootstrap/source.part-04
+          6ff8ffe2fb2ddefe767997305cfab2c7c0bb786c3ac671aa6f985f6fe5d333d5  .bootstrap/source.part-05
+          6dee346af5003923a99048ebb6f6a70b7e506da62c1c516bcfd196f7957e09a9  .bootstrap/source.part-060
+          68fcab2243b3610f09c33f451122f5b2cbf2bb37179c47791efebd288e7ce441  .bootstrap/source.part-061
+          b559adb2fcc6ca12e57dd9bfc3b3285bc2693341f02fc3258636c347974c2a9d  .bootstrap/source.part-062
+          c7246cb6c327092f398e5d4d1944749411566580b200c585a352fe8c904fbdbb  .bootstrap/source.part-063
+          9a358c0c2a7df2f46aed9bce4e126a912d5babe4e917c232fb007eb0d5a2080f  .bootstrap/source.part-07
+          56ce69840adf7ddb7f95fa0cc1945032d8352791aabfac210d76d47eb7cab2c3  .bootstrap/source.part-08
+          5a62027d207668ba77c2f068fb1412a83b05ec48f3c6297730603aea752cb7f3  .bootstrap/source.part-09
+          CHECKSUMS
+          cat \
+            .bootstrap/source.part-00 \
+            .bootstrap/source.part-01 \
+            .bootstrap/source.part-02 \
+            .bootstrap/source.part-03 \
+            .bootstrap/source.part-04 \
+            .bootstrap/source.part-05 \
+            .bootstrap/source.part-060 \
+            .bootstrap/source.part-061 \
+            .bootstrap/source.part-062 \
+            .bootstrap/source.part-063 \
+            .bootstrap/source.part-07 \
+            .bootstrap/source.part-08 \
+            .bootstrap/source.part-09 \
+            | base64 --decode > /tmp/dress-tour-note.tar.xz
+          echo "564d9780df03f0211b1dd4a55836752d0aac27bd95c163565ff9d9a6779b7343  /tmp/dress-tour-note.tar.xz" | sha256sum --check
+          tar -xJf /tmp/dress-tour-note.tar.xz -C .
+          rm -rf .bootstrap .github/workflows/bootstrap-source.yml
+
+      - name: Commit implemented application
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: implement complete dress tour note PRD"
+          git push origin HEAD:feat/full-prd-implementation
