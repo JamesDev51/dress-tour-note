@@ -524,6 +524,22 @@ export type DressPresentationItem = {
   readonly note?: string;
 };
 
+export const CORE_DRESS_CATEGORIES = [
+  "top",
+  "neckline",
+  "silhouette",
+  "fabric",
+] as const;
+export const ADDITIONAL_DRESS_CATEGORIES = [
+  "color",
+  "backStyle",
+  "details",
+] as const;
+export const ACTIVE_DRESS_CATEGORIES = [
+  ...CORE_DRESS_CATEGORIES,
+  ...ADDITIONAL_DRESS_CATEGORIES,
+] as const satisfies readonly DressOptionCategory[];
+
 export type DressPresentation = {
   readonly core: readonly DressPresentationItem[];
   readonly details: readonly DressPresentationItem[];
@@ -582,12 +598,10 @@ export function formatDressPresentation(dress: Dress): DressPresentation {
     selectedItem("neckline", necklineOptions, dress.neckline),
     selectedItem("silhouette", silhouetteOptions, dress.silhouette),
     selectedItem("fabric", fabricOptions, dress.fabric),
-    selectedItem("color", colorOptions, dress.color),
   ].filter((item): item is DressPresentationItem => Boolean(item));
   const details = [
-    selectedItem("waistline", waistlineOptions, dress.waistline),
+    selectedItem("color", colorOptions, dress.color),
     selectedItem("backStyle", backStyleOptions, dress.backStyle),
-    selectedItem("train", trainOptions, dress.train),
     ...dress.details.map((detail) =>
       selectedItem("details", detailOptions, detail),
     ),

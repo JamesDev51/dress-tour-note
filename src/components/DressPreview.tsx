@@ -38,9 +38,9 @@ function artworkStatusCopy(artwork: GarmentArtworkResult): string {
           ? "뒤태를 아직 기록하지 않았어요. 등 디자인을 남기면 여기에서 확인할 수 있어요."
           : "드레스 형태를 기록하면 여기에서 확인할 수 있어요.";
       }
-      const missing = artwork.missingFields.map(
-        (field) => GARMENT_FIELD_LABELS[field],
-      );
+      const missing = artwork.missingFields
+        .filter((field) => field !== "waistline" && field !== "train")
+        .map((field) => GARMENT_FIELD_LABELS[field]);
       const prefix =
         artwork.view === "back" && artwork.missingFields.includes("backStyle")
           ? "뒤태 미기록 · 형태 참고 이미지예요."
@@ -189,7 +189,7 @@ export function DressPreview({
         : "",
     [artwork, dress, face, includeFace, instanceNamespace, mode, view],
   );
-  const rootClass = `dress-preview overflow-hidden rounded-preview border border-stone-200 bg-preview-surface ${mode === "visual" ? (view === "upper" ? "aspect-[80/77]" : "aspect-[3/4]") : ""} ${className}`;
+  const rootClass = `dress-preview overflow-hidden rounded-preview border border-stone-200 bg-preview-surface ${mode === "visual" ? (view === "upper" ? "aspect-[80/77]" : "aspect-[16/25]") : ""} ${className}`;
 
   if (preparationState === "loading") {
     return (
@@ -276,7 +276,7 @@ export function DressPreview({
           className="mt-2 min-h-11 rounded-control border border-accent/30 bg-accent-soft px-3 text-xs font-semibold text-accent-copy"
           onClick={onOpenDetails}
         >
-          {artwork.view === "back" ? "뒤태 기록하기" : "상세 기록 열기"}
+          {artwork.view === "back" ? "뒤태 기록하기" : "상세 기록 추가하기"}
         </button>
       )}
       {isRetryable(artwork) && (

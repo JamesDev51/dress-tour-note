@@ -239,15 +239,17 @@ export function DressEditorPage() {
           safelyPersist({ isFavorite: !dress.isFavorite })
         }
       />
-      <div className="core-details-nav sticky top-0 z-10 border-b border-stone-100 bg-shell/95 px-5 py-2 backdrop-blur">
-        <button
-          type="button"
-          className="min-h-11 w-full rounded-control border border-accent/30 bg-accent-soft px-4 text-sm font-bold text-accent-copy"
-          onClick={detailsOpen ? closeDetails : openDetails}
-        >
-          {detailsOpen ? "핵심 기록으로 돌아가기" : "상세 기록"}
-        </button>
-      </div>
+      {detailsOpen && (
+        <div className="core-details-nav sticky top-0 z-10 border-b border-stone-100 bg-shell/95 px-5 py-2 backdrop-blur">
+          <button
+            type="button"
+            className="min-h-11 w-full rounded-control border border-accent/30 bg-accent-soft px-4 text-sm font-bold text-accent-copy"
+            onClick={closeDetails}
+          >
+            핵심 기록으로 돌아가기
+          </button>
+        </div>
+      )}
       {detailsOpen && (
         <div className="px-5 pt-4">
           <DressPreview
@@ -311,7 +313,7 @@ export function DressEditorPage() {
                 <DressPreview
                   dress={dress}
                   mode="visual"
-                  className="mx-auto mt-6 max-w-40"
+                  className="mt-6 w-full"
                 />
               }
               renderSummary={(onEditCore) => (
@@ -326,7 +328,6 @@ export function DressEditorPage() {
               onComplete={addNextDress}
               onFinishAndView={finishAndView}
               onOpenDetails={openDetails}
-              showDetailsAction={false}
             />
           </div>
           {detailsOpen && (

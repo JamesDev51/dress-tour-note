@@ -1,3 +1,7 @@
+import {
+  preparedFaceRegistration,
+  renderPreparedMannequin,
+} from "./preparedMannequin";
 import type { Dress } from "../../types/domain";
 import {
   backStyleOptions,
@@ -182,22 +186,10 @@ function garment(
 function allUnknown(dress: Dress, view: DressSketchView) {
   const values =
     view === "full"
-      ? [
-          dress.topStyle,
-          dress.neckline,
-          dress.silhouette,
-          dress.waistline,
-          dress.color,
-          dress.train,
-        ]
+      ? [dress.topStyle, dress.neckline, dress.silhouette, dress.color]
       : view === "upper"
-        ? [dress.topStyle, dress.neckline, dress.waistline, dress.color]
-        : [
-            dress.backStyle ?? "unknown",
-            dress.silhouette,
-            dress.train,
-            dress.color,
-          ];
+        ? [dress.topStyle, dress.neckline, dress.color]
+        : [dress.backStyle ?? "unknown", dress.silhouette, dress.color];
   return values.every((value) => value === "unknown");
 }
 
@@ -305,24 +297,32 @@ export function dressSvgMarkup(
     visual &&
     view === "back" &&
     (usesPreparedArtwork || usesPreparedPlaceholder);
-  const preparedFullScale = usesPreparedArtwork ? 0.7 : 0.68;
+
   const preparedFullBounds =
     visualPreparedFull && options.preparedArtwork
-      ? preparedArtworkVerticalBounds(options.preparedArtwork, faceAllowed)
+      ? preparedArtworkVerticalBounds(options.preparedArtwork, true)
       : undefined;
-  const preparedFullTransform = preparedFullBounds
-    ? `translate(${numberText(usesPreparedArtwork ? 65.5 : 37.6)} ${numberText(213.5 - preparedFullScale * ((preparedFullBounds.top + preparedFullBounds.bottom) / 2))}) scale(${numberText(preparedFullScale)})`
+  const preparedFullFrame = preparedFullBounds
+    ? preparedArtworkFrameTransform({
+        bounds: preparedFullBounds,
+        sourceCenterX: usesPreparedArtwork ? 135 : 180,
+        baseScale: 2,
+        safeInset: 25,
+      })
+    : undefined;
+  const preparedFullTransform = preparedFullFrame
+    ? `translate(${numberText(preparedFullFrame.translateX)} ${numberText(preparedFullFrame.translateY)}) scale(${numberText(preparedFullFrame.scale)})`
     : undefined;
   const preparedBackBounds =
     visualPreparedBack && options.preparedArtwork
-      ? preparedArtworkVerticalBounds(options.preparedArtwork)
+      ? preparedArtworkVerticalBounds(options.preparedArtwork, true)
       : undefined;
   const preparedBackFrame = preparedBackBounds
     ? preparedArtworkFrameTransform({
         bounds: preparedBackBounds,
         sourceCenterX: usesPreparedArtwork ? 135 : 180,
-        baseScale: 0.8,
-        safeInset: 8,
+        baseScale: 2,
+        safeInset: 25,
       })
     : undefined;
   const preparedBackTransform = preparedBackFrame
@@ -330,9 +330,17 @@ export function dressSvgMarkup(
     : undefined;
   const viewBox = visual
     ? visualPreparedUpper
-      ? `${options.preparedArtwork.viewBox.x} ${options.preparedArtwork.viewBox.y} ${options.preparedArtwork.viewBox.width} ${options.preparedArtwork.viewBox.height}`
-      : "0 0 320 427"
+      ? usesPreparedArtwork
+        ? "68 8 224 216"
+        : `${options.preparedArtwork.viewBox.x} ${options.preparedArtwork.viewBox.y} ${options.preparedArtwork.viewBox.width} ${options.preparedArtwork.viewBox.height}`
+      : visualPreparedFull || visualPreparedBack
+        ? "0 0 320 500"
+        : "0 0 320 427"
     : "0 0 360 640";
+  const annotatedScale = view === "upper" ? 1 : 224 / 360;
+  const annotatedPreparedTransform = usesPreparedArtwork
+    ? `translate(${numberText(128 - faceAnchorX * annotatedScale)} ${numberText(72 - preparedArtworkVerticalBounds(options.preparedArtwork, true).top * annotatedScale)}) scale(${numberText(annotatedScale)})`
+    : undefined;
   const figureTransform = visual
     ? visualPreparedUpper
       ? undefined
@@ -343,17 +351,20 @@ export function dressSvgMarkup(
           : view === "upper"
             ? "translate(-42 -130) scale(1.5)"
             : "translate(22 -58) scale(.8)"
-    : view === "upper"
-      ? "translate(0 74) scale(1.18)"
-      : undefined;
+    : usesPreparedArtwork
+      ? annotatedPreparedTransform
+      : view === "upper"
+        ? "translate(0 74) scale(1.18)"
+        : undefined;
   const heading = visual
     ? ""
     : `<text x="24" y="34" font-size="15" font-weight="700" fill="${dressRenderTokens.garmentDropShadow}">드레스 기억 스케치</text><text x="24" y="51" font-size="9" fill="${dressRenderTokens.volume.contourShadow}">${view === "full" ? "전체" : view === "upper" ? "상체" : "뒤태"} · 선택한 기록을 단순화한 그림</text>`;
   const background = visual
-    ? `<rect width="100%" height="100%" fill="${dressRenderTokens.previewSurface}"/>`
+    ? `<rect ${visualPreparedUpper && usesPreparedArtwork ? 'x="68" y="8" width="224" height="216"' : 'width="100%" height="100%"'} fill="${dressRenderTokens.previewSurface}"/>`
     : `<rect width="360" height="640" fill="${dressRenderTokens.previewSurface}"/>`;
-  const mannequin =
-    usesPreparedArtwork || usesPreparedPlaceholder
+  const mannequin = usesPreparedArtwork
+    ? renderPreparedMannequin(options.preparedArtwork, faceAnchorX)
+    : usesPreparedPlaceholder
       ? renderMannequin(undefined, false, {
           includeBody: false,
           includeNeck: false,
@@ -381,8 +392,12 @@ export function dressSvgMarkup(
   const placeholder = usesPreparedPlaceholder
     ? `<g data-layer="prepared-placeholder" data-view="${view}" data-state="${options.preparedArtwork?.status ?? "unavailable"}"><rect x="${placeholderBounds.x + placeholderInset}" y="${placeholderBounds.y + placeholderInset}" width="${Math.max(1, placeholderBounds.width - placeholderInset * 2)}" height="${Math.max(1, placeholderBounds.height - placeholderInset * 2)}" rx="8" fill="none" stroke="${dressRenderTokens.volume.contourShadow}" stroke-opacity=".45" stroke-width="2" stroke-dasharray="7 6"/><path d="M${placeholderBounds.x + placeholderBounds.width / 2} ${placeholderBounds.y + placeholderInset * 2} V${placeholderBounds.y + placeholderBounds.height - placeholderInset * 2}" stroke="${dressRenderTokens.volume.contourShadow}" stroke-opacity=".16" stroke-width="1" stroke-dasharray="3 5"/></g>`
     : "";
+  const registeredFace =
+    usesPreparedArtwork && face
+      ? `<g data-layer="face-registration" transform="${preparedFaceRegistration(options.preparedArtwork, faceAnchorX)}">${face}</g>`
+      : face;
   const figureArtwork = usesPreparedArtwork
-    ? `${prepared.content}${face}`
+    ? `${prepared.content}${registeredFace}`
     : usesPreparedPlaceholder
       ? `${face}${placeholder}`
       : `${face}${garment(dress, view, visual, ids, train)}`;
@@ -399,6 +414,10 @@ export function dressSvgMarkup(
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" role="img" aria-label="${escapeXml(dress.label)} 드레스 기억 스케치" data-renderer="memory-sketch" data-view="${view}"${visual ? ' data-mode="visual"' : ""}${allUnknown(dress, view) ? ' data-state="unknown"' : ""}${preparedState}${preparedReferenceMode}>${defs}${background}${heading}<g data-layer="figure"${figureTransform ? ` transform="${figureTransform}"` : ""}>${mannequin}${figureArtwork}</g>${visual ? "" : renderFields(dress, view)}${supportingAnnotations}</svg>`;
 }
 
+export type DressJpegOptions = DressSvgMarkupOptions & {
+  readonly mode?: DressSketchMode;
+};
+
 export async function dressSvgToJpeg(
   dress: Dress,
   faceDataUrl?: string,
@@ -406,21 +425,25 @@ export async function dressSvgToJpeg(
   width = 720,
   height = 1280,
   view: DressSketchView = "full",
-  options: DressSvgMarkupOptions = {},
+  options: DressJpegOptions = {},
 ): Promise<Uint8Array> {
-  const blob = new Blob(
-    [
-      dressSvgMarkup(
-        dress,
-        faceDataUrl,
-        includeFace,
-        view,
-        "annotated",
-        options,
-      ),
-    ],
-    { type: "image/svg+xml" },
+  const mode = options.mode ?? "annotated";
+  const svg = dressSvgMarkup(
+    dress,
+    faceDataUrl,
+    includeFace,
+    view,
+    mode,
+    options,
   );
+  const rasterSvg =
+    mode === "visual"
+      ? svg.replace(
+          "<svg ",
+          `<svg width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet" `,
+        )
+      : svg;
+  const blob = new Blob([rasterSvg], { type: "image/svg+xml" });
   const url = URL.createObjectURL(blob);
   try {
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {

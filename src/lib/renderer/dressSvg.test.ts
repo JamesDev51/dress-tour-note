@@ -1,3 +1,4 @@
+import { preparedArtworkVerticalBounds } from "./dressSvgSupport";
 import { describe, expect, it, vi } from "vitest";
 import { FABRICS, SILHOUETTES, type Dress } from "../../types/domain";
 import { fabricOptions, optionLabel } from "../dress/options";
@@ -45,11 +46,11 @@ describe("dress memory sketch", () => {
     expect(artwork.status).toBe("ready");
     expect(svg).toContain('data-garment-state="ready"');
     expect(svg).toContain('data-layer="prepared-garment"');
-    expect(svg).toContain('transform="translate(65.5 -5.845) scale(.7)"');
+    expect(svg).toContain('viewBox="0 0 320 500"');
     expect(svg).toContain("garment-bridge-test-");
-    expect(svg).not.toContain('data-layer="mannequin-body"');
-    expect(svg).not.toContain('data-layer="arms"');
-    expect(svg).not.toContain('data-layer="head"');
+    expect(svg).toContain('data-layer="mannequin-body"');
+    expect(svg).toContain('data-layer="arms"');
+    expect(svg).toContain('data-layer="head"');
     expect(svg).not.toContain("<text");
   });
 
@@ -139,127 +140,47 @@ describe("dress memory sketch", () => {
       { preparedArtwork: backPlaceholderArtwork },
     );
 
-    expect(visual).toContain('transform="translate(65.5 -5.845) scale(.7)"');
-    expect(visualPlaceholder).toContain(
-      'transform="translate(37.6 -4.1) scale(.68)"',
-    );
-    expect(visualWithFace).toContain(
-      '<ellipse cx="135" cy="116" rx="28" ry="32"',
-    );
-    expect(visualWithFace).toContain(
-      'transform="translate(65.5 -5.6) scale(.7)"',
-    );
-    expect(visualPlaceholderWithFace).toContain(
-      'transform="translate(37.6 -4.1) scale(.68)"',
-    );
-    expect(visualPlaceholderWithFace).toContain(
-      '<ellipse cx="180" cy="116" rx="28" ry="32"',
-    );
-    expect(visualBack).toContain('transform="translate(52 -37.98) scale(.8)"');
-    expect(visualBackPlaceholder).toContain(
-      'transform="translate(39.9026 -.0065) scale(.6672)"',
-    );
-    expect(visual).not.toContain('transform="translate(36 -58) scale(.7)"');
-    expect(visualPlaceholder).not.toContain(
-      'transform="translate(65.5 -58) scale(.7)"',
-    );
+    for (const svg of [
+      visual,
+      visualPlaceholder,
+      visualWithFace,
+      visualPlaceholderWithFace,
+      visualBack,
+      visualBackPlaceholder,
+    ]) {
+      const matrix = svg.match(
+        /data-layer="figure" transform="translate\(([-.\d]+) ([-.\d]+)\) scale\(([-.\d]+)\)"/,
+      );
+      const center = svg.includes('data-layer="prepared-placeholder"')
+        ? 180
+        : 135;
+      expect(Number(matrix?.[1]) + center * Number(matrix?.[3])).toBeCloseTo(
+        160,
+        1,
+      );
+    }
+    expect(visualWithFace).toContain('data-layer="face-registration"');
+    expect(visualBack).not.toContain('data-layer="face"');
   });
 
-  it("balances full-frame vertical bounds for long, short, and native gowns", () => {
-    const render = (overrides: Partial<Dress>, namespace: string) => {
-      const value = { ...dress, ...overrides };
-      const artwork = resolveGarmentRecipe(value, "full", namespace);
-      return dressSvgMarkup(value, undefined, false, "full", "visual", {
+  it.each(["aLine", "teaLength", "mermaid", "ballGown"] as const)(
+    "fits visible %s head and hem within safe frame margins",
+    (silhouette) => {
+      const value = { ...dress, silhouette };
+      const artwork = resolveGarmentRecipe(value, "full");
+      const svg = dressSvgMarkup(value, undefined, false, "full", "visual", {
         preparedArtwork: artwork,
       });
-    };
-    const figureTransform = (svg: string) =>
-      svg.match(/data-layer="figure" transform="([^"]+)"/)?.[1];
-    const renderBack = (overrides: Partial<Dress>, namespace: string) => {
-      const value = { ...dress, ...overrides };
-      const artwork = resolveGarmentRecipe(value, "back", namespace);
-      return dressSvgMarkup(value, undefined, false, "back", "visual", {
-        preparedArtwork: artwork,
-      });
-    };
-
-    expect(
-      figureTransform(
-        render(
-          {
-            silhouette: "aLine",
-            fabric: "lace",
-            train: "chapel",
-          },
-          "vertical-chapel",
-        ),
-      ),
-    ).toBe("translate(65.5 -31.92) scale(.7)");
-    expect(
-      figureTransform(
-        render(
-          {
-            topStyle: "longSleeve",
-            neckline: "high",
-            silhouette: "aLine",
-            fabric: "mikadoSatin",
-            train: "none",
-          },
-          "vertical-native",
-        ),
-      ),
-    ).toBe("translate(65.5 -5.845) scale(.7)");
-    expect(
-      figureTransform(
-        render(
-          {
-            silhouette: "teaLength",
-            fabric: "mikadoSatin",
-            train: "none",
-          },
-          "vertical-tea",
-        ),
-      ),
-    ).toBe("translate(65.5 30.065) scale(.7)");
-    expect(
-      figureTransform(
-        render(
-          {
-            topStyle: "offShoulder",
-            neckline: "sweetheart",
-            silhouette: "aLine",
-            fabric: "mikadoSatin",
-            train: "none",
-          },
-          "vertical-off-shoulder",
-        ),
-      ),
-    ).toBe("translate(65.5 -13.895) scale(.7)");
-    expect(
-      figureTransform(
-        render(
-          {
-            silhouette: "aLine",
-            fabric: "lace",
-            train: "cathedral",
-          },
-          "vertical-cathedral",
-        ),
-      ),
-    ).toBe("translate(65.5 -43.12) scale(.7)");
-    expect(
-      figureTransform(
-        renderBack(
-          {
-            silhouette: "aLine",
-            fabric: "lace",
-            train: "chapel",
-          },
-          "vertical-back-chapel",
-        ),
-      ),
-    ).toBe("translate(55.6068 -49.6869) scale(.7733)");
-  });
+      const bounds = preparedArtworkVerticalBounds(artwork, true);
+      const matrix = svg.match(
+        /data-layer="figure" transform="translate\(([-.\d]+) ([-.\d]+)\) scale\(([-.\d]+)\)"/,
+      );
+      const scale = Number(matrix?.[3]);
+      const offset = Number(matrix?.[2]);
+      expect(offset + bounds.top * scale).toBeCloseTo(25, 1);
+      expect(offset + bounds.bottom * scale).toBeCloseTo(475, 1);
+    },
+  );
 
   it("preserves the core's tightened upper viewport instead of scaling a torso into the full frame", () => {
     const supported = {
@@ -283,12 +204,12 @@ describe("dress memory sketch", () => {
     expect(svg).toContain(
       'data-layer="prepared-garment" data-view="upper" data-state="ready"',
     );
-    expect(svg).toContain('viewBox="100 66 160 154"');
+    expect(svg).toContain('viewBox="68 8 224 216"');
     expect(svg).toContain('transform="translate(0 0)"');
     expect(svg).not.toContain('transform="translate(-42 -130) scale(1.5)"');
-    expect(svg).not.toContain('data-layer="head"');
-    expect(svg).not.toContain('data-layer="mannequin-body"');
-    expect(svg).not.toContain('data-layer="arms"');
+    expect(svg).toContain('data-layer="head"');
+    expect(svg).toContain('data-layer="mannequin-body"');
+    expect(svg).toContain('data-layer="arms"');
   });
 
   it("keeps a partial prepared fragment honest without adding a generic body", () => {
@@ -304,8 +225,8 @@ describe("dress memory sketch", () => {
     expect(artwork.status).toBe("partial");
     expect(svg).toContain('data-garment-state="partial"');
     expect(svg).toContain('data-layer="prepared-garment"');
-    expect(svg).not.toContain('data-layer="mannequin-body"');
-    expect(svg).not.toContain('data-layer="arms"');
+    expect(svg).toContain('data-layer="mannequin-body"');
+    expect(svg).toContain('data-layer="arms"');
   });
 
   it("shows an explicit unresolved placeholder when prepared artwork has no asset", () => {
@@ -368,7 +289,7 @@ describe("dress memory sketch", () => {
       upper.indexOf('data-layer="face"'),
     );
     expect(upper).toContain(face);
-    expect(upper).not.toContain('data-layer="head"');
+    expect(upper).toContain('data-layer="head"');
     expect(back).not.toContain(face);
     expect(back).not.toContain('data-layer="face"');
   });
@@ -397,9 +318,9 @@ describe("dress memory sketch", () => {
   });
 
   it.each([
-    ["full", ["상의", "네크라인", "실루엣", "허리선", "트레인", "색상"], true],
-    ["upper", ["상의", "네크라인", "허리선", "색상"], false],
-    ["back", ["등 디자인", "실루엣", "트레인", "색상"], true],
+    ["full", ["상의", "네크라인", "실루엣", "색상"], true],
+    ["upper", ["상의", "네크라인", "색상"], false],
+    ["back", ["등 디자인", "실루엣", "색상"], true],
   ] as const)(
     "renders the requested %s view and only its field set",
     (view, expectedFields, showsAnnotations) => {
@@ -1084,84 +1005,104 @@ describe("dress memory sketch", () => {
     },
   );
 
-  it("passes the canonical SVG into the JPEG encoder and returns its bytes", async () => {
-    let svgBlob: Blob | undefined;
-    Object.defineProperty(URL, "createObjectURL", {
-      configurable: true,
-      value: (blob: Blob) => {
-        svgBlob = blob;
-        return "blob:memory-sketch";
-      },
-    });
-    Object.defineProperty(URL, "revokeObjectURL", {
-      configurable: true,
-      value: vi.fn(),
-    });
-    vi.stubGlobal(
-      "Image",
-      class {
-        onload: (() => void) | null = null;
-        onerror: (() => void) | null = null;
-        set src(_value: string) {
-          queueMicrotask(() => this.onload?.());
-        }
-      },
-    );
-    Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
-      configurable: true,
-      value: () => ({
-        fillStyle: "",
-        fillRect: vi.fn(),
-        drawImage: vi.fn(),
-      }),
-    });
-    Object.defineProperty(HTMLCanvasElement.prototype, "toBlob", {
-      configurable: true,
-      value: (callback: BlobCallback) =>
-        callback(
-          new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0xd9])], {
-            type: "image/jpeg",
-          }),
-        ),
-    });
+  it.each([undefined, "visual"] as const)(
+    "encodes %s JPEG mode with safe face exclusion and preserved viewport aspect",
+    async (mode) => {
+      let svgBlob: Blob | undefined;
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        value: (blob: Blob) => {
+          svgBlob = blob;
+          return "blob:memory-sketch";
+        },
+      });
+      Object.defineProperty(URL, "revokeObjectURL", {
+        configurable: true,
+        value: vi.fn(),
+      });
+      vi.stubGlobal(
+        "Image",
+        class {
+          onload: (() => void) | null = null;
+          onerror: (() => void) | null = null;
+          set src(_value: string) {
+            queueMicrotask(() => this.onload?.());
+          }
+        },
+      );
+      Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+        configurable: true,
+        value: () => ({
+          fillStyle: "",
+          fillRect: vi.fn(),
+          drawImage: vi.fn(),
+        }),
+      });
+      Object.defineProperty(HTMLCanvasElement.prototype, "toBlob", {
+        configurable: true,
+        value: (callback: BlobCallback) =>
+          callback(
+            new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0xd9])], {
+              type: "image/jpeg",
+            }),
+          ),
+      });
 
-    const privateFace = "data:image/webp;base64,private-face";
-    const jpeg = await dressSvgToJpeg(
-      dress,
-      privateFace,
-      true,
-      600,
-      1067,
-      "back",
-    );
+      const privateFace = "data:image/webp;base64,private-face";
+      const jpeg = await dressSvgToJpeg(
+        dress,
+        privateFace,
+        true,
+        600,
+        1067,
+        "back",
+        { mode },
+      );
 
-    expect([...jpeg]).toEqual([0xff, 0xd8, 0xff, 0xd9]);
-    const capturedSvgBlob = svgBlob;
-    if (!capturedSvgBlob)
-      throw new Error("SVG blob was not passed to the encoder");
-    const svgSource = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () =>
-        resolve(typeof reader.result === "string" ? reader.result : "");
-      reader.onerror = () => reject(reader.error);
-      reader.readAsText(capturedSvgBlob);
-    });
-    expect(svgSource).toBe(dressSvgMarkup(dress, privateFace, true, "back"));
-    expect(svgSource).not.toContain(privateFace);
-    expect(svgSource).not.toContain('data-layer="face"');
+      expect([...jpeg]).toEqual([0xff, 0xd8, 0xff, 0xd9]);
+      const capturedSvgBlob = svgBlob;
+      if (!capturedSvgBlob)
+        throw new Error("SVG blob was not passed to the encoder");
+      const svgSource = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () =>
+          resolve(typeof reader.result === "string" ? reader.result : "");
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(capturedSvgBlob);
+      });
+      if (mode === "visual") {
+        const root = new DOMParser().parseFromString(
+          svgSource,
+          "image/svg+xml",
+        ).documentElement;
+        expect(root.getAttribute("width")).toBe("600");
+        expect(root.getAttribute("height")).toBe("1067");
+        expect(root.getAttribute("preserveAspectRatio")).toBe("xMidYMid meet");
+        expect(root.getAttribute("viewBox")).toBe("0 0 320 427");
+        expect(root.querySelector("text")).toBeNull();
+      } else {
+        expect(svgSource).toBe(
+          dressSvgMarkup(dress, privateFace, true, "back"),
+        );
+      }
+      expect(svgSource).not.toContain(privateFace);
+      expect(svgSource).not.toContain('data-layer="face"');
 
-    await dressSvgToJpeg(dress, privateFace, false, 600, 1067, "full");
-    const faceExcludedSvgBlob = svgBlob;
-    if (!faceExcludedSvgBlob)
-      throw new Error("Face-excluded SVG blob was not passed to the encoder");
-    const faceExcludedSvg = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () =>
-        resolve(typeof reader.result === "string" ? reader.result : "");
-      reader.onerror = () => reject(reader.error);
-      reader.readAsText(faceExcludedSvgBlob);
-    });
-    expect(faceExcludedSvg).not.toContain(privateFace);
-    expect(faceExcludedSvg).not.toContain('data-layer="face"');
-  });
+      await dressSvgToJpeg(dress, privateFace, false, 600, 1067, "full", {
+        mode,
+      });
+      const faceExcludedSvgBlob = svgBlob;
+      if (!faceExcludedSvgBlob)
+        throw new Error("Face-excluded SVG blob was not passed to the encoder");
+      const faceExcludedSvg = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () =>
+          resolve(typeof reader.result === "string" ? reader.result : "");
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(faceExcludedSvgBlob);
+      });
+      expect(faceExcludedSvg).not.toContain(privateFace);
+      expect(faceExcludedSvg).not.toContain('data-layer="face"');
+    },
+  );
 });

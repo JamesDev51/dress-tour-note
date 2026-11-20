@@ -9,8 +9,11 @@ The mobile release is ready only when every item below passes on the final pull 
 - Saved cards and detail show explicit recall cues without inventing text from missing data. Full detail retains all notes and options.
 - Comparison separates observed differences, matching features, and missing information; both views switch together and stay face-free.
 - Chromium and WebKit recall journeys pass; engine testing is not physical-device testing.
-- The four-step core flow records shoulder/top, neckline, silhouette, and candidate decision; every step persists across back/next/reload.
-- The optional detail editor exposes all nine categories and persists closest-choice notes without silently replacing unsupported values.
+- The five-step core flow records shoulder/top, neckline, silhouette, fabric, and candidate decision; every step persists across back/next/reload.
+- The additional dress-choice editor exposes only color, back style and details. Core fields and their closest-choice notes are edited through core recording.
+- A single Plus-icon `상세 기록 추가하기` button sits below the completed preview, before supplementary examples and notes.
+- Waistline/train are absent from current inputs/read summaries/comparison/PDF labels while raw portable-v1 values remain recoverable.
+- Full and back prepared views fit a clothed mannequin in a 320×500 frame, retaining head/hem and making the gown visibly larger.
 - Full, upper, and back previews use prepared local garment artwork in the canonical SVG frame. Partial/unavailable results are labelled, unknown values remain visibly unrecorded, and the record-sketch fallback remains usable.
 - Garment assets load offline; PDF/JPEG embeds the selected assets without changing portable v1 JSON.
 - `기록 완료하고 보기` waits for the last input and opens the saved record without adding another dress.

@@ -1,13 +1,28 @@
 # 드레스노트 Design System
 
+## User feedback — 2026-09-16 (current contract)
+
+These explicit user corrections supersede older conflicting recording and preview rules below.
+
+- Core recording has five steps: shoulder/top → neckline → silhouette → fabric → candidate decision and recall notes. Fabric uses the existing local option images and supports an explicit unknown choice, autosave, back/next, and reload.
+- Additional dress-choice sections contain only color, back style, and details. Core choices are edited through the core flow; existing memo and optional local face controls remain available as supporting record tools.
+- Waistline and train are retired from current input, read summaries, comparison, and visual PDF labels. Keep their raw persisted and portable-v1 values and legacy option assets for backward compatibility. They are not missing required fields in preview captions; internal neutral rendering parameters must not be represented as user-recorded facts.
+- Completed dresses are shown worn by a coherent neutral ivory mannequin with head/neck/shoulders/arms, grounded proportions, and garment occlusion. Preserve the depth of the existing garment artwork. No remote upload, runtime AI service, or body-measurement claim is added.
+- Full/front and back framing fits the visible mannequin and garment rather than the empty source canvas. Use a 320×500 logical full/back frame (16:25 aspect) for prepared completed views, and target 85–94% vertical figure occupancy, preserve head and garment hem, avoid enlarged empty padding, and verify both320px and390px. Upper views still show the relevant upper body without clipping selected sleeves.
+- The primary saved dress image spans the available content width. Immediately below it place one clear native button with a Lucide Plus icon and the exact text **상세 기록 추가하기**. Keep it outside the SVG, with a44px or larger target, and above supplementary example images and notes.
+- Replace entry-point wording 상세 기록 with **상세 기록 추가하기** consistently. Back/close controls retain clear return wording. Avoid a second identical detail-entry button between the finished image and its CTA.
+- PDF image panels request the same visual garment/mannequin composition without duplicate tiny in-image labels; full record text remains outside the image. Raster output explicitly preserves aspect ratio within the existing PDF panels.
+- Face bytes remain explicit opt-in for eligible full/upper views and always excluded from back/compact compare/face-off export. Face alignment follows the mannequin head while preserving saved relative transforms and portable-v1 data.
+- Keep the existing Pretendard/blush/ivory palette, token radii, and mobile-only scope. Regression checks cover immediate navigation, legacy import, current5-step records, three additional option categories, plus CTA placement, larger framing and coherent mannequin layering.
+
 ## Recall experience — 2026-09-11
 
 이번 사용자 요청은 기록을 다시 보고 어떤 드레스였는지 떠올리고 선택할 수 있게 하는 것이다. 아래 규칙은 이전 문서의 작은 스케치·분류 우선 목록·분류 순서 비교 규칙을 대체한다. 사진처럼 재현한다는 약속은 하지 않으며 기록하지 않은 특징을 추정하지 않는다.
 
-- 기록은 네 단계로 유지한다. 마지막 단계에서 `기억할 특징`(80자), `좋았던 점`(160자), `아쉬운 점`(160자)을 선택적으로 남긴다. 소재·디테일 전체 목록을 거쳐야 이유를 적을 수 있는 구조를 피한다. 입은 사람의 느낌은 당사자에게 물어서 기록하도록 안내한다.
+- 기록은 소재를 포함한 다섯 단계로 진행한다. 마지막 단계에서 `기억할 특징`(80자), `좋았던 점`(160자), `아쉬운 점`(160자)을 선택적으로 남긴다. 소재·디테일 전체 목록을 거쳐야 이유를 적을 수 있는 구조를 피한다. 입은 사람의 느낌은 당사자에게 물어서 기록하도록 안내한다.
 - 다시 보는 목록은 기억할 특징을 첫 제목으로 보여 주고, 없으면 기존 드레스 이름을 사용한다. 업체·착용 순서/드레스 이름은 함께 남겨 기록의 출처를 잃지 않는다. 문장 생성이나 메모를 임의로 별명으로 바꾸는 것은 금지한다.
 - 저장한 드레스를 열면 큰 그림, 기억할 특징, 이유, 선택한 실제 옵션 예시, 전체 기록을 확인한다. 수정 동작은 명시적이며 새 드레스는 빠른 입력으로 시작한다. 이전 v1 기록도 모든 원래 입력값에 접근할 수 있어야 한다.
-- 핵심 기록 4단계에서는 `기록 완료하고 보기`가 현재 드레스 저장·보기 동작이고, `다음 드레스 기록`은 새 빈 드레스를 추가하는 별도 이어쓰기 동작이다. 완료 동작은 마지막 메모 입력까지 기다리며 새 드레스를 만들지 않는다.
+- 핵심 기록 5단계에서는 `기록 완료하고 보기`가 현재 드레스 저장·보기 동작이고, `다음 드레스 기록`은 새 빈 드레스를 추가하는 별도 이어쓰기 동작이다. 완료 동작은 마지막 메모 입력까지 기다리며 새 드레스를 만들지 않는다.
 - 샵·결과 카드의 `기록 보기`는 `?view=record` UI 경로로 기존 기록을 먼저 보여 준다. `coreRecordedAt`이 없는 v1 기록도 완료 상태로 추정하거나 저장값을 바꾸지 않고, 기록 보기와 핵심 기록 수정 동작을 분리한다.
 - 브라우저의 작은 스케치 안에는 글자를 넣지 않는다. 동일한 SVG 형태를 넓게 보여 주고 제목·기록 상태·설명은 읽을 수 있는 HTML로 밖에 둔다. PDF의 기존 설명형 렌더링과 face 제외 계약은 유지한다.
 - 얼굴을 명시적으로 포함하는 상체 스케치는 기존 기준점 `(135, 116)`과 clip 타원 `rx=28, ry=32`를 사용하며, 중립 마네킹 머리의 반지름은 `31`이다. 얼굴 변환값과 뒤태·제외 출력의 얼굴 없음 규칙은 그대로 보존한다.
@@ -56,7 +71,7 @@
 
 기존 CSS 토큰을 정식 채택한다: canvas `#eef0f2`, shell `#ffffff`, artwork-surface `#faf7f5`, preview-surface `#fbf8f6`, ink `#211d1c`, ink-muted `#6f6662`, accent-soft `#fff2ee`, accent `#b96e63`, accent-copy `#8b5750`, error `#b91c1c`, error-surface `#fef2f2`. 카드 24px, preview 28px, control 16px radius; 간격 4/8/12/16/20/24/32px. 이미지 안쪽은 외곽 radius에서 padding을 뺀 값을 사용한다. 그림 면은 기존 preview-surface, 선택 이유 면은 accent-soft를 쓰며 의미 없는 장식이나 추가 팔레트를 만들지 않는다.
 
-모바일 스케치는 정보량에 따라 4:5 또는 3:4 영역을 사용하고, 전체 드레스 끝단이나 트레인을 자르지 않는다. 확대해도 unknown 표시와 face 정책은 동일하다. 긴 한국어는 단어를 보존하고, 매우 긴 단일 문자열만 안전하게 줄바꿈한다.
+준비된 전체·뒤태 미리보기는 16:25 영역에 마네킹과 드레스를 크게 맞추며, 상체와 기존 스케치 fallback은 해당 뷰의 비율을 유지한다. 머리와 드레스 끝단을 자르지 않는다. 확대해도 unknown 표시와 face 정책은 동일하다. 긴 한국어는 단어를 보존하고, 매우 긴 단일 문자열만 안전하게 줄바꿈한다.
 
 ## Supersession
 
@@ -66,17 +81,17 @@
 
 ## Five-component topology
 
-| Component                | Outcome                                     | Boundary and states                                                                                                                           |
-| ------------------------ | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `catalog`                | 선택지를 눈으로 구별한다                    | local image → official Korean term → plain one-line description → common aliases. loading, loaded, error fallback, selected, disabled, focus. |
-| `fast-record`            | 네 핵심 선택을 한 mounted flow에서 끝낸다   | 아래 4-step state machine만 core path. back/next, saving, write-error/retry, completion.                                                      |
-| `memory-sketch`          | 기록을 과장 없이 도형으로 보여 준다         | full/upper/back, unknown, unsupported annotation, no-face/face-enabled.                                                                       |
-| `details-and-exceptions` | 선택 밖의 차이와 detail을 선택적으로 남긴다 | collapsed, expanded, empty, edited, validation-error; core path를 막지 않는다.                                                                |
-| `decision-and-backup`    | 이후 비교·회고·PDF에서 결정을 찾는다        | shop, review, compare, export, import/privacy에서 같은 formatter와 local-only v1 원칙을 사용한다.                                             |
+| Component                | Outcome                                                   | Boundary and states                                                                                                                           |
+| ------------------------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalog`                | 선택지를 눈으로 구별한다                                  | local image → official Korean term → plain one-line description → common aliases. loading, loaded, error fallback, selected, disabled, focus. |
+| `fast-record`            | 소재를 포함한 다섯 핵심 선택을 한 mounted flow에서 끝낸다 | 아래 5-step state machine만 core path. back/next, saving, write-error/retry, completion.                                                      |
+| `memory-sketch`          | 기록을 과장 없이 도형으로 보여 준다                       | full/upper/back, unknown, unsupported annotation, no-face/face-enabled.                                                                       |
+| `details-and-exceptions` | 선택 밖의 차이와 detail을 선택적으로 남긴다               | collapsed, expanded, empty, edited, validation-error; core path를 막지 않는다.                                                                |
+| `decision-and-backup`    | 이후 비교·회고·PDF에서 결정을 찾는다                      | shop, review, compare, export, import/privacy에서 같은 formatter와 local-only v1 원칙을 사용한다.                                             |
 
 별도 companion identity, account, sync, analytics, remote image/face upload, 새 route는 만들지 않는다.
 
-## Four-step core state machine
+## Five-step core state machine
 
 한 editor route 안에서 한 번에 하나의 step만 mount한다. 각 step의 `기억 안 남`은 유효한 명시 선택이다.
 
@@ -85,14 +100,15 @@
 | Step 1 — 어깨/상의 | top/shoulder                         | 새 dress에서 시작하고 선택 후 Step 2. saving 중 중복 tap을 막고 실패 시 선택·step을 유지해 재시도한다.                 |
 | Step 2 — 네크라인  | neckline                             | Step 1 다음, back은 Step 1. Step 1 값과 독립 저장한다.                                                                 |
 | Step 3 — 실루엣    | silhouette                           | Step 2 다음, back은 Step 2. unknown을 known form으로 추측하지 않는다.                                                  |
-| Step 4 — 후보 결정 | `isFavorite`, 선택 rating/첫인상 tag | Step 3 다음, back은 Step 3. 후보 여부만 core; `다음 드레스 기록`은 모든 write를 await하고 새 dress Step 1로 reset한다. |
+| Step 4 — 소재      | fabric                               | Step 3 다음, back은 Step 3. 소재 선택과 unknown을 독립 저장한다.                                                       |
+| Step 5 — 후보 결정 | `isFavorite`, 선택 rating/첫인상 tag | Step 4 다음, back은 Step 4. 후보 여부만 core; `다음 드레스 기록`은 모든 write를 await하고 새 dress Step 1로 reset한다. |
 
-정확히 네 결정은 top/shoulder → neckline → silhouette → candidate decision이다. fabric, color, waistline, back style, train, details, comfort/body-effect, memo, face는 `상세 기록`에만 둔다.
+핵심 결정은 top/shoulder → neckline → silhouette → fabric → candidate decision이다. 추가 드레스 선택지는 color, back style, details이며 `상세 기록 추가하기`에서 연다. waistline과 train은 새 입력에서 제외한다.
 
 ## Card-grid and content hierarchy
 
-- top, neckline, silhouette, fabric, waistline, back style의 구조·소재 card는 320px와 390px에서 **2 columns**만 허용한다.
-- color, train, compact detail multi-select처럼 짧은 label의 단순 attribute만 조건부 3 columns/chips를 허용한다. 320px에서 label 또는 44px target이 맞지 않으면 2 columns/stack으로 fallback한다.
+- top, neckline, silhouette, fabric, back style의 구조·소재 card는 320px와 390px에서 **2 columns**만 허용한다.
+- color, compact detail multi-select처럼 짧은 label의 단순 attribute만 조건부 3 columns/chips를 허용한다. 320px에서 label 또는 44px target이 맞지 않으면 2 columns/stack으로 fallback한다.
 - known card는 반드시 **representative local image → official Korean term → plain one-line description → genuinely common aliases** 순서다. alias는 secondary metadata이며 공식 용어를 대체하지 않는다.
 - selected는 blush tint/border와 text check, focus는 별도 focus ring으로 보인다. image error에도 공식 용어, 설명, alias, target, selection은 남는다.
 
@@ -214,7 +230,7 @@ The visible label is **드레스 기억 스케치** for the deterministic fallba
 
 | Surface / export                        | Face allowed          | Required behavior                                                       |
 | --------------------------------------- | --------------------- | ----------------------------------------------------------------------- |
-| Fast four-step record                   | No                    | Never blocks or appears in the 30-second core path.                     |
+| Fast five-step record                   | No                    | Never blocks or appears in the 30-second core path.                     |
 | Optional detail and full/upper sketch   | Explicit enable only  | Browser-local source; clear include/exclude state; no default portrait. |
 | Compact shop/review/compare cards       | No                    | Full memory sketch and decision metadata without portrait.              |
 | Back sketch                             | No                    | Never render, reference, transform, or infer face.                      |

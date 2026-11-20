@@ -1,5 +1,6 @@
 import type { Dress, DressOptionCategory } from "../../types/domain";
 import {
+  ACTIVE_DRESS_CATEGORIES,
   backStyleOptions,
   colorOptions,
   detailOptions,
@@ -8,21 +9,7 @@ import {
   optionLabel,
   silhouetteOptions,
   topStyleOptions,
-  trainOptions,
-  waistlineOptions,
 } from "../dress/options";
-
-const exceptionCategories = [
-  "top",
-  "neckline",
-  "silhouette",
-  "fabric",
-  "color",
-  "waistline",
-  "backStyle",
-  "train",
-  "details",
-] as const satisfies readonly DressOptionCategory[];
 
 const categoryLabels: Readonly<Record<DressOptionCategory, string>> = {
   top: "상의 디자인",
@@ -72,16 +59,8 @@ export function dressTermBlocks(dress: Dress): readonly TextBlock[] {
       text: optionLabel(colorOptions, dress.color),
     },
     {
-      label: categoryLabels.waistline,
-      text: optionLabel(waistlineOptions, dress.waistline),
-    },
-    {
       label: categoryLabels.backStyle,
       text: optionLabel(backStyleOptions, dress.backStyle),
-    },
-    {
-      label: categoryLabels.train,
-      text: optionLabel(trainOptions, dress.train),
     },
     {
       label: categoryLabels.details,
@@ -95,7 +74,7 @@ export function dressTermBlocks(dress: Dress): readonly TextBlock[] {
 }
 
 export function exceptionBlocks(dress: Dress): readonly TextBlock[] {
-  return exceptionCategories.flatMap((category) => {
+  return ACTIVE_DRESS_CATEGORIES.flatMap((category) => {
     const note = dress.customOptions?.[category];
     return note
       ? [

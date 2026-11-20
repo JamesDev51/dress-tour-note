@@ -1,7 +1,10 @@
+import { Plus } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FastRecordOptions } from "./FastRecordOptions";
 import type {
   Dress,
+  DressOptionCategory,
+  Fabric,
   Neckline,
   QuickTag,
   Silhouette,
@@ -17,15 +20,16 @@ type CoreDress = Pick<
   | "topStyle"
   | "neckline"
   | "silhouette"
+  | "fabric"
   | "isFavorite"
   | "coreRecordedAt"
   | "rating"
   | "quickTags"
   | "customOptions"
 >;
-type Step = 1 | 2 | 3 | 4;
-const PREVIOUS_STEP = { 1: 1, 2: 1, 3: 2, 4: 3 } as const;
-const NEXT_STEP = { 1: 2, 2: 3, 3: 4, 4: 4 } as const;
+type Step = 1 | 2 | 3 | 4 | 5;
+const PREVIOUS_STEP = { 1: 1, 2: 1, 3: 2, 4: 3, 5: 4 } as const;
+const NEXT_STEP = { 1: 2, 2: 3, 3: 4, 4: 5, 5: 5 } as const;
 
 function hasRecordedCore(dress: CoreDress) {
   return dress.coreRecordedAt !== undefined;
@@ -62,6 +66,7 @@ export function FastRecordFlow({
   const [topStyle, setTopStyle] = useState<TopStyle>(dress.topStyle);
   const [neckline, setNeckline] = useState<Neckline>(dress.neckline);
   const [silhouette, setSilhouette] = useState<Silhouette>(dress.silhouette);
+  const [fabric, setFabric] = useState<Fabric>(dress.fabric);
   const [isFavorite, setIsFavorite] = useState(dress.isFavorite);
   const [rating, setRating] = useState(dress.rating);
   const [quickTags, setQuickTags] = useState<readonly QuickTag[]>(
@@ -71,10 +76,12 @@ export function FastRecordFlow({
     recorded || dress.topStyle !== "unknown",
     recorded || dress.neckline !== "unknown",
     recorded || dress.silhouette !== "unknown",
+    recorded || dress.fabric !== "unknown",
     recorded,
   ]);
   const [saving, setSaving] = useState(false);
   const busyRef = useRef(false);
+  const customWrite = useRef<Promise<boolean> | undefined>(undefined);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -83,6 +90,7 @@ export function FastRecordFlow({
     setTopStyle(dress.topStyle);
     setNeckline(dress.neckline);
     setSilhouette(dress.silhouette);
+    setFabric(dress.fabric);
     setIsFavorite(dress.isFavorite);
     setRating(dress.rating);
     setQuickTags(dress.quickTags);
@@ -91,10 +99,12 @@ export function FastRecordFlow({
       nextRecorded || dress.topStyle !== "unknown",
       nextRecorded || dress.neckline !== "unknown",
       nextRecorded || dress.silhouette !== "unknown",
+      nextRecorded || dress.fabric !== "unknown",
       nextRecorded,
     ]);
     setSaving(false);
     busyRef.current = false;
+    customWrite.current = undefined;
     setError("");
   }, [dress.id, initialView]);
 
@@ -102,6 +112,7 @@ export function FastRecordFlow({
     setTopStyle(dress.topStyle);
     setNeckline(dress.neckline);
     setSilhouette(dress.silhouette);
+    setFabric(dress.fabric);
     setIsFavorite(dress.isFavorite);
     setRating(dress.rating);
     setQuickTags(dress.quickTags);
@@ -110,10 +121,12 @@ export function FastRecordFlow({
       current[0] || nextRecorded || dress.topStyle !== "unknown",
       current[1] || nextRecorded || dress.neckline !== "unknown",
       current[2] || nextRecorded || dress.silhouette !== "unknown",
-      current[3] || nextRecorded,
+      current[3] || nextRecorded || dress.fabric !== "unknown",
+      current[4] || nextRecorded,
     ]);
   }, [
     dress.coreRecordedAt,
+    dress.fabric,
     dress.isFavorite,
     dress.neckline,
     dress.quickTags,
@@ -152,6 +165,61 @@ export function FastRecordFlow({
   };
   const pickSilhouette = async (value: Silhouette) => {
     if (await persist({ silhouette: value }, true)) setSilhouette(value);
+  };
+  const pickFabric = async (value: Fabric) => {
+    if (await persist({ fabric: value }, true)) setFabric(value);
+  };
+  const clearAndPick = async (
+    category: DressOptionCategory,
+    patch: Partial<Dress>,
+  ) => {
+    if (
+      await persist(
+        { ...patch, customOptions: { [category]: undefined } },
+        true,
+      )
+    ) {
+      if (patch.topStyle) setTopStyle(patch.topStyle);
+      if (patch.neckline) setNeckline(patch.neckline);
+      if (patch.silhouette) setSilhouette(patch.silhouette);
+      if (patch.fabric) setFabric(patch.fabric);
+    }
+  };
+  const commitCustom = (category: DressOptionCategory, value: string) => {
+    setError("");
+    const write = onPatch({
+      customOptions: { [category]: value || undefined },
+    }).then(
+      () => {
+        if (customWrite.current === write) customWrite.current = undefined;
+        return true;
+      },
+      () => {
+        setError("저장하지 못했어요. 다시 시도해 주세요.");
+        return false;
+      },
+    );
+    customWrite.current = write;
+  };
+  const changeStep = async (next: Step) => {
+    if (busyRef.current) return;
+    if (!customWrite.current) {
+      setStep(next);
+      return;
+    }
+    busyRef.current = true;
+    setSaving(true);
+    try {
+      let pending = customWrite.current;
+      while (pending) {
+        if (!(await pending)) return;
+        pending = customWrite.current;
+      }
+      setStep(next);
+    } finally {
+      busyRef.current = false;
+      setSaving(false);
+    }
   };
   const pickCandidate = async (value: boolean) => {
     if (
@@ -207,6 +275,7 @@ export function FastRecordFlow({
           topStyle,
           neckline,
           silhouette,
+          fabric,
           isFavorite,
           customOptions: dress.customOptions,
         }}
@@ -217,10 +286,10 @@ export function FastRecordFlow({
   }
 
   return (
-    <section className={`px-5 pt-4 ${step === 4 ? "pb-48" : "pb-32"}`}>
+    <section className={`px-5 pt-4 ${step === 5 ? "pb-48" : "pb-32"}`}>
       <h1 className="sr-only">드레스 핵심 기록</h1>
       <div className="flex items-center justify-between text-sm font-bold">
-        <span>{step}/4</span>
+        <span>{step}/5</span>
         <span className="text-ink-muted">빠른 기록</span>
       </div>
       <div
@@ -229,17 +298,19 @@ export function FastRecordFlow({
       >
         <div
           className="h-full bg-accent transition-[width] motion-reduce:transition-none"
-          style={{ width: `${step * 25}%` }}
+          style={{ width: `${step * 20}%` }}
         />
       </div>
 
-      {step !== 4 && (
+      {step !== 5 && (
         <FastRecordOptions
+          key={step}
           step={step}
           values={{
             topStyle,
             neckline,
             silhouette,
+            fabric,
             customOptions: dress.customOptions,
           }}
           acknowledged={acknowledged[step - 1] === true}
@@ -247,23 +318,27 @@ export function FastRecordFlow({
           onTop={(value) => void pickTop(value)}
           onNeckline={(value) => void pickNeckline(value)}
           onSilhouette={(value) => void pickSilhouette(value)}
+          onFabric={(value) => void pickFabric(value)}
+          onCustomCommit={commitCustom}
+          onClearAndSelect={clearAndPick}
         />
       )}
-      {showDetailsAction && step === 4 && acknowledged[3] && (
+      {step === 5 && corePreview}
+      {showDetailsAction && step === 5 && acknowledged[4] && (
         <button
           type="button"
-          className="mt-5 min-h-12 w-full rounded-control border border-accent/30 bg-accent-soft px-4 font-bold text-accent-copy"
+          className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-control border border-accent/30 bg-accent-soft px-4 font-bold text-accent-copy"
           disabled={saving}
           onClick={onOpenDetails}
         >
-          상세 기록
+          <Plus size={20} aria-hidden="true" />
+          상세 기록 추가하기
         </button>
       )}
 
-      {step === 4 && corePreview}
-      {step === 4 && (
+      {step === 5 && (
         <FastRecordDecisionStep
-          acknowledged={acknowledged[3]}
+          acknowledged={acknowledged[4]}
           isFavorite={isFavorite}
           rating={rating}
           quickTags={quickTags}
@@ -274,7 +349,7 @@ export function FastRecordFlow({
         />
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <fieldset disabled={saving} className="min-w-0">
           {recallEditor}
         </fieldset>
@@ -292,11 +367,11 @@ export function FastRecordFlow({
         step={step}
         canAdvance={acknowledged[step - 1] === true}
         saving={saving}
-        onPrevious={() => setStep((current) => PREVIOUS_STEP[current])}
+        onPrevious={() => void changeStep(PREVIOUS_STEP[step])}
         onFinishAndView={() => void finishAndView()}
         onNext={() => {
-          if (step === 4) void finish();
-          else setStep((current) => NEXT_STEP[current]);
+          if (step === 5) void finish();
+          else void changeStep(NEXT_STEP[step]);
         }}
       />
     </section>

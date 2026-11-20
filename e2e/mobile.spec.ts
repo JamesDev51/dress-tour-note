@@ -110,13 +110,12 @@ async function createTour(
     top: /오프숄더/,
     neckline: /하트형/,
     silhouette: /A라인/,
+    fabric: /레이스/,
     candidate: "후보로 남기기",
   });
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
-  await page.getByRole("button", { name: /레이스/ }).click();
   await page.getByRole("button", { name: /아이보리/ }).click();
   await page.getByLabel("특이사항").fill("E2E 메모: 허리 라인이 가장 좋았음");
   await page.getByLabel("특이사항").blur();
@@ -140,7 +139,7 @@ async function createTour(
     await page
       .getByRole("button", { name: "핵심 기록으로", exact: true })
       .click();
-    await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+    await expect(page.getByText("5/5", { exact: true })).toBeVisible();
     await page
       .getByRole("button", { name: "다음 드레스 기록", exact: true })
       .click();
@@ -148,13 +147,12 @@ async function createTour(
       top: /스트랩리스|끈 없음/,
       neckline: /스트레이트 네크라인|일자 네크라인/,
       silhouette: /머메이드|무릎 부근부터/,
+      fabric: /미카도 새틴/,
       candidate: "후보 아님",
     });
     await page
-      .locator(".core-details-nav")
-      .getByRole("button", { name: "상세 기록", exact: true })
+      .getByRole("button", { name: "상세 기록 추가하기", exact: true })
       .click();
-    await page.getByRole("button", { name: /미카도 새틴|새틴/ }).click();
     await page.getByRole("button", { name: /퓨어 화이트|새하얀/ }).click();
     await page.getByLabel("특이사항").fill("E2E 두 번째 드레스");
     await page.getByLabel("특이사항").blur();
@@ -184,6 +182,7 @@ async function recordCore(
     top: RegExp | string;
     neckline: RegExp | string;
     silhouette: RegExp | string;
+    fabric?: RegExp | string;
     candidate: "후보로 남기기" | "후보 아님";
   },
 ) {
@@ -192,6 +191,8 @@ async function recordCore(
   await selectPersistedOption(page, choices.neckline);
   await advanceCore(page);
   await selectPersistedOption(page, choices.silhouette);
+  await advanceCore(page);
+  await selectPersistedOption(page, choices.fabric ?? /레이스/);
   await advanceCore(page);
   await selectPersistedOption(page, choices.candidate);
 }
@@ -331,8 +332,7 @@ test("mobile core flow autosaves, reloads and compares two dresses", async ({
   await createTour(page, { twoDresses: true });
   await page.reload();
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
   await expect(page.getByLabel("특이사항")).toHaveValue("E2E 두 번째 드레스");
   await editorToReview(page);
@@ -389,8 +389,7 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
     .first()
     .click();
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
   await page
     .getByRole("button", { name: "얼굴 미리보기 켜기", exact: true })
@@ -529,16 +528,21 @@ test("direct editor URL survives a full reload", async ({ page }) => {
   const url = page.url();
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
   await expect(page.getByLabel("특이사항")).toHaveValue(
     "E2E 메모: 허리 라인이 가장 좋았음",
   );
   await page.reload({ waitUntil: "domcontentloaded" });
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "핵심 기록으로 돌아가기", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "핵심 기록 수정", exact: true })
     .click();
   await expect(page.getByRole("button", { name: /오프숄더/ })).toHaveAttribute(
     "aria-pressed",

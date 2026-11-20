@@ -99,7 +99,7 @@ describe("RecallDressDetail", () => {
     );
 
     const viewer = screen.getByLabelText("드레스 보기");
-    expect(within(viewer).getAllByRole("button")).toHaveLength(4);
+    expect(within(viewer).getAllByRole("button")).toHaveLength(5);
     await waitFor(() =>
       expect(
         container.querySelector('svg[data-renderer="memory-sketch"]'),
@@ -141,7 +141,7 @@ describe("RecallDressDetail", () => {
     ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
-    fireEvent.click(screen.getByRole("button", { name: "상세 기록" }));
+    fireEvent.click(screen.getByRole("button", { name: "상세 기록 추가하기" }));
     expect(onEditCore).toHaveBeenCalledOnce();
     expect(onOpenDetails).toHaveBeenCalledOnce();
   });
@@ -165,7 +165,7 @@ describe("RecallDressDetail", () => {
     expect(
       screen.getByText(/뒤태를 아직 기록하지 않았어요/),
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "뒤태 기록하기" }));
+    fireEvent.click(screen.getByRole("button", { name: "상세 기록 추가하기" }));
     expect(onOpenDetails).toHaveBeenCalledOnce();
   });
 
@@ -292,4 +292,31 @@ it("keeps the shop and fitting order visible beside a remembered feature", () =>
   expect(screen.getByText(/루미에르 브라이덜/)).toHaveTextContent(
     "2번째 · Dress 02",
   );
+});
+
+it("places one Plus detail action immediately below the primary preview", async () => {
+  const { container } = render(
+    <RecallDressDetail
+      dress={dress}
+      onEditCore={vi.fn()}
+      onOpenDetails={vi.fn()}
+    />,
+  );
+  const action = screen.getByRole("button", { name: "상세 기록 추가하기" });
+  expect(
+    screen.getAllByRole("button", { name: "상세 기록 추가하기" }),
+  ).toHaveLength(1);
+  expect(action.querySelector("svg.lucide-plus")).toBeInTheDocument();
+  await waitFor(() =>
+    expect(
+      action.previousElementSibling?.querySelector("svg"),
+    ).toBeInTheDocument(),
+  );
+  const examples = screen.getByText("선택한 특징 · 예시 이미지");
+  expect(action.compareDocumentPosition(examples)).toBe(
+    Node.DOCUMENT_POSITION_FOLLOWING,
+  );
+  expect(
+    container.querySelector('[data-option-category="waistline"]'),
+  ).toBeNull();
 });

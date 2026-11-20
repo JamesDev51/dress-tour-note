@@ -368,7 +368,11 @@ export async function exportPortablePdf(
           360,
           640,
           view,
-          { preparedArtwork: artwork, namespace: artworkNamespace },
+          {
+            preparedArtwork: artwork,
+            namespace: artworkNamespace,
+            mode: "visual",
+          },
         ),
       );
     }
@@ -647,7 +651,7 @@ export async function exportPortablePdf(
       let favoriteY = drawTextLines(
         page,
         font,
-        summarizeDress(dress).slice(0, 3).join(" · ") || "형태 기록 없음",
+        summarizeDress(dress).slice(0, 4).join(" · ") || "형태 기록 없음",
         summaryX,
         665,
         9,

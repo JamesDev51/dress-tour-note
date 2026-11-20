@@ -1,3 +1,7 @@
+import {
+  PREPARED_MANNEQUIN_FLOOR,
+  preparedMannequinGeometry,
+} from "./preparedMannequin";
 import type { Dress, Fabric } from "../../types/domain";
 import {
   backStyleOptions,
@@ -8,8 +12,6 @@ import {
   optionLabel,
   silhouetteOptions,
   topStyleOptions,
-  trainOptions,
-  waistlineOptions,
 } from "../dress/options";
 import { dressRenderTokens } from "../dress/renderTokens";
 import type { ProfileAnchors, ProfileVolume } from "./dressProfiles";
@@ -48,13 +50,13 @@ export function preparedArtworkFrameTransform({
   baseScale,
   safeInset,
 }: PreparedArtworkFrameTransformInput): PreparedArtworkFrameTransform {
-  const availableHeight = Math.max(1, 427 - safeInset * 2);
+  const availableHeight = Math.max(1, 500 - safeInset * 2);
   const sourceHeight = Math.max(1, bounds.bottom - bounds.top);
   const scale = Math.min(baseScale, availableHeight / sourceHeight);
   return {
     scale,
     translateX: 160 - sourceCenterX * scale,
-    translateY: 213.5 - ((bounds.top + bounds.bottom) / 2) * scale,
+    translateY: 250 - ((bounds.top + bounds.bottom) / 2) * scale,
   };
 }
 
@@ -121,7 +123,7 @@ function topBoundForLayer({ asset, neckline, region }: GarmentLayer): number {
 
 export function preparedArtworkVerticalBounds(
   artwork: GarmentArtworkResult,
-  includeFace = false,
+  includeMannequin = false,
 ): PreparedArtworkVerticalBounds {
   const bounds =
     artwork.assetIds.length > 0
@@ -136,8 +138,22 @@ export function preparedArtworkVerticalBounds(
         lowerLayer.asset.anchors.hemY + trainExtensionFor(artwork.train),
       )
     : undefined;
-  const top = Math.min(bounds?.top ?? 12, includeFace ? 72 : Infinity);
-  const bottom = Math.max(bounds?.bottom ?? 628, trainBottom ?? -Infinity);
+  const top = Math.min(
+    bounds?.top ?? 12,
+    includeMannequin && artwork.assetIds.length > 0
+      ? preparedMannequinGeometry(artwork).top
+      : Infinity,
+  );
+  const bottom = Math.max(
+    bounds?.bottom ?? 628,
+    trainBottom ?? -Infinity,
+    includeMannequin &&
+      artwork.silhouette === "teaLength" &&
+      artwork.view !== "upper" &&
+      artwork.assetIds.length > 0
+      ? PREPARED_MANNEQUIN_FLOOR
+      : -Infinity,
+  );
   return { top, bottom };
 }
 
@@ -210,18 +226,6 @@ export function renderFields(dress: Dress, view: DressSketchView) {
     dress.silhouette !== "unknown",
     172,
   );
-  const waist = field(
-    "허리선",
-    optionLabel(waistlineOptions, dress.waistline),
-    dress.waistline !== "unknown",
-    212,
-  );
-  const train = field(
-    "트레인",
-    optionLabel(trainOptions, dress.train),
-    dress.train !== "unknown",
-    252,
-  );
   const color = field(
     "색상",
     optionLabel(colorOptions, dress.color),
@@ -230,11 +234,11 @@ export function renderFields(dress: Dress, view: DressSketchView) {
   );
   switch (view) {
     case "full":
-      return `${top}${neckline}${silhouette}${waist}${train}${color}`;
+      return `${top}${neckline}${silhouette}${color}`;
     case "upper":
-      return `${top}${neckline}${waist}${color}`;
+      return `${top}${neckline}${color}`;
     case "back":
-      return `${field("등 디자인", optionLabel(backStyleOptions, dress.backStyle), Boolean(dress.backStyle && dress.backStyle !== "unknown"), 132)}${silhouette}${train}${color}`;
+      return `${field("등 디자인", optionLabel(backStyleOptions, dress.backStyle), Boolean(dress.backStyle && dress.backStyle !== "unknown"), 132)}${silhouette}${color}`;
   }
 }
 
@@ -244,6 +248,7 @@ export function renderAnnotations(dress: Dress, view: DressSketchView) {
   );
   const notes = Object.entries(dress.customOptions ?? []).flatMap(
     ([category, note]) => {
+      if (category === "waistline" || category === "train") return [];
       if (
         view === "back" &&
         ["top", "neckline", "waistline"].includes(category)

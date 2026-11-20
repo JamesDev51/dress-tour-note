@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import {
   createDressDecisionPresentation,
@@ -100,11 +101,18 @@ export function RecallDressDetail({
               dress={presentation.dress}
               view={view}
               mode="visual"
-              className="mt-3"
-              onOpenDetails={onOpenDetails}
+              className="mt-3 w-full"
             />
           </>
         )}
+        <button
+          type="button"
+          className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-stone-900 px-4 font-bold text-white"
+          onClick={onOpenDetails}
+        >
+          <Plus size={20} aria-hidden="true" />
+          상세 기록 추가하기
+        </button>
       </section>
 
       {view !== "reference" && (
@@ -141,13 +149,6 @@ export function RecallDressDetail({
           onClick={onEditCore}
         >
           핵심 기록 수정
-        </button>
-        <button
-          type="button"
-          className="min-h-12 rounded-control border border-stone-200 bg-white px-4 font-bold"
-          onClick={onOpenDetails}
-        >
-          상세 기록
         </button>
       </div>
     </section>

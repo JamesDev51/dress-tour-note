@@ -8,6 +8,7 @@ const dress = {
   topStyle: "unknown",
   neckline: "unknown",
   silhouette: "unknown",
+  fabric: "unknown",
   isFavorite: false,
   rating: undefined,
   quickTags: [],
@@ -17,6 +18,7 @@ const dress = {
   | "topStyle"
   | "neckline"
   | "silhouette"
+  | "fabric"
   | "isFavorite"
   | "rating"
   | "quickTags"
@@ -62,7 +64,7 @@ describe("FastRecordFlow", () => {
       />,
     );
 
-    expect(screen.getByText("1/4")).toBeVisible();
+    expect(screen.getByText("1/5")).toBeVisible();
     expect(screen.getByRole("heading", { name: /어깨\/상의/ })).toBeVisible();
     expect(screen.queryByRole("heading", { name: /네크라인/ })).toBeNull();
     expect(screen.queryByRole("heading", { name: "소재" })).toBeNull();
@@ -70,7 +72,7 @@ describe("FastRecordFlow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /오프숄더/ }));
     expect(screen.getByRole("button", { name: /^다음$/ })).toBeDisabled();
-    expect(screen.getByText("1/4")).toBeVisible();
+    expect(screen.getByText("1/5")).toBeVisible();
 
     write.resolve();
     await waitFor(() =>
@@ -78,7 +80,7 @@ describe("FastRecordFlow", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
 
-    expect(screen.getByText("2/4")).toBeVisible();
+    expect(screen.getByText("2/5")).toBeVisible();
     expect(screen.getByRole("heading", { name: /네크라인/ })).toBeVisible();
     expect(screen.queryByRole("heading", { name: /어깨\/상의/ })).toBeNull();
   });
@@ -101,7 +103,10 @@ describe("FastRecordFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: /기억 안 남/ }));
 
     await waitFor(() =>
-      expect(onPatch).toHaveBeenCalledWith({ topStyle: "unknown" }),
+      expect(onPatch).toHaveBeenCalledWith({
+        topStyle: "unknown",
+        customOptions: { top: undefined },
+      }),
     );
     expect(screen.getByRole("button", { name: /기억 안 남/ })).toHaveAttribute(
       "aria-pressed",
@@ -126,7 +131,7 @@ describe("FastRecordFlow", () => {
     );
 
     expect(screen.getByRole("heading", { name: "핵심 기록" })).toBeVisible();
-    expect(screen.queryByText("1/4")).toBeNull();
+    expect(screen.queryByText("1/5")).toBeNull();
   });
 
   it("keeps every completed unknown core choice selected after returning from summary", () => {
@@ -156,6 +161,13 @@ describe("FastRecordFlow", () => {
       "aria-pressed",
       "true",
     );
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    expect(screen.getByText("4/5")).toBeVisible();
+    expect(screen.getByRole("button", { name: "기억 안 남" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled();
   });
 
   it("keeps each deliberately completed mixed core choice selected after returning from summary", () => {
@@ -248,6 +260,11 @@ describe("FastRecordFlow", () => {
       expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled(),
     );
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /레이스/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     onPatch.mockClear();
     fireEvent.click(screen.getByRole("button", { name: "후보 아님" }));
 
@@ -258,7 +275,9 @@ describe("FastRecordFlow", () => {
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
       ),
     });
-    expect(screen.getByRole("button", { name: "상세 기록" })).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "상세 기록 추가하기" }),
+    ).toBeVisible();
   });
 
   it("finishes the current record into summary without adding the next dress", async () => {
@@ -281,6 +300,7 @@ describe("FastRecordFlow", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
@@ -309,10 +329,10 @@ describe("FastRecordFlow", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
-    for (let step = 0; step < 3; step += 1) {
+    for (let step = 0; step < 4; step += 1) {
       fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     }
-    expect(screen.getByText("4/4")).toBeVisible();
+    expect(screen.getByText("5/5")).toBeVisible();
 
     rerender(
       <FastRecordFlow
@@ -322,9 +342,9 @@ describe("FastRecordFlow", () => {
         onOpenDetails={vi.fn()}
       />,
     );
-    expect(screen.getByText("4/4")).toBeVisible();
+    expect(screen.getByText("5/5")).toBeVisible();
 
-    for (let step = 0; step < 3; step += 1) {
+    for (let step = 0; step < 4; step += 1) {
       fireEvent.click(screen.getByRole("button", { name: "이전" }));
     }
     expect(screen.getByRole("button", { name: /스트랩리스/ })).toHaveAttribute(
@@ -352,11 +372,11 @@ describe("FastRecordFlow", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
-    for (let step = 0; step < 3; step += 1) {
+    for (let step = 0; step < 4; step += 1) {
       fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     }
     const details = screen.getByRole("button", {
-      name: "상세 기록",
+      name: "상세 기록 추가하기",
     });
     const recall = screen.getByTestId("long-recall-editor");
     expect(details.compareDocumentPosition(recall)).toBe(
@@ -386,7 +406,7 @@ describe("FastRecordFlow", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
-    for (let step = 1; step < 4; step += 1) {
+    for (let step = 1; step < 5; step += 1) {
       fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     }
     const finish = screen.getByRole("button", {
@@ -405,7 +425,7 @@ describe("FastRecordFlow", () => {
     let writes = 0;
     const onPatch = vi.fn(() => {
       writes += 1;
-      return writes === 4 ? write.promise : Promise.resolve();
+      return writes === 5 ? write.promise : Promise.resolve();
     });
     const incompleteDress = {
       ...dress,
@@ -436,6 +456,11 @@ describe("FastRecordFlow", () => {
       expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled(),
     );
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /기억 안 남/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     fireEvent.click(screen.getByRole("button", { name: "후보 아님" }));
     expect(
       screen.getByRole("button", { name: "다음 드레스 기록" }),
@@ -451,7 +476,7 @@ describe("FastRecordFlow", () => {
       />,
     );
     expect(screen.queryByRole("heading", { name: "핵심 기록" })).toBeNull();
-    expect(screen.getByText("1/4")).toBeVisible();
+    expect(screen.getByText("1/5")).toBeVisible();
 
     write.reject(new Error("write rejected"));
     expect("coreRecordedAt" in incompleteDress).toBe(false);
@@ -477,11 +502,13 @@ describe("FastRecordFlow", () => {
     expect(
       screen.getByRole("button", { name: "핵심 기록 수정" }),
     ).toBeVisible();
-    expect(screen.getByRole("button", { name: "상세 기록" })).toBeVisible();
-    expect(screen.getByText("소재", { exact: true })).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "상세 기록 추가하기" }),
+    ).toBeVisible();
+    expect(screen.getAllByText("소재", { exact: true })).toHaveLength(2);
     expect(screen.getByText("광택이 조금 덜해요")).toBeVisible();
-    expect(screen.queryByText("1/4")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "상세 기록" }));
+    expect(screen.queryByText("1/5")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "상세 기록 추가하기" }));
     expect(onOpenDetails).toHaveBeenCalledOnce();
   });
 
@@ -514,9 +541,11 @@ describe("FastRecordFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    expect(screen.getByRole("heading", { name: /소재/ })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     expect(screen.getByRole("heading", { name: /후보로/ })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
-    expect(screen.getByRole("heading", { name: /실루엣/ })).toBeVisible();
+    expect(screen.getByRole("heading", { name: /소재/ })).toBeVisible();
   });
 
   it("resets a newly routed dress to clean Step 1 state", () => {
@@ -530,7 +559,7 @@ describe("FastRecordFlow", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
     fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
-    expect(screen.getByText("2/4")).toBeVisible();
+    expect(screen.getByText("2/5")).toBeVisible();
 
     view.rerender(
       <FastRecordFlow
@@ -541,7 +570,7 @@ describe("FastRecordFlow", () => {
       />,
     );
 
-    expect(screen.getByText("1/4")).toBeVisible();
+    expect(screen.getByText("1/5")).toBeVisible();
     expect(screen.getByRole("button", { name: /기억 안 남/ })).toHaveAttribute(
       "aria-pressed",
       "false",
@@ -549,7 +578,7 @@ describe("FastRecordFlow", () => {
     expect(screen.getByRole("button", { name: /^다음$/ })).toBeDisabled();
   });
 
-  it("keeps Step 4 retryable and suppresses duplicate final submissions", async () => {
+  it("keeps Step 5 retryable and suppresses duplicate final submissions", async () => {
     const first = deferred();
     const onComplete = vi
       .fn<() => Promise<void>>()
@@ -571,10 +600,10 @@ describe("FastRecordFlow", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
-    for (let step = 1; step < 4; step += 1) {
+    for (let step = 1; step < 5; step += 1) {
       fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
     }
-    expect(screen.getByText("4/4")).toBeVisible();
+    expect(screen.getByText("5/5")).toBeVisible();
 
     const finish = screen.getByRole("button", {
       name: "다음 드레스 기록",
@@ -588,10 +617,224 @@ describe("FastRecordFlow", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "저장하지 못했어요. 다시 시도해 주세요.",
     );
-    expect(screen.getByText("4/4")).toBeVisible();
+    expect(screen.getByText("5/5")).toBeVisible();
     expect(finish).toBeEnabled();
 
     fireEvent.click(finish);
     await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(2));
   });
+});
+
+describe("fabric core step", () => {
+  const knownCore = {
+    ...dress,
+    topStyle: "strapless",
+    neckline: "sweetheart",
+    silhouette: "aLine",
+  } as const;
+  const reachFabric = () => {
+    for (let step = 1; step < 4; step += 1)
+      fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+  };
+  it("waits for a fabric write, retries failure, and retains the choice after remount", async () => {
+    const write = deferred();
+    const onPatch = vi
+      .fn<(patch: Partial<Dress>) => Promise<void>>()
+      .mockImplementationOnce(() => write.promise)
+      .mockResolvedValue(undefined);
+    const first = render(
+      <FastRecordFlow
+        dress={knownCore}
+        onPatch={onPatch}
+        onComplete={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    reachFabric();
+    expect(screen.getByText("4/5")).toBeVisible();
+    expect(
+      document.querySelector('[data-option-art="fabric-lace"]'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /레이스/ }));
+    expect(screen.getByRole("button", { name: /^다음$/ })).toBeDisabled();
+    write.reject(new Error("storage unavailable"));
+    await screen.findByRole("alert");
+    expect(screen.getByText("4/5")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: /레이스/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled(),
+    );
+    expect(onPatch).toHaveBeenLastCalledWith({ fabric: "lace" });
+    fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+    expect(screen.getByText("5/5")).toBeVisible();
+    first.unmount();
+    render(
+      <FastRecordFlow
+        dress={{ ...knownCore, fabric: "lace" }}
+        onPatch={vi.fn()}
+        onComplete={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    reachFabric();
+    expect(screen.getByRole("button", { name: /레이스/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+  it("offers core custom notes and clears the fabric note atomically for unknown", async () => {
+    const onPatch = vi.fn(async () => undefined);
+    render(
+      <FastRecordFlow
+        dress={{
+          ...knownCore,
+          fabric: "lace",
+          customOptions: { fabric: "조금 다른 광택" },
+        }}
+        onPatch={onPatch}
+        onComplete={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    reachFabric();
+    expect(
+      screen.getByRole("textbox", { name: "소재에서 다른 점" }),
+    ).toHaveValue("조금 다른 광택");
+    fireEvent.click(screen.getByRole("button", { name: "기억 안 남" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "메모 지우고 기억 안 남 선택" }),
+    );
+    await waitFor(() =>
+      expect(onPatch).toHaveBeenCalledWith({
+        fabric: "unknown",
+        customOptions: { fabric: undefined },
+      }),
+    );
+    expect(screen.getByRole("button", { name: "기억 안 남" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled();
+  });
+});
+
+it("saves a core difference note before advancing and keeps category drafts separate", async () => {
+  const onPatch = vi.fn(async () => undefined);
+  render(
+    <FastRecordFlow
+      dress={{ ...dress, topStyle: "strapless", neckline: "sweetheart" }}
+      onPatch={onPatch}
+      onComplete={vi.fn()}
+      onOpenDetails={vi.fn()}
+    />,
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "비슷하지만 달라요 · 상의 디자인" }),
+  );
+  const note = screen.getByRole("textbox", { name: "상의 디자인에서 다른 점" });
+  fireEvent.change(note, { target: { value: "가슴선 위에 작은 접힘" } });
+  fireEvent.blur(note);
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled(),
+  );
+  expect(onPatch).toHaveBeenCalledWith({
+    customOptions: { top: "가슴선 위에 작은 접힘" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "비슷하지만 달라요 · 네크라인" }),
+  );
+  expect(
+    screen.getByRole("textbox", { name: "네크라인에서 다른 점" }),
+  ).toHaveValue("");
+});
+
+it("does not drop a core note blurred while an option write is pending", async () => {
+  const write = deferred();
+  const onPatch = vi
+    .fn<(patch: Partial<Dress>) => Promise<void>>()
+    .mockImplementationOnce(() => write.promise)
+    .mockResolvedValue(undefined);
+  render(
+    <FastRecordFlow
+      dress={{ ...dress, topStyle: "strapless" }}
+      onPatch={onPatch}
+      onComplete={vi.fn()}
+      onOpenDetails={vi.fn()}
+    />,
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "비슷하지만 달라요 · 상의 디자인" }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: /스트랩리스/ }));
+  const note = screen.getByRole("textbox", { name: "상의 디자인에서 다른 점" });
+  fireEvent.change(note, { target: { value: "접힌 가장자리" } });
+  fireEvent.blur(note);
+  expect(onPatch).toHaveBeenCalledWith({
+    customOptions: { top: "접힌 가장자리" },
+  });
+  write.resolve();
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled(),
+  );
+});
+
+it("accepts the immediate next tap and waits for the note write before advancing", async () => {
+  const write = deferred();
+  const onPatch = vi.fn(() => write.promise);
+  render(
+    <FastRecordFlow
+      dress={{ ...dress, topStyle: "strapless" }}
+      onPatch={onPatch}
+      onComplete={vi.fn()}
+      onOpenDetails={vi.fn()}
+    />,
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "비슷하지만 달라요 · 상의 디자인" }),
+  );
+  const note = screen.getByRole("textbox", { name: "상의 디자인에서 다른 점" });
+  fireEvent.change(note, { target: { value: "접힌 가장자리" } });
+  fireEvent.blur(note);
+  expect(onPatch).toHaveBeenCalledWith({
+    customOptions: { top: "접힌 가장자리" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+  expect(screen.getByText("1/5")).toBeVisible();
+  expect(screen.getByRole("button", { name: /^다음$/ })).toBeDisabled();
+  write.resolve();
+  await waitFor(() => expect(screen.getByText("2/5")).toBeVisible());
+});
+
+it("stays on the current step when the note save fails and accepts retry", async () => {
+  const write = deferred();
+  const onPatch = vi
+    .fn<(patch: Partial<Dress>) => Promise<void>>()
+    .mockImplementationOnce(() => write.promise)
+    .mockResolvedValue(undefined);
+  render(
+    <FastRecordFlow
+      dress={{ ...dress, topStyle: "strapless" }}
+      onPatch={onPatch}
+      onComplete={vi.fn()}
+      onOpenDetails={vi.fn()}
+    />,
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "비슷하지만 달라요 · 상의 디자인" }),
+  );
+  const note = screen.getByRole("textbox", { name: "상의 디자인에서 다른 점" });
+  fireEvent.change(note, { target: { value: "접힌 가장자리" } });
+  fireEvent.blur(note);
+  fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+  write.reject(new Error("write failed"));
+  await screen.findByRole("alert");
+  expect(screen.getByText("1/5")).toBeVisible();
+  expect(note).toHaveValue("접힌 가장자리");
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: /^다음$/ })).toBeEnabled(),
+  );
+  fireEvent.blur(note);
+  fireEvent.click(screen.getByRole("button", { name: /^다음$/ }));
+  await waitFor(() => expect(screen.getByText("2/5")).toBeVisible());
 });

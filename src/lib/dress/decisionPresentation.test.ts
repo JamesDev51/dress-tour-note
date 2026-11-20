@@ -91,6 +91,7 @@ describe("decision presentation", () => {
         state: "unknown",
       }),
       expect.objectContaining({ label: "실루엣", value: "A라인" }),
+      expect.objectContaining({ key: "fabric", value: "레이스" }),
     ]);
     expect(presentation.exceptions).toContainEqual(
       expect.objectContaining({
@@ -186,4 +187,47 @@ describe("decision presentation", () => {
     );
     expect(rows.find(({ key }) => key === "memoryCue")).toBeUndefined();
   });
+});
+
+it("omits retired fields and their exceptions from comparison without changing raw records", () => {
+  const left: Dress = {
+    ...baseDress,
+    customOptions: {
+      train: "긴 꼬리",
+      waistline: "높음",
+      backStyle: "단추가 작음",
+    },
+  };
+  const right: Dress = {
+    ...left,
+    waistline: "unknown",
+    train: "unknown",
+    customOptions: { backStyle: "단추가 작음" },
+  };
+  const before = structuredClone(left);
+
+  const presentation = createDressDecisionPresentation(left);
+  const rows = compareDressPresentations(left, right, true);
+
+  expect(presentation.core.map(({ key }) => key)).toEqual([
+    "top",
+    "neckline",
+    "silhouette",
+    "fabric",
+  ]);
+  expect(presentation.details.map(({ key }) => key)).toEqual([
+    "color",
+    "backStyle",
+    "details",
+  ]);
+  expect(presentation.exceptions.map(({ key }) => key)).toEqual([
+    "exception:backStyle",
+  ]);
+  expect(rows.map(({ key }) => key)).not.toEqual(
+    expect.arrayContaining(["waistline"]),
+  );
+  expect(rows.map(({ key }) => key)).not.toContain("train");
+  expect(rows.map(({ key }) => key)).not.toContain("exception:train");
+  expect(rows.map(({ key }) => key)).not.toContain("exception:waistline");
+  expect(left).toEqual(before);
 });

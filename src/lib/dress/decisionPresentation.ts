@@ -1,9 +1,8 @@
+import { type Dress, type DressOptionCategory } from "../../types/domain";
 import {
-  DRESS_OPTION_CATEGORIES,
-  type Dress,
-  type DressOptionCategory,
-} from "../../types/domain";
-import {
+  ACTIVE_DRESS_CATEGORIES,
+  CORE_DRESS_CATEGORIES,
+  ADDITIONAL_DRESS_CATEGORIES,
   dressForPresentation,
   formatDressPresentation,
   type DressPresentationItem,
@@ -56,16 +55,6 @@ const CATEGORY_LABELS: Record<DressOptionCategory, string> = {
   train: "트레인",
   details: "디테일",
 };
-
-const CORE_CATEGORIES = ["top", "neckline", "silhouette"] as const;
-const DETAIL_CATEGORIES = [
-  "fabric",
-  "color",
-  "waistline",
-  "backStyle",
-  "train",
-  "details",
-] as const;
 
 function field(
   key: DecisionFieldKey,
@@ -134,13 +123,13 @@ export function createDressDecisionPresentation(
   const visibleDress = dressForPresentation(dress);
   const catalog = formatDressPresentation(visibleDress);
   const catalogItems = [...catalog.core, ...catalog.details];
-  const core = CORE_CATEGORIES.map((category) =>
+  const core = CORE_DRESS_CATEGORIES.map((category) =>
     categoryField(visibleDress, catalogItems, category),
   );
-  const details = DETAIL_CATEGORIES.map((category) =>
+  const details = ADDITIONAL_DRESS_CATEGORIES.map((category) =>
     categoryField(visibleDress, catalogItems, category),
   );
-  const exceptions = DRESS_OPTION_CATEGORIES.flatMap((category) => {
+  const exceptions = ACTIVE_DRESS_CATEGORIES.flatMap((category) => {
     const note = visibleDress.customOptions?.[category]?.trim();
     return note
       ? [

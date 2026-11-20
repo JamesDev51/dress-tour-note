@@ -15,20 +15,16 @@ export const FRONT_FIELDS: readonly GarmentField[] = [
   "topStyle",
   "neckline",
   "silhouette",
-  "waistline",
   "fabric",
   "color",
-  "train",
   "details",
 ];
 
 export const BACK_FIELDS: readonly GarmentField[] = [
   "silhouette",
-  "waistline",
   "fabric",
   "color",
   "backStyle",
-  "train",
   "details",
 ];
 
@@ -64,8 +60,12 @@ export function unknownFields(
 }
 
 export function hasCustomOption(dress: Dress): boolean {
-  return Object.values(dress.customOptions ?? {}).some(
-    (value) => typeof value === "string" && value.trim().length > 0,
+  return Object.entries(dress.customOptions ?? {}).some(
+    ([field, value]) =>
+      field !== "waistline" &&
+      field !== "train" &&
+      typeof value === "string" &&
+      value.trim().length > 0,
   );
 }
 

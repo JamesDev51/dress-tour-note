@@ -1,5 +1,13 @@
-import type { Dress, Neckline, Silhouette, TopStyle } from "../../types/domain";
+import type {
+  Dress,
+  DressOptionCategory,
+  Fabric,
+  Neckline,
+  Silhouette,
+  TopStyle,
+} from "../../types/domain";
 import {
+  fabricOptions,
   necklineOptions,
   silhouetteOptions,
   topStyleOptions,
@@ -14,7 +22,7 @@ const fastNecklineOptions = necklineOptions.map((option) =>
 
 type CoreValues = Pick<
   Dress,
-  "topStyle" | "neckline" | "silhouette" | "customOptions"
+  "topStyle" | "neckline" | "silhouette" | "fabric" | "customOptions"
 >;
 
 export function FastRecordOptions({
@@ -25,19 +33,29 @@ export function FastRecordOptions({
   onTop,
   onNeckline,
   onSilhouette,
+  onFabric,
+  onCustomCommit,
+  onClearAndSelect,
 }: {
-  readonly step: 1 | 2 | 3;
+  readonly step: 1 | 2 | 3 | 4;
   readonly values: CoreValues;
   readonly acknowledged: boolean;
   readonly saving: boolean;
   readonly onTop: (value: TopStyle) => void;
   readonly onNeckline: (value: Neckline) => void;
+  readonly onFabric: (value: Fabric) => void;
+  readonly onCustomCommit: (
+    category: DressOptionCategory,
+    value: string,
+  ) => void;
+  readonly onClearAndSelect: (
+    category: DressOptionCategory,
+    patch: Partial<Dress>,
+  ) => void;
   readonly onSilhouette: (value: Silhouette) => void;
 }) {
   const shared = {
     disabled: () => saving,
-    allowCustom: false,
-    onCustomCommit: () => undefined,
   };
   switch (step) {
     case 1:
@@ -51,6 +69,10 @@ export function FastRecordOptions({
           value={acknowledged ? values.topStyle : undefined}
           onPick={onTop}
           customValue={values.customOptions?.top}
+          onCustomCommit={(value) => onCustomCommit("top", value)}
+          onClearAndSelect={(value) =>
+            onClearAndSelect("top", { topStyle: value })
+          }
         />
       );
     case 2:
@@ -64,6 +86,10 @@ export function FastRecordOptions({
           value={acknowledged ? values.neckline : undefined}
           onPick={onNeckline}
           customValue={values.customOptions?.neckline}
+          onCustomCommit={(value) => onCustomCommit("neckline", value)}
+          onClearAndSelect={(value) =>
+            onClearAndSelect("neckline", { neckline: value })
+          }
         />
       );
     case 3:
@@ -77,6 +103,27 @@ export function FastRecordOptions({
           value={acknowledged ? values.silhouette : undefined}
           onPick={onSilhouette}
           customValue={values.customOptions?.silhouette}
+          onCustomCommit={(value) => onCustomCommit("silhouette", value)}
+          onClearAndSelect={(value) =>
+            onClearAndSelect("silhouette", { silhouette: value })
+          }
+        />
+      );
+    case 4:
+      return (
+        <DressOptionSection
+          {...shared}
+          category="fabric"
+          title="소재는 어땠나요?"
+          hint="표면의 느낌을 떠올려 보세요."
+          options={fabricOptions}
+          value={acknowledged ? values.fabric : undefined}
+          onPick={onFabric}
+          customValue={values.customOptions?.fabric}
+          onCustomCommit={(value) => onCustomCommit("fabric", value)}
+          onClearAndSelect={(value) =>
+            onClearAndSelect("fabric", { fabric: value })
+          }
         />
       );
     default: {

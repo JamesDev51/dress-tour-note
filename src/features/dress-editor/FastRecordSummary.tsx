@@ -1,4 +1,5 @@
 import {
+  fabricOptions,
   necklineOptions,
   optionLabel,
   silhouetteOptions,
@@ -8,7 +9,12 @@ import type { Dress } from "../../types/domain";
 
 type SummaryDress = Pick<
   Dress,
-  "topStyle" | "neckline" | "silhouette" | "isFavorite" | "customOptions"
+  | "topStyle"
+  | "neckline"
+  | "silhouette"
+  | "fabric"
+  | "isFavorite"
+  | "customOptions"
 >;
 
 const categoryLabels = {
@@ -17,9 +23,7 @@ const categoryLabels = {
   silhouette: "실루엣",
   fabric: "소재",
   color: "색상",
-  waistline: "허리선",
   backStyle: "등 디자인",
-  train: "트레인",
   details: "디테일",
 } as const;
 
@@ -59,6 +63,12 @@ export function FastRecordSummary({
           </dd>
         </div>
         <div className="flex justify-between gap-4">
+          <dt className="text-ink-muted">소재</dt>
+          <dd className="font-bold">
+            {optionLabel(fabricOptions, dress.fabric)}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-4">
           <dt className="text-ink-muted">후보</dt>
           <dd className="font-bold">
             {dress.isFavorite ? "후보" : "후보 아님"}
@@ -93,7 +103,7 @@ export function FastRecordSummary({
           className="min-h-12 rounded-control border border-stone-200 bg-white px-4 font-bold"
           onClick={onOpenDetails}
         >
-          상세 기록
+          상세 기록 추가하기
         </button>
       </div>
     </section>

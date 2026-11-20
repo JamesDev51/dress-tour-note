@@ -48,7 +48,7 @@ describe("unknown front selections", () => {
     expect(full.status).toBe("partial");
     expect(full.layers.length).toBeGreaterThan(0);
     expect(full.missingFields).toEqual(
-      expect.arrayContaining(["waistline", "fabric", "color", "train"]),
+      expect.arrayContaining(["fabric", "color"]),
     );
     expect(full.markup).toContain('data-reference-mode="form"');
     expect(full.markup).toContain('data-layer="garment-image"');

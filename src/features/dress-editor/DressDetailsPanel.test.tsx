@@ -60,14 +60,11 @@ function renderPanel(
 }
 
 describe("DressDetailsPanel", () => {
-  it("contains every optional catalog without requiring a face", () => {
+  it("contains only three additional catalogs and retains supporting tools", () => {
     renderPanel();
     for (const heading of [
-      "소재",
       "색상",
-      "허리선",
       "등 디자인",
-      "트레인",
       "디테일",
       "입어봤을 때 어땠나요?",
       "특이사항",
@@ -75,6 +72,12 @@ describe("DressDetailsPanel", () => {
     ]) {
       expect(screen.getByRole("heading", { name: heading })).toBeVisible();
     }
+    expect(
+      Array.from(
+        document.querySelectorAll("[data-option-category]"),
+        (element) => element.getAttribute("data-option-category"),
+      ),
+    ).toEqual(["color", "backStyle", "details"]);
     expect(screen.getByText("얼굴 사진 추가")).toBeVisible();
   });
 
@@ -104,9 +107,9 @@ describe("DressDetailsPanel", () => {
       <DressDetailsPanel
         dress={{
           ...dress,
-          fabric: "lace",
+          color: "ivory",
           customOptions: {
-            fabric: "광택이 달라요",
+            color: "색이 달라요",
             neckline: "스캘럽 가장자리",
           },
         }}
@@ -128,13 +131,13 @@ describe("DressDetailsPanel", () => {
       />,
     );
 
-    const fabricSection = document.querySelector(
-      '[data-option-category="fabric"]',
+    const colorSection = document.querySelector(
+      '[data-option-category="color"]',
     );
-    if (!(fabricSection instanceof HTMLElement))
-      throw new Error("fabric section missing");
+    if (!(colorSection instanceof HTMLElement))
+      throw new Error("color section missing");
     fireEvent.click(
-      fabricSection.querySelector("[data-option-unknown]") ?? fabricSection,
+      colorSection.querySelector("[data-option-unknown]") ?? colorSection,
     );
     fireEvent.click(
       screen.getByRole("button", { name: "메모 지우고 기억 안 남 선택" }),
@@ -142,8 +145,8 @@ describe("DressDetailsPanel", () => {
 
     expect(onPatch).toHaveBeenCalledOnce();
     expect(onPatch).toHaveBeenCalledWith({
-      fabric: "unknown",
-      customOptions: { fabric: undefined },
+      color: "unknown",
+      customOptions: { color: undefined },
     });
   });
 

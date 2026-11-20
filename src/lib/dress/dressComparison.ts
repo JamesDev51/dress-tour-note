@@ -1,4 +1,5 @@
-import { DRESS_OPTION_CATEGORIES, type Dress } from "../../types/domain";
+import type { Dress } from "../../types/domain";
+import { ACTIVE_DRESS_CATEGORIES } from "./options";
 import {
   createDressDecisionPresentation,
   type DecisionField,
@@ -58,7 +59,7 @@ export function compareDressPresentations(
     left.memo,
   ].map(({ key }) => key);
   keys.push(
-    ...DRESS_OPTION_CATEGORIES.map(
+    ...ACTIVE_DRESS_CATEGORIES.map(
       (category): DecisionFieldKey => `exception:${category}`,
     ),
   );

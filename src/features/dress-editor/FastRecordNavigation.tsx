@@ -1,4 +1,4 @@
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 export function FastRecordNavigation({
   step,
@@ -15,7 +15,7 @@ export function FastRecordNavigation({
   onNext: () => void;
   onFinishAndView?: () => void;
 }) {
-  if (step === 4) {
+  if (step === 5) {
     return (
       <div className="fixed bottom-0 left-1/2 z-20 w-full max-w-[480px] -translate-x-1/2 border-t border-stone-100 bg-shell/95 px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
         <button

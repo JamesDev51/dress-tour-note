@@ -6,12 +6,6 @@ import {
   backStyleOptions,
   colorOptions,
   detailOptions,
-  fabricOptions,
-  necklineOptions,
-  silhouetteOptions,
-  topStyleOptions,
-  trainOptions,
-  waistlineOptions,
 } from "../../lib/dress/options";
 import type {
   Dress,
@@ -103,66 +97,6 @@ export function DressDetailsPanel({
         핵심 기록으로 돌아가기
       </button>
       <DressOptionSection
-        category="top"
-        title="어깨/상의"
-        options={topStyleOptions}
-        value={dress.topStyle}
-        onPick={(value) => void onPatch({ topStyle: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            topStyle: value,
-            customOptions: customOptionsWithout("top"),
-          })
-        }
-        customValue={dress.customOptions?.top}
-        onCustomCommit={(value) => onCustomCommit("top", value)}
-      />
-      <DressOptionSection
-        category="neckline"
-        title="네크라인"
-        options={necklineOptions}
-        value={dress.neckline}
-        onPick={(value) => void onPatch({ neckline: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            neckline: value,
-            customOptions: customOptionsWithout("neckline"),
-          })
-        }
-        customValue={dress.customOptions?.neckline}
-        onCustomCommit={(value) => onCustomCommit("neckline", value)}
-      />
-      <DressOptionSection
-        category="silhouette"
-        title="실루엣"
-        options={silhouetteOptions}
-        value={dress.silhouette}
-        onPick={(value) => void onPatch({ silhouette: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            silhouette: value,
-            customOptions: customOptionsWithout("silhouette"),
-          })
-        }
-        customValue={dress.customOptions?.silhouette}
-        onCustomCommit={(value) => onCustomCommit("silhouette", value)}
-      />
-      <DressOptionSection
-        category="fabric"
-        title="소재"
-        options={fabricOptions}
-        value={dress.fabric}
-        onPick={(value) => void onPatch({ fabric: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            fabric: value,
-            customOptions: customOptionsWithout("fabric"),
-          })
-        }
-        customValue={dress.customOptions?.fabric}
-        onCustomCommit={(value) => onCustomCommit("fabric", value)}
-      />
-      <DressOptionSection
         category="color"
         title="색상"
         options={colorOptions}
@@ -178,21 +112,6 @@ export function DressDetailsPanel({
         onCustomCommit={(value) => onCustomCommit("color", value)}
       />
       <DressOptionSection
-        category="waistline"
-        title="허리선"
-        options={waistlineOptions}
-        value={dress.waistline}
-        onPick={(value) => void onPatch({ waistline: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            waistline: value,
-            customOptions: customOptionsWithout("waistline"),
-          })
-        }
-        customValue={dress.customOptions?.waistline}
-        onCustomCommit={(value) => onCustomCommit("waistline", value)}
-      />
-      <DressOptionSection
         category="backStyle"
         title="등 디자인"
         options={backStyleOptions}
@@ -206,21 +125,6 @@ export function DressDetailsPanel({
         }
         customValue={dress.customOptions?.backStyle}
         onCustomCommit={(value) => onCustomCommit("backStyle", value)}
-      />
-      <DressOptionSection
-        category="train"
-        title="트레인"
-        options={trainOptions}
-        value={dress.train}
-        onPick={(value) => void onPatch({ train: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            train: value,
-            customOptions: customOptionsWithout("train"),
-          })
-        }
-        customValue={dress.customOptions?.train}
-        onCustomCommit={(value) => onCustomCommit("train", value)}
       />
       <DressOptionSection
         category="details"

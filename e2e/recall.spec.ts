@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 
-async function recordCore(page: Page) {
-  for (const name of [/스트랩리스/, /스트레이트 네크라인/, /^A라인/]) {
+async function recordCore(page: Page, fabric: RegExp | string = /레이스/) {
+  for (const name of [/스트랩리스/, /스트레이트 네크라인/, /^A라인/, fabric]) {
     await page.getByRole("button", { name }).click();
     await page.getByRole("button", { name: "다음", exact: true }).click();
   }
@@ -93,6 +93,21 @@ test("explicit completion shows the current dress without creating the next blan
     page.getByRole("heading", { name: "등 뒤 큰 리본", exact: true }),
   ).toBeVisible();
 
+  const addDetails = page.getByRole("button", {
+    name: "상세 기록 추가하기",
+    exact: true,
+  });
+  await expect(addDetails).toHaveCount(1);
+  await expect(addDetails.locator("svg")).toHaveCount(1);
+  const previewBox = await page.locator(".dress-preview").boundingBox();
+  const actionBox = await addDetails.boundingBox();
+  if (!previewBox || !actionBox)
+    throw new Error("드레스와 추가 기록 버튼이 보여야 해요.");
+  expect(actionBox.y).toBeGreaterThanOrEqual(previewBox.y + previewBox.height);
+  expect(actionBox.y - previewBox.y - previewBox.height).toBeLessThan(120);
+  await expect(page.getByText("허리선", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("트레인", { exact: true })).toHaveCount(0);
+
   await page.getByRole("button", { name: "뒤로", exact: true }).click();
   await expect(page).toHaveURL(/\/shop\//);
   await expect(
@@ -110,10 +125,11 @@ test("details returns to the current core step and stays discoverable", async ({
   await startRecord(page);
 
   const details = page.getByRole("button", {
-    name: "상세 기록",
+    name: "상세 기록 추가하기",
     exact: true,
   });
   await expect(details).toBeVisible();
+  await details.scrollIntoViewIfNeeded();
   const detailsPosition = await details.evaluate((node) => {
     const rect = node.getBoundingClientRect();
     return { top: rect.top, bottom: rect.bottom, viewport: innerHeight };
@@ -133,21 +149,17 @@ test("details returns to the current core step and stays discoverable", async ({
     .first();
   await expect(returnToCore).toBeVisible();
   await page
-    .locator('[data-option-category="fabric"]')
-    .getByRole("button", { name: /레이스/ })
-    .click();
-  await page
-    .locator('[data-option-category="top"]')
-    .getByRole("button", { name: /스트랩리스/ })
+    .locator('[data-option-category="color"]')
+    .getByRole("button", { name: /아이보리/ })
     .click();
   await returnToCore.click();
 
-  await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+  await expect(page.getByText("5/5", { exact: true })).toBeVisible();
   const scrollAfterDetails = await page.evaluate(() => window.scrollY);
   expect(
     Math.abs(scrollAfterDetails - scrollBeforeDetails),
   ).toBeLessThanOrEqual(1);
-  for (let step = 0; step < 3; step += 1) {
+  for (let step = 0; step < 4; step += 1) {
     await page.getByRole("button", { name: "이전", exact: true }).click();
   }
   await expect(
@@ -166,7 +178,7 @@ test("record summary keeps its selected preview after details return", async ({
   await expect(page.locator('svg[data-view="upper"]')).toHaveCount(1);
 
   await page
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .first()
     .click();
   await page
@@ -184,8 +196,10 @@ test("a failed detail write keeps the panel open until the field is retried", as
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await startRecord(page);
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
-  await page.getByRole("heading", { name: "소재", exact: true }).waitFor();
+  await page
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
+    .click();
+  await page.getByRole("heading", { name: "색상", exact: true }).waitFor();
 
   await page.evaluate(() => {
     const original = IDBObjectStore.prototype.put;
@@ -205,7 +219,7 @@ test("a failed detail write keeps the panel open until the field is retried", as
     .getByRole("button", { name: "핵심 기록으로 돌아가기", exact: true });
   await returnToCore.click();
   await expect(
-    page.getByRole("heading", { name: "소재", exact: true }),
+    page.getByRole("heading", { name: "색상", exact: true }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: /퓨어 화이트/ })
@@ -213,7 +227,7 @@ test("a failed detail write keeps the panel open until the field is retried", as
     .click();
   await expect(page.getByText("자동 저장됨", { exact: true })).toBeVisible();
   await returnToCore.click();
-  await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+  await expect(page.getByText("5/5", { exact: true })).toBeVisible();
 });
 
 test("review cards open the explicit record view", async ({ page }) => {
@@ -264,16 +278,9 @@ test("comparison separates observed differences from missing evidence", async ({
   await page
     .getByRole("textbox", { name: "좋았던 점", exact: true })
     .fill("허리가 편함");
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
   await page
-    .locator('[data-option-category="fabric"]')
-    .getByRole("button", { name: /레이스/ })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
-  await expect(
-    page
-      .locator('[data-option-category="fabric"]')
-      .getByRole("button", { name: /레이스/ }),
-  ).toHaveAttribute("aria-pressed", "true");
   await page
     .locator('[data-option-category="color"]')
     .getByRole("button", { name: /아이보리/ })
@@ -281,7 +288,7 @@ test("comparison separates observed differences from missing evidence", async ({
   await page.getByRole("button", { name: "뒤로", exact: true }).click();
   await expect(page).toHaveURL(/\/shop\//);
   await page.getByRole("button", { name: "드레스 추가", exact: true }).click();
-  await recordCore(page);
+  await recordCore(page, "기억 안 남");
   const secondUrl = page.url();
   await page
     .getByRole("textbox", { name: "기억할 특징", exact: true })
@@ -289,7 +296,9 @@ test("comparison separates observed differences from missing evidence", async ({
   await page
     .getByRole("textbox", { name: "아쉬운 점", exact: true })
     .fill("걷기 무거움");
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
+    .click();
   await page
     .locator('[data-option-category="color"]')
     .getByRole("button", { name: /샴페인/ })
@@ -399,4 +408,28 @@ test("recall reasons survive real PDF download and copy import", async ({
   await expect(
     page.getByText("팔을 올릴 때 불편함", { exact: true }),
   ).toBeVisible();
+});
+
+test("core exception note survives an immediate next tap and reload", async ({
+  page,
+}) => {
+  await startRecord(page);
+  await page
+    .getByRole("button", { name: "기록 완료하고 보기", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "핵심 기록 수정", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: /비슷하지만 달라요 · 상의 디자인/ })
+    .click();
+  await page
+    .getByLabel("상의 디자인에서 다른 점")
+    .fill("어깨 끝이 조금 더 둥글었음");
+  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await expect(page.getByText("2/5", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("상의 디자인에서 다른 점")).toHaveValue(
+    "어깨 끝이 조금 더 둥글었음",
+  );
 });

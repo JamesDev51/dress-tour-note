@@ -200,6 +200,11 @@ describe("visual PDF export", () => {
     expect(
       dressSvgToJpeg.mock.calls.map((call) => call[6]?.preparedArtwork?.view),
     ).toEqual(["full", "upper", "back"]);
+    expect(dressSvgToJpeg.mock.calls.map((call) => call[6]?.mode)).toEqual([
+      "visual",
+      "visual",
+      "visual",
+    ]);
     const pdf = await PDFDocument.load(await blob.arrayBuffer());
     expect(pdf.getPageCount()).toBeGreaterThanOrEqual(4);
   });

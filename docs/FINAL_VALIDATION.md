@@ -1,6 +1,6 @@
 # Final validation
 
-The release contains exactly 61 local WebP option images across nine categories, plus the explicit text-backed `기억 안 남` state. The core capture is four steps: top/shoulder, neckline, silhouette, and candidate decision. The optional detail surface covers all nine categories and preserves category-labelled notes when no listed option matches.
+The release contains exactly 61 local WebP option images across nine categories, plus the explicit text-backed `기억 안 남` state. The core capture is five steps: top/shoulder, neckline, silhouette, fabric, and candidate decision. The additional choice surface covers color, back style and details. Waistline/train remain in legacy-compatible storage and portable-v1 data but are retired from current UI and visual PDF fields. Category-labelled exception notes remain available for active fields.
 
 Preview, comparison, and PDF output use the same prepared local garment artwork in the canonical SVG frame for full, upper, and back views, with explicit partial/unavailable states and a record-sketch fallback. Unknown values remain visibly unrecorded rather than being guessed. A face is local-only and appears only when explicitly included on an eligible view; the back view never receives face data.
 

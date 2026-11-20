@@ -149,8 +149,7 @@ async function createBaseTour(
   });
   if (options.face) {
     await page
-      .locator(".core-details-nav")
-      .getByRole("button", { name: "상세 기록", exact: true })
+      .getByRole("button", { name: "상세 기록 추가하기", exact: true })
       .click();
     await page
       .locator('input[type="file"][accept*="image/heic"]')
@@ -209,6 +208,7 @@ async function completeCore(
     top: RegExp | string;
     neckline: RegExp | string;
     silhouette: RegExp | string;
+    fabric?: RegExp | string;
     candidate: "후보로 남기기" | "후보 아님";
   },
 ) {
@@ -217,6 +217,8 @@ async function completeCore(
   await chooseCoreOption(page, choices.neckline);
   await nextCoreStep(page);
   await chooseCoreOption(page, choices.silhouette);
+  await nextCoreStep(page);
+  await chooseCoreOption(page, choices.fabric ?? /레이스/);
   await nextCoreStep(page);
   await chooseCoreOption(page, choices.candidate);
 }
@@ -268,18 +270,16 @@ test("all individual WebP artwork is available and option cards use it", async (
 
   await createBaseTour(page);
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
   await expect(
     page.locator('[data-option-art-kind="generated-image"] img'),
-  ).toHaveCount(61);
-  await expect(
-    page.locator('[data-option-art="top-offShoulder"]'),
-  ).toBeVisible();
-  await expect(
-    page.locator('[data-option-art="silhouette-aLine"]'),
-  ).toBeVisible();
+  ).toHaveCount(21);
+  await expect(page.locator('[data-option-category="fabric"]')).toHaveCount(0);
+  await expect(page.locator('[data-option-category="waistline"]')).toHaveCount(
+    0,
+  );
+  await expect(page.locator('[data-option-category="train"]')).toHaveCount(0);
   await expect(page.locator('[data-option-art="color-ivory"]')).toBeVisible();
 });
 
@@ -388,8 +388,7 @@ test("last face position survives immediate navigation away", async ({
   await expect(page).toHaveURL(new RegExp(`/tour/${tourId}/shop/`));
   await page.goto(dressUrl);
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
   await expect(page.getByLabel("좌우")).toHaveValue("0.73");
 });
@@ -459,6 +458,7 @@ test("three warmed core records stay functional while reporting timing", async (
       ["상의 디자인", "오프숄더"],
       ["네크라인", "스위트하트 네크라인"],
       ["실루엣", "A라인"],
+      ["소재", "레이스"],
     ]) {
       await expect(
         summary.getByText(label, { exact: true }).locator("..").locator("dd"),
@@ -492,6 +492,7 @@ test("all unknown core choices persist as deliberate decisions on re-entry", asy
     top: "기억 안 남",
     neckline: "기억 안 남",
     silhouette: "기억 안 남",
+    fabric: "기억 안 남",
     candidate: "후보 아님",
   });
   await page.reload();
@@ -499,7 +500,7 @@ test("all unknown core choices persist as deliberate decisions on re-entry", asy
     .getByRole("heading", { name: "전체 기록", exact: true })
     .locator("..");
   await expect(summary).toBeVisible();
-  for (const label of ["상의 디자인", "네크라인", "실루엣"]) {
+  for (const label of ["상의 디자인", "네크라인", "실루엣", "소재"]) {
     await expect(
       summary.getByText(label, { exact: true }).locator("..").locator("dd"),
     ).toHaveText("기억 안 남");
@@ -541,41 +542,48 @@ test("each core field survives immediate next, back, and reload", async ({
     "aria-pressed",
     "true",
   );
+  await nextCoreStep(page);
+  await expect(page.getByText("4/5", { exact: true })).toBeVisible();
+  await chooseCoreOption(page, /^튤 /);
+  await page.reload();
+  await nextCoreStep(page);
+  await nextCoreStep(page);
+  await nextCoreStep(page);
+  await expect(page.getByRole("button", { name: /^튤 / })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
 });
 
-test("all nine detail categories and closest-choice notes persist", async ({
+test("three additional categories and closest-choice notes persist", async ({
   page,
 }) => {
   await createBaseTour(page);
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
-  for (const heading of [
-    "어깨/상의",
-    "네크라인",
-    "실루엣",
-    "소재",
-    "색상",
-    "허리선",
-    "등 디자인",
-    "트레인",
-    "디테일",
-  ]) {
-    await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+  for (const heading of ["색상", "등 디자인", "디테일"]) {
+    await expect(
+      page.getByRole("heading", { name: heading, exact: true }),
+    ).toBeVisible();
   }
-  await page
-    .getByRole("button", { name: /비슷하지만 달라요 · 상의 디자인/ })
-    .click();
-  await page
-    .getByLabel("상의 디자인에서 다른 점")
-    .fill("소매가 팔꿈치까지 내려오는 가장 가까운 선택");
-  await page.getByLabel("상의 디자인에서 다른 점").blur();
-  await chooseCoreOption(page, /미카도 새틴/);
+  for (const category of [
+    "top",
+    "neckline",
+    "silhouette",
+    "fabric",
+    "waistline",
+    "train",
+  ]) {
+    await expect(
+      page.locator('[data-option-category="' + category + '"]'),
+    ).toHaveCount(0);
+  }
   await chooseCoreOption(page, /샴페인/);
-  await chooseCoreOption(page, /내추럴 웨이스트/);
+  await page.getByRole("button", { name: /비슷하지만 달라요 · 색상/ }).click();
+  await page.getByLabel("색상에서 다른 점").fill("아이보리보다 살짝 노란 느낌");
+  await page.getByLabel("색상에서 다른 점").blur();
   await chooseCoreOption(page, /오픈 백/);
-  await chooseCoreOption(page, /채플 트레인/);
   await chooseCoreOption(page, /^코르셋 몸통/);
   await page.getByRole("button", { name: "신부 픽" }).click();
   await expect(page.getByRole("button", { name: "신부 픽" })).toHaveAttribute(
@@ -584,17 +592,16 @@ test("all nine detail categories and closest-choice notes persist", async ({
   );
   await page.reload();
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
   await settleOptionArtwork(page);
-  await expect(page.getByLabel("상의 디자인에서 다른 점")).toHaveValue(
-    "소매가 팔꿈치까지 내려오는 가장 가까운 선택",
+  await expect(page.getByLabel("색상에서 다른 점")).toHaveValue(
+    "아이보리보다 살짝 노란 느낌",
   );
   await expect(
     page.getByRole("button", { name: /^코르셋 몸통/ }),
   ).toHaveAttribute("aria-pressed", "true");
-  await captureSurface(page, "details-nine-categories-390");
+  await captureSurface(page, "details-three-categories-390");
 });
 
 test.describe("option artwork failure", () => {
@@ -630,8 +637,7 @@ test("offline app opens, edits, reloads, and compares saved dresses", async ({
   );
   await page.reload();
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
   await expect(page.getByRole("button", { name: "5점" })).toHaveClass(
     /text-amber-400/,
@@ -656,8 +662,7 @@ test("editor, details, review, compare, import, and export have no serious axe v
   await expectNoSeriousAccessibilityViolations(page);
   await captureSurface(page, "axe-editor-390");
   await page
-    .locator(".core-details-nav")
-    .getByRole("button", { name: "상세 기록", exact: true })
+    .getByRole("button", { name: "상세 기록 추가하기", exact: true })
     .click();
   await settleOptionArtwork(page);
   await expectNoSeriousAccessibilityViolations(page);
@@ -687,8 +692,7 @@ test("editor, details, review, compare, import, and export have no serious axe v
     await page.goto(editorUrl);
     await expectNoHorizontalOverflow(page);
     await page
-      .locator(".core-details-nav")
-      .getByRole("button", { name: "상세 기록", exact: true })
+      .getByRole("button", { name: "상세 기록 추가하기", exact: true })
       .click();
     await settleOptionArtwork(page);
     await expectNoHorizontalOverflow(page);
