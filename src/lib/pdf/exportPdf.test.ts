@@ -23,6 +23,9 @@ vi.mock("../image/processFace", async (importOriginal) => {
 });
 
 import { exportPortablePdf } from "./exportPdf";
+import { snapshotDressLook } from "../dress/styling";
+import { inspectPortableTrailer } from "./portableTrailer";
+import { dressTermBlocks } from "./dressTextBlocks";
 
 const now = "2026-09-04T00:00:00.000Z";
 const faceAsset: LocalAsset = {
@@ -150,8 +153,107 @@ describe("visual PDF export", () => {
     const font = await readFile("src/assets/pretendard-pdf-static.ttf");
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(new Response(font, { status: 200 })),
+      vi.fn(async () => new Response(font, { status: 200 })),
     );
+  });
+
+  it.each([
+    [undefined, "상체 소재", "치마 소재"],
+    ["waist", "상체 소재", "치마 소재"],
+    ["hip", "위쪽 소재", "골반부터"],
+    ["thigh", "위쪽 소재", "허벅지부터"],
+    ["knee", "위쪽 소재", "무릎부터"],
+  ] as const)(
+    "labels mixed-material starts in PDF text for %s",
+    (lowerFabricStart, upperLabel, lowerLabel) => {
+      const value = dress({
+        upperFabric: "lace",
+        lowerFabric: "organzaChiffon",
+        lowerFabricStart,
+      });
+      expect(dressTermBlocks(value)).toEqual(
+        expect.arrayContaining([
+          { label: upperLabel, text: "레이스" },
+          { label: lowerLabel, text: "망사·쉬폰" },
+        ]),
+      );
+      expect(
+        dressTermBlocks({ ...value, lowerFabric: "lace" }).filter(({ label }) =>
+          label.includes("소재"),
+        ),
+      ).toEqual([{ label: "소재", text: "레이스" }]);
+    },
+  );
+
+  it("exports the active face-free front views and distinct upper/skirt materials without retired labels", async () => {
+    getTourSnapshot.mockResolvedValue(
+      snapshot(
+        dress({
+          upperFabric: "lace",
+          lowerFabric: "organzaChiffon",
+          lowerFabricStart: "thigh",
+          backStyle: "vBack",
+          backClosure: "laceUp",
+          color: "champagne",
+          train: "cathedral",
+          details: ["detachableSleeve", "backBow", "sequin"],
+          quickTags: ["편함", "무거움", "신부 픽"],
+        }),
+        [faceAsset],
+      ),
+    );
+    const drawText = vi.spyOn(PDFPage.prototype, "drawText");
+    const output = await exportPortablePdf("tour-1", {
+      mode: "portable",
+      includeFace: true,
+    });
+    expect(dressSvgToJpeg.mock.calls.map((call) => call[5])).toEqual([
+      "full",
+      "upper",
+    ]);
+    expect(
+      dressSvgToJpeg.mock.calls.every((call) => !call[1] && !call[2]),
+    ).toBe(true);
+    expect(
+      dressSvgToJpeg.mock.calls.every((call) => call[6]?.mode === "visual"),
+    ).toBe(true);
+    const text = drawnText(drawText.mock.calls).join(" ");
+    for (const retired of [
+      "얼굴",
+      "뒷모습",
+      "등 파임",
+      "등 뒤 여밈",
+      "샴페인",
+      "뒤로 끌리는 길이",
+      "탈부착",
+      "편함",
+      "무거움",
+    ])
+      expect(text).not.toContain(retired);
+    expect(text).toContain("위쪽 소재");
+    expect(
+      drawnText(drawText.mock.calls).filter(
+        (line) => line === "제작 · 할미눈나 (@halminunna)",
+      ),
+    ).toHaveLength(1);
+    expect(text).toContain("허벅지부터");
+    expect(
+      dressSvgToJpeg.mock.calls.every(
+        (call) => call[0].lowerFabricStart === "thigh",
+      ),
+    ).toBe(true);
+    const restored = await inspectPortableTrailer(
+      new Uint8Array(await output.arrayBuffer()),
+    );
+    expect(restored?.payload.schemaVersion).toBe(5);
+    expect(restored?.payload.includeFace).toBe(false);
+    expect(restored?.payload.tour.faceAssetId).toBeUndefined();
+    expect(restored?.assetBytes.size).toBe(0);
+    expect(restored?.payload.dresses[0]).toMatchObject({
+      upperFabric: "lace",
+      lowerFabric: "organzaChiffon",
+      lowerFabricStart: "thigh",
+    });
   });
 
   it("uses a static TrueType font for portable Korean text", async () => {
@@ -171,8 +273,49 @@ describe("visual PDF export", () => {
     expect(tableTags).not.toContain("fvar");
   });
 
-  it("renders bounded full, upper, and back panels while never passing a face to back", async () => {
-    // Given a recoverable export with an explicitly included local face
+  it("wraps a long cover title and paginates shop rows within printable bounds", async () => {
+    const data = snapshot(minimalDress());
+    data.tour.title = "드레스투어의 모든 순간을 오래 기억하려고 적어 둔 제목"
+      .repeat(2)
+      .slice(0, 50);
+    data.shops = Array.from({ length: 30 }, (_, order) => ({
+      ...data.shops[0]!,
+      id: order === 0 ? "shop-1" : `shop-${order + 1}`,
+      order,
+      name:
+        `브라이덜 ${order + 1} ` +
+        "드레스 상담과 선택을 함께 기록한 샵 이름".repeat(2).slice(0, 35),
+    }));
+    getTourSnapshot.mockResolvedValue(data);
+    const drawText = vi.spyOn(PDFPage.prototype, "drawText");
+    const output = await exportPortablePdf("tour-1", {
+      mode: "viewOnly",
+      includeFace: false,
+    });
+    const coverPage = drawText.mock.contexts[0];
+    const coverCalls = drawText.mock.calls.filter(
+      (_, index) => drawText.mock.contexts[index] === coverPage,
+    );
+    expect(
+      coverCalls.every(([text, options]) => {
+        const font = options?.font;
+        return (
+          font &&
+          options?.size &&
+          (options.x ?? 0) + font.widthOfTextAtSize(text, options.size) <=
+            553.28 &&
+          (options.y ?? 0) >= 24
+        );
+      }),
+    ).toBe(true);
+    expect(drawnText(drawText.mock.calls)).toContain("방문한 드레스샵 · 계속");
+    expect(
+      (await PDFDocument.load(await output.arrayBuffer())).getPageCount(),
+    ).toBeGreaterThan(3);
+  });
+
+  it("renders bounded full and upper panels without any face feature", async () => {
+    // Given an old record with a stored face and a retired include flag
     getTourSnapshot.mockResolvedValue(snapshot(dress(), [faceAsset]));
 
     // When the PDF is exported
@@ -181,16 +324,21 @@ describe("visual PDF export", () => {
       includeFace: true,
     });
 
-    // Then every memory-sketch view is rendered and the back view is face-free
+    // Then only current front views are rendered and all face data is excluded
     expect(dressSvgToJpeg.mock.calls.map((call) => call[5])).toEqual([
       "full",
       "upper",
-      "back",
     ]);
     expect(dressSvgToJpeg.mock.calls.map((call) => call[2])).toEqual([
-      true,
-      true,
       false,
+      false,
+    ]);
+    expect(
+      dressSvgToJpeg.mock.calls.map((call) => call[6]?.preparedArtwork?.view),
+    ).toEqual(["full", "upper"]);
+    expect(dressSvgToJpeg.mock.calls.map((call) => call[3] / call[4])).toEqual([
+      3 / 4,
+      6 / 5,
     ]);
     const pdf = await PDFDocument.load(await blob.arrayBuffer());
     expect(pdf.getPageCount()).toBeGreaterThanOrEqual(4);
@@ -207,10 +355,15 @@ describe("visual PDF export", () => {
       includeFace: false,
     });
 
-    // Then three comparison panels plus one favorites full sketch are drawn within A4 bounds
-    expect(drawImage).toHaveBeenCalledTimes(4);
-    const favoriteOptions = drawImage.mock.calls[3]?.[1];
-    expect(favoriteOptions).toMatchObject({ x: 42, y: 326 });
+    // Then two front panels plus one favorites full sketch are drawn within A4 bounds
+    expect(drawImage).toHaveBeenCalledTimes(3);
+    const favoriteOptions = drawImage.mock.calls[2]?.[1];
+    expect(
+      drawImage.mock.calls.map(([, options]) =>
+        Number((options!.width! / options!.height!).toFixed(2)),
+      ),
+    ).toEqual([0.75, 1.2, 0.75]);
+    expect(favoriteOptions?.x).toBe(42);
     expect(
       (favoriteOptions?.x ?? 0) + (favoriteOptions?.width ?? 0),
     ).toBeLessThanOrEqual(553.28);
@@ -266,7 +419,7 @@ describe("visual PDF export", () => {
       .join("")
       .replaceAll(" ", "");
     const content = normalized.replaceAll(
-      "테스트브라이덜·Dress01상세기록·계속",
+      "테스트브라이덜·1번째·Dress01·기본연출·대표연출상세기록·계속",
       "",
     );
     expect(content).toContain(
@@ -294,7 +447,7 @@ describe("visual PDF export", () => {
     expect(pdf.getPageCount()).toBeGreaterThanOrEqual(5);
   });
 
-  it("excludes a stored face from every view-only panel and privacy label", async () => {
+  it("excludes stored faces and retired face copy from view-only output", async () => {
     // Given a stored face that is not authorized for a view-only export
     getTourSnapshot.mockResolvedValue(snapshot(dress(), [faceAsset]));
     const drawText = vi.spyOn(PDFPage.prototype, "drawText");
@@ -305,15 +458,12 @@ describe("visual PDF export", () => {
       includeFace: true,
     });
 
-    // Then all three render calls exclude the face and the visual page states that outcome
+    // Then current render calls exclude the face without exposing a retired feature
     expect(dressSvgToJpeg.mock.calls.map((call) => call[2])).toEqual([
       false,
       false,
-      false,
     ]);
-    expect(drawnText(drawText.mock.calls)).toContain(
-      "얼굴 사진은 보이는 스케치와 복원 데이터에 포함되지 않습니다.",
-    );
+    expect(drawnText(drawText.mock.calls).join(" ")).not.toContain("얼굴");
   });
 
   it("adds continuation pages instead of clipping maximal Korean notes and memo", async () => {
@@ -330,4 +480,118 @@ describe("visual PDF export", () => {
     const pdf = await PDFDocument.load(await blob.arrayBuffer());
     expect(pdf.getPageCount()).toBeGreaterThanOrEqual(5);
   });
+
+  it("renders every styling with unique view keys and summarizes only the representative", async () => {
+    const base = dress({ memoryCue: "기본 연출 기억" });
+    base.stylingVariants = [
+      {
+        id: "look-1",
+        label: "어깨 감쌈",
+        createdAt: now,
+        updatedAt: now,
+        snapshot: snapshotDressLook({
+          ...base,
+          topStyle: "longSleeve",
+          memoryCue: "대표 연출 기억",
+          memo: "긴 소매 메모",
+        }),
+      },
+    ];
+    base.preferredStylingId = "look-1";
+    getTourSnapshot.mockResolvedValue(snapshot(base, [faceAsset]));
+    const drawText = vi.spyOn(PDFPage.prototype, "drawText");
+    const drawImage = vi.spyOn(PDFPage.prototype, "drawImage");
+    const progress = vi.fn();
+    const blob = await exportPortablePdf(
+      "tour-1",
+      { mode: "portable", includeFace: false },
+      progress,
+    );
+    expect(
+      dressSvgToJpeg.mock.calls.map((call) => [call[0].topStyle, call[5]]),
+    ).toEqual([
+      ["offShoulder", "full"],
+      ["offShoulder", "upper"],
+      ["longSleeve", "full"],
+      ["longSleeve", "upper"],
+    ]);
+    const namespaces = dressSvgToJpeg.mock.calls.map(
+      (call) => call[6].namespace,
+    );
+    expect(new Set(namespaces).size).toBe(4);
+    expect(namespaces).toContain("pdf-dress-1-base-full");
+    expect(namespaces).toContain("pdf-dress-1-look-1-full");
+    expect(
+      dressSvgToJpeg.mock.calls.every((call) => !call[1] && !call[2]),
+    ).toBe(true);
+    expect(drawImage).toHaveBeenCalledTimes(5);
+    const texts = drawnText(drawText.mock.calls);
+    expect(texts.filter((text) => text === "기본 연출 기억")).toHaveLength(1);
+    expect(texts.filter((text) => text === "대표 연출 기억")).toHaveLength(2);
+    expect(texts).toContain("드레스 1벌");
+    expect(texts).toContain("후보 1벌");
+    expect(texts.some((text) => text.includes("어깨 감쌈 · 대표 연출"))).toBe(
+      true,
+    );
+    expect(progress).toHaveBeenCalledWith({
+      step: "render",
+      percent: 55,
+      label: "연출 이미지 2/2",
+    });
+    const restored = await inspectPortableTrailer(
+      new Uint8Array(await blob.arrayBuffer()),
+    );
+    expect(restored?.payload.schemaVersion).toBe(2);
+    expect(
+      restored?.payload.dresses[0].stylingVariants?.[0].snapshot.memo,
+    ).toBe("긴 소매 메모");
+    expect(restored?.payload.dresses[0].preferredStylingId).toBe("look-1");
+    expect(restored?.assetBytes.size).toBe(0);
+  });
+
+  it("keeps maximum-length shop, dress and look names above the PDF panels", async () => {
+    const base = dress({ label: "드".repeat(50) });
+    base.stylingVariants = [
+      {
+        id: "look-long",
+        label: "연".repeat(30),
+        createdAt: now,
+        updatedAt: now,
+        snapshot: snapshotDressLook(base),
+      },
+    ];
+    base.preferredStylingId = "look-long";
+    const data = snapshot(base);
+    data.shops[0].name = "샵".repeat(50);
+    getTourSnapshot.mockResolvedValue(data);
+    const drawText = vi.spyOn(PDFPage.prototype, "drawText");
+    await exportPortablePdf("tour-1", { mode: "viewOnly", includeFace: false });
+    const titleCalls = drawText.mock.calls.filter(([text]) =>
+      /[드샵연]{2}/.test(text),
+    );
+    expect(titleCalls.length).toBeGreaterThan(1);
+    expect(
+      titleCalls.every(
+        ([text, options]) =>
+          options?.font &&
+          options.size &&
+          (options.x ?? 0) +
+            options.font.widthOfTextAtSize(text, options.size) <=
+            553.28 &&
+          (options.y ?? 0) >= 54,
+      ),
+    ).toBe(true);
+    const favoritePage =
+      drawText.mock.contexts[
+        drawText.mock.calls.findIndex(([text]) => text === "후보 드레스")
+      ];
+    const favoriteTitles = titleCalls.filter(
+      (call) =>
+        drawText.mock.contexts[drawText.mock.calls.indexOf(call)] ===
+        favoritePage,
+    );
+    expect(
+      favoriteTitles.every(([, options]) => (options?.y ?? 0) >= 720),
+    ).toBe(true);
+  }, 15000);
 });

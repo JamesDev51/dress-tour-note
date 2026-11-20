@@ -1,11 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { chooseUpper } from "./helpers/selectUpper";
 
-const tinyPng = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8Dwn4GBgYGJAQoAHQkCAWJ6+ygAAAAASUVORK5CYII=",
-  "base64",
-);
-const evidenceRoot = ".omo/evidence/task-11-e2e-release-qa/manual";
+const evidenceRoot =
+  ".reviews/2026-11-01-remove-comparison/usability-browser/surfaces";
 
 async function captureSurface(page: Page, name: string) {
   await page.evaluate(async () => document.fonts.ready);
@@ -118,10 +116,7 @@ async function expectNoSeriousAccessibilityViolations(page: Page) {
   expect(violations).toEqual([]);
 }
 
-async function createBaseTour(
-  page: Page,
-  options: { two?: boolean; face?: boolean } = {},
-) {
+async function createBaseTour(page: Page, options: { two?: boolean } = {}) {
   await page.goto("/");
   await page.getByRole("link", { name: /새 투어 시작/ }).click();
   await page.getByPlaceholder("예: 히똥").fill("사용성 신부");
@@ -137,50 +132,39 @@ async function createBaseTour(
   await page.getByRole("button", { name: /샵 추가/ }).click();
   await page.getByPlaceholder("드레스샵 이름").fill("사용성 브라이덜");
   await page.getByRole("button", { name: "추가하기", exact: true }).click();
-  await page
-    .getByRole("button", { name: "사용성 브라이덜 열기", exact: true })
-    .click();
+  await expect(page).toHaveURL(/\/shop\/[^/]+$/);
   await page.getByRole("button", { name: "드레스 추가", exact: true }).click();
   await completeCore(page, {
-    top: /오프숄더/,
-    neckline: /하트형/,
+    upper: /어깨 감쌈 · 하트 가슴선/,
+    fabric: /레이스/,
     silhouette: /A라인/,
-    candidate: "후보로 남기기",
+    candidate: true,
   });
-  if (options.face) {
-    await page.getByRole("button", { name: "상세 기록", exact: true }).click();
-    await page
-      .locator('input[type="file"][accept*="image/heic"]')
-      .setInputFiles({
-        name: "face.png",
-        mimeType: "image/png",
-        buffer: tinyPng,
-      });
-    await expect(page.getByRole("status")).toContainText(
-      "얼굴 사진을 저장했어요.",
-    );
-  }
   if (options.two) {
     await page
       .getByRole("button", { name: "다음 드레스 기록", exact: true })
       .click();
     await expect(
-      page.getByRole("heading", { name: /어깨\/상의는 어땠나요/ }),
+      page.getByRole("heading", { name: /전체 모양은 어땠나요/ }),
     ).toBeVisible();
     await expect(
-      page.locator('[data-option-category="top"] [aria-pressed="true"]'),
+      page.locator('[data-fast-record-options] [aria-pressed="true"]'),
     ).toHaveCount(0);
     await completeCore(page, {
-      top: /스트랩리스|끈 없음/,
-      neckline: /스트레이트 네크라인|일자 네크라인/,
+      upper: /끈 없음 · 일자 가슴선/,
+      fabric: /실크/,
       silhouette: /머메이드/,
-      candidate: "후보 아님",
+      candidate: false,
     });
   }
   return tourId;
 }
 
 async function chooseCoreOption(page: Page, name: RegExp | string) {
+  if ((typeof name === "string" ? name : name.source).includes(" · ")) {
+    await chooseUpper(page, name);
+    return;
+  }
   const option = page.getByRole("button", { name }).first();
   await option.click();
   await expect(option).toHaveAttribute("aria-pressed", "true");
@@ -203,19 +187,29 @@ async function expectNoHorizontalOverflow(page: Page) {
 async function completeCore(
   page: Page,
   choices: {
-    top: RegExp | string;
-    neckline: RegExp | string;
+    upper: RegExp | string;
+    fabric: RegExp | string;
     silhouette: RegExp | string;
-    candidate: "후보로 남기기" | "후보 아님";
+    candidate: boolean;
   },
 ) {
-  await chooseCoreOption(page, choices.top);
-  await nextCoreStep(page);
-  await chooseCoreOption(page, choices.neckline);
-  await nextCoreStep(page);
   await chooseCoreOption(page, choices.silhouette);
   await nextCoreStep(page);
-  await chooseCoreOption(page, choices.candidate);
+  await chooseCoreOption(page, choices.fabric);
+  await nextCoreStep(page);
+  await chooseUpper(page, choices.upper);
+  await page
+    .getByRole("button", { name: "기록 완료하고 보기", exact: true })
+    .click();
+  await expect(page).toHaveURL(/view=record/);
+  const feedback = page.getByText("느낌·평가 남기기 · 선택", { exact: true });
+  await feedback.click();
+  if (choices.candidate)
+    await page.getByRole("button", { name: "후보", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "후보", exact: true }),
+  ).toHaveAttribute("aria-pressed", String(choices.candidate));
+  await feedback.click();
 }
 
 test("first-time flow accepts optional tour fields", async ({ page }) => {
@@ -234,7 +228,7 @@ test("mobile pages do not overflow horizontally at supported boundary widths", a
 }) => {
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });
-    await page.goto("http://127.0.0.1:4173");
+    await page.goto("/");
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,
     );
@@ -257,6 +251,7 @@ test("all individual WebP artwork is available and option cards use it", async (
       };
     }),
   );
+  expect(assets).toHaveLength(61);
   expect(
     assets.every(
       (asset) => asset.ok && asset.contentType?.includes("image/webp"),
@@ -264,30 +259,153 @@ test("all individual WebP artwork is available and option cards use it", async (
   ).toBe(true);
 
   await createBaseTour(page);
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
   await expect(
-    page.locator('[data-option-art-kind="generated-image"] img'),
-  ).toHaveCount(61);
+    page.locator(
+      '[data-option-category] [data-option-art-kind="generated-image"] img',
+    ),
+  ).toHaveCount(44); // Only current structural/material/detail choices are presented.
   await expect(
     page.locator('[data-option-art="top-offShoulder"]'),
   ).toBeVisible();
   await expect(
     page.locator('[data-option-art="silhouette-aLine"]'),
   ).toBeVisible();
-  await expect(page.locator('[data-option-art="color-ivory"]')).toBeVisible();
+  for (const category of ["color", "backStyle", "train"])
+    await expect(
+      page.locator(`[data-option-category="${category}"]`),
+    ).toHaveCount(0);
+  await expect(
+    page.locator('[data-option-art="details-detachableSleeve"]'),
+  ).toHaveCount(0);
+  await expect(page.locator('[data-option-art="fabric-tulle"]')).toHaveCount(0);
+  await expect(
+    page.locator('[data-option-art="fabric-organzaChiffon"]'),
+  ).toBeVisible();
 });
 
 test("missing-record routes fail safely instead of leaving a blank screen", async ({
   page,
 }) => {
-  await page.goto("/tour/not-found");
-  await expect(page.getByText("기록을 불러오는 중...")).toBeVisible();
+  const missingRoutes = [
+    {
+      path: "/tour/not-found",
+      heading: "투어 기록을 찾을 수 없어요.",
+      role: "link" as const,
+      action: "홈에서 기록 찾기",
+      target: "/",
+    },
+    {
+      path: "/tour/not-found/shop/not-found",
+      heading: "드레스샵 기록을 찾을 수 없어요.",
+      role: "button" as const,
+      action: "홈에서 기록 찾기",
+      target: "/",
+    },
+    {
+      path: "/tour/not-found/dress/not-found",
+      heading: "기록을 찾을 수 없어요",
+      role: "link" as const,
+      action: "투어로 돌아가기",
+      target: "/tour/not-found",
+    },
+    {
+      path: "/tour/not-found/review",
+      heading: "기록을 찾을 수 없어요",
+      role: "link" as const,
+      action: "홈으로 돌아가기",
+      target: "/",
+    },
+  ];
+  for (const route of missingRoutes) {
+    await page.goto(route.path);
+    await expect(
+      page.getByRole("heading", { name: route.heading, exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText(/불러오는 중/)).toHaveCount(0);
+    await page
+      .getByRole(route.role, { name: route.action, exact: true })
+      .click();
+    await expect(page).toHaveURL(route.target);
+  }
   await page.goto("/tour/not-found/export");
   await expect(page.getByRole("alert")).toContainText(
-    "투어 기록을 찾을 수 없어요.",
+    "이 브라우저에서 투어 기록을 찾을 수 없어요.",
   );
   await page.getByRole("button", { name: /다시 불러오기/ }).click();
   await expect(page.getByRole("alert")).toBeVisible();
+});
+
+test("older tours stay reachable after the first five recent records", async ({
+  page,
+}) => {
+  const tourUrls: string[] = [];
+  for (let index = 1; index <= 6; index += 1) {
+    await page.goto("/tour/new");
+    await page
+      .getByPlaceholder("비워두면 자동으로 만들어요")
+      .fill(`기록 접근 ${index}`);
+    await page
+      .getByRole("button", { name: "투어 만들기", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/tour\/[a-f0-9-]{36}$/);
+    await expect(page.getByRole("textbox", { name: "투어 제목" })).toHaveValue(
+      `기록 접근 ${index}`,
+    );
+    tourUrls.push(page.url());
+  }
+  await page.goto("/");
+  await expect(page.getByText("기록 접근 6", { exact: true })).toBeVisible();
+  await expect(page.getByText("기록 접근 1", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: /이전 기록 더 보기/ }).click();
+  await page.getByText("기록 접근 1", { exact: true }).click();
+  await expect(page).toHaveURL(tourUrls[0]!);
+  await expect(page.getByRole("textbox", { name: "투어 제목" })).toHaveValue(
+    "기록 접근 1",
+  );
+});
+
+test("shop action targets keep their mobile size without horizontal overflow", async ({
+  page,
+}) => {
+  await createBaseTour(page, { two: true });
+  await page.getByRole("button", { name: "뒤로", exact: true }).click();
+  await expect(page).toHaveURL(/\/shop\//);
+  await expect(page.locator("article").first()).toBeVisible();
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    const dimensions = await page
+      .locator("article")
+      .first()
+      .getByRole("button")
+      .evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const rect = button.getBoundingClientRect();
+          return {
+            label: button.getAttribute("aria-label"),
+            width: rect.width,
+            height: rect.height,
+          };
+        }),
+      );
+    expect(dimensions.length).toBeGreaterThanOrEqual(7);
+    for (const target of dimensions) {
+      expect(
+        target.width,
+        `${target.label} width at ${width}px`,
+      ).toBeGreaterThanOrEqual(44);
+      expect(
+        target.height,
+        `${target.label} height at ${width}px`,
+      ).toBeGreaterThanOrEqual(44);
+    }
+    const nameHeight = await page
+      .getByRole("textbox", { name: "드레스샵 이름" })
+      .evaluate((input) => input.getBoundingClientRect().height);
+    expect(nameHeight).toBeGreaterThanOrEqual(44);
+    await expectNoHorizontalOverflow(page);
+    await captureSurface(page, `shop-touch-targets-${width}`);
+  }
 });
 
 test("privacy keeps local data controls without display settings", async ({
@@ -297,19 +415,19 @@ test("privacy keeps local data controls without display settings", async ({
   await expect(page.getByText("화면 테마")).toHaveCount(0);
   await expect(page.getByText("글꼴")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "설정" })).toHaveCount(0);
-  await expect(page.getByText("기록은 내 기기에만")).toBeVisible();
+  await expect(page.getByText("기록은 내 브라우저에")).toBeVisible();
   const shellStyle = await page.locator(".app-shell").evaluate((element) => ({
     background: getComputedStyle(element).backgroundColor,
     font: getComputedStyle(element).fontFamily,
   }));
-  expect(shellStyle.background).toBe("rgb(255, 255, 255)");
+  expect(shellStyle.background).toBe("rgb(250, 248, 244)");
   expect(shellStyle.font).toContain("Pretendard");
   page.once("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: /전체 데이터 삭제/ }).click();
+  await page.getByRole("button", { name: /기록 전체 삭제/ }).click();
   await expect(page).toHaveURL("/");
 });
 
-test("candidate filter never blocks choosing two dresses for comparison", async ({
+test("candidate filter opens individual records and keeps PDF access without comparison", async ({
   page,
 }) => {
   const tourId = await createBaseTour(page, { two: true });
@@ -317,11 +435,24 @@ test("candidate filter never blocks choosing two dresses for comparison", async 
   await expect(
     page.getByText("사용성 테스트 투어", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByRole("button", { name: /비교/ })).toHaveCount(0);
   await page.getByRole("button", { name: /^후보 1$/ }).click();
-  await page.getByRole("button", { name: "2벌 비교" }).click();
-  await expect(page.getByText(/비교할 드레스 2벌/)).toBeVisible();
-  await expect(page.getByRole("button", { name: /Dress 01/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Dress 02/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^후보 1$/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByRole("button", { name: /드레스 01/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /드레스 02/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "PDF 만들기" })).toBeVisible();
+  await page.getByRole("button", { name: /드레스 01/ }).click();
+  await expect(page).toHaveURL(/view=record/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("드레스 01");
+  await page.goto(`/tour/${tourId}/review`);
+  await page.getByRole("button", { name: /^전체 2$/ }).click();
+  await expect(page.getByRole("button", { name: /드레스 02/ })).toBeVisible();
+  await page.getByRole("button", { name: /드레스 02/ }).click();
+  await expect(page).toHaveURL(/view=record/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("드레스 02");
 });
 
 test("editor choices remain independent across the 320 and 390px boundaries", async ({
@@ -329,35 +460,43 @@ test("editor choices remain independent across the 320 and 390px boundaries", as
 }) => {
   await createBaseTour(page);
   const editorUrl = page.url();
-  await page.reload();
-  await page.getByRole("button", { name: "핵심 기록 수정" }).click();
-  await page.getByRole("button", { name: /끈 있는 형태/ }).click();
-  await expect(
-    page.getByRole("button", { name: /끈 있는 형태/ }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await nextCoreStep(page);
-  await page.getByRole("button", { name: /브이넥/ }).click();
-  await expect(page.getByRole("button", { name: /브이넥/ })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await page.getByRole("button", { name: "끈·소매 수정", exact: true }).click();
+  await chooseCoreOption(page, /^일반 끈/);
+  await page
+    .getByRole("button", { name: "기록으로 돌아가기", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "목·가슴선 수정", exact: true })
+    .click();
+  await chooseCoreOption(page, /브이넥/);
+  await page
+    .getByRole("button", { name: "기록으로 돌아가기", exact: true })
+    .click();
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto(editorUrl);
-    await page.getByRole("button", { name: "핵심 기록 수정" }).click();
+    await page
+      .getByRole("button", { name: "끈·소매 수정", exact: true })
+      .click();
     await expect(
-      page.getByRole("button", { name: /끈 있는 형태/ }),
+      page.getByRole("button", { name: /^일반 끈/ }),
     ).toHaveAttribute("aria-pressed", "true");
-    await nextCoreStep(page);
+    await expectNoHorizontalOverflow(page);
+    await page
+      .getByRole("button", { name: "기록으로 돌아가기", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "목·가슴선 수정", exact: true })
+      .click();
     await expect(page.getByRole("button", { name: /브이넥/ })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
+    await expectNoHorizontalOverflow(page);
     await captureSurface(page, `editor-neckline-${width}`);
+    await page
+      .getByRole("button", { name: "기록으로 돌아가기", exact: true })
+      .click();
   }
 });
 
@@ -372,28 +511,52 @@ test("invalid import file returns an actionable error", async ({ page }) => {
   await expect(page.getByText(/다시 선택/)).toBeVisible();
 });
 
-test("last face position survives immediate navigation away", async ({
+test("mixed upper and skirt materials survive immediate navigation away", async ({
   page,
 }) => {
-  const tourId = await createBaseTour(page, { face: true });
+  const tourId = await createBaseTour(page);
   const dressUrl = page.url();
-  await page.getByLabel("좌우").fill("0.73");
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
+  await page
+    .getByRole("checkbox", { name: "상체와 치마 소재가 달라요" })
+    .click();
+  await expect(
+    page.getByRole("checkbox", { name: "상체와 치마 소재가 달라요" }),
+  ).toBeChecked();
+  await page
+    .getByRole("group", { name: "상체 소재", exact: true })
+    .getByRole("button", { name: /^레이스/ })
+    .click();
+  await page
+    .getByRole("group", { name: "치마 소재", exact: true })
+    .getByRole("button", { name: /^망사·쉬폰/ })
+    .click();
   await page.getByLabel("뒤로").click();
   await expect(page).toHaveURL(new RegExp(`/tour/${tourId}/shop/`));
   await page.goto(dressUrl);
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
-  await expect(page.getByLabel("좌우")).toHaveValue("0.73");
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
+  await expect(
+    page.getByRole("checkbox", { name: "상체와 치마 소재가 달라요" }),
+  ).toBeChecked();
+  await expect(
+    page
+      .getByRole("group", { name: "상체 소재", exact: true })
+      .getByRole("button", { name: /^레이스/ }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page
+      .getByRole("group", { name: "치마 소재", exact: true })
+      .getByRole("button", { name: /^망사·쉬폰/ }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
-test("bad compare URL recovers safely and recent tour deletion works", async ({
+test("obsolete comparison URL returns home and recent tour deletion works", async ({
   page,
 }) => {
   const tourId = await createBaseTour(page);
   await page.goto(`/tour/${tourId}/compare?a=bad&b=bad2`);
-  await expect(
-    page.getByText("선택한 드레스 기록을 찾을 수 없어요."),
-  ).toBeVisible();
-  await page.goto("/");
+  await expect(page).toHaveURL("/");
+  await expect(page.getByRole("link", { name: /새 투어 시작/ })).toBeVisible();
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: /사용성 테스트 투어 삭제/ }).click();
   await expect(
@@ -409,22 +572,22 @@ test("three warmed core records stay functional while reporting timing", async (
     .getByRole("button", { name: "다음 드레스 기록", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: /어깨\/상의는 어땠나요/ }),
+    page.getByRole("heading", { name: /전체 모양은 어땠나요/ }),
   ).toBeVisible();
   const samplesMs: number[] = [];
   for (let index = 0; index < 3; index += 1) {
     const startedAt = Date.now();
     await expect(
-      page.locator('[data-option-category="top"] [aria-pressed="true"]'),
+      page.locator('[data-fast-record-options] [aria-pressed="true"]'),
     ).toHaveCount(0);
     if (index === 0 && process.env.CORE_TIMING_DELAY === "1") {
       await page.waitForTimeout(40_000);
     }
     await completeCore(page, {
-      top: /오프숄더/,
-      neckline: /하트형/,
+      upper: /어깨 감쌈 · 하트 가슴선/,
+      fabric: /레이스/,
       silhouette: /A라인/,
-      candidate: "후보 아님",
+      candidate: false,
     });
     const completedDressUrl = page.url();
     const nextDress = page.getByRole("button", {
@@ -435,7 +598,7 @@ test("three warmed core records stay functional while reporting timing", async (
     await expect(nextDress).toBeEnabled();
     await nextDress.click();
     await expect(
-      page.getByRole("heading", { name: /어깨\/상의는 어땠나요/ }),
+      page.getByRole("heading", { name: /전체 모양은 어땠나요/ }),
     ).toBeVisible();
     const elapsedMs = Date.now() - startedAt;
     samplesMs.push(elapsedMs);
@@ -447,9 +610,10 @@ test("three warmed core records stay functional while reporting timing", async (
       .locator("..");
     await expect(summary).toBeVisible();
     for (const [label, value] of [
-      ["상의 디자인", "오프숄더"],
-      ["네크라인", "스위트하트 네크라인"],
-      ["실루엣", "A라인"],
+      ["전체 모양", "A라인"],
+      ["소재", "레이스"],
+      ["끈·소매", "어깨 감쌈"],
+      ["목·가슴선", "하트 가슴선"],
     ]) {
       await expect(
         summary.getByText(label, { exact: true }).locator("..").locator("dd"),
@@ -457,13 +621,13 @@ test("three warmed core records stay functional while reporting timing", async (
     }
     await expect(
       page
-        .getByRole("heading", { name: "기억과 선택" })
+        .getByRole("heading", { name: "느낌과 평가" })
         .locator("..")
-        .getByText("후보 아님", { exact: true }),
+        .getByText("후보 표시 없음", { exact: true }),
     ).toBeVisible();
     await page.goto(readyDressUrl);
     await expect(
-      page.getByRole("heading", { name: /어깨\/상의는 어땠나요/ }),
+      page.getByRole("heading", { name: /전체 모양은 어땠나요/ }),
     ).toBeVisible();
   }
   const medianMs = [...samplesMs].sort((left, right) => left - right)[1];
@@ -480,22 +644,22 @@ test("all unknown core choices persist as deliberate decisions on re-entry", asy
     .getByRole("button", { name: "다음 드레스 기록", exact: true })
     .click();
   await completeCore(page, {
-    top: "기억 안 남",
-    neckline: "기억 안 남",
+    upper: "기억 안 남",
+    fabric: "기억 안 남",
     silhouette: "기억 안 남",
-    candidate: "후보 아님",
+    candidate: false,
   });
   await page.reload();
   const summary = page
     .getByRole("heading", { name: "전체 기록", exact: true })
     .locator("..");
   await expect(summary).toBeVisible();
-  for (const label of ["상의 디자인", "네크라인", "실루엣"]) {
+  for (const label of ["전체 모양", "소재", "끈·소매", "목·가슴선"]) {
     await expect(
       summary.getByText(label, { exact: true }).locator("..").locator("dd"),
     ).toHaveText("기억 안 남");
   }
-  await page.getByRole("button", { name: "핵심 기록 수정" }).click();
+  await page.getByRole("button", { name: "기본 기록 수정" }).click();
   await expect(
     page.getByRole("button", { name: "기억 안 남" }),
   ).toHaveAttribute("aria-pressed", "true");
@@ -508,78 +672,103 @@ test("each core field survives immediate next, back, and reload", async ({
   await page
     .getByRole("button", { name: "다음 드레스 기록", exact: true })
     .click();
-  await chooseCoreOption(page, /스트랩리스/);
+  await chooseCoreOption(page, /머메이드/);
   await nextCoreStep(page);
   await page.getByRole("button", { name: "이전" }).click();
-  await expect(
-    page.getByRole("button", { name: /스트랩리스/ }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await nextCoreStep(page);
-  await chooseCoreOption(page, /브이넥/);
-  await nextCoreStep(page);
-  await page.reload();
-  await nextCoreStep(page);
-  await expect(page.getByRole("button", { name: /브이넥/ })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await nextCoreStep(page);
-  await chooseCoreOption(page, /머메이드/);
-  await page.reload();
-  await nextCoreStep(page);
-  await nextCoreStep(page);
   await expect(page.getByRole("button", { name: /머메이드/ })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
+  await nextCoreStep(page);
+  await chooseCoreOption(page, /레이스/);
+  await nextCoreStep(page);
+  await page.reload();
+  await expect(page.getByRole("button", { name: /머메이드/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await nextCoreStep(page);
+  await expect(page.getByRole("button", { name: /레이스/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await nextCoreStep(page);
+  await chooseCoreOption(page, /가는 끈 · 일자 가슴선/);
+  await page.reload();
+  await nextCoreStep(page);
+  await nextCoreStep(page);
+  await expect(
+    page
+      .locator('[data-option-category="neckline"]')
+      .getByRole("button", { name: /^일자 가슴선/ }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page
+      .locator('[data-option-category="top"]')
+      .getByRole("button", { name: /^가는 끈/ }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
-test("all nine detail categories and closest-choice notes persist", async ({
+test("active detail categories and closest-choice notes persist without retired controls", async ({
   page,
 }) => {
   await createBaseTour(page);
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
   for (const heading of [
-    "어깨/상의",
-    "네크라인",
-    "실루엣",
-    "소재",
-    "색상",
+    "끈·소매",
+    "목·가슴선",
+    "전체 모양",
+    "소재·표면",
     "허리선",
-    "등 디자인",
-    "트레인",
-    "디테일",
+    "장식과 세부 특징",
   ]) {
     await expect(page.getByRole("heading", { name: heading })).toBeVisible();
   }
   await page
-    .getByRole("button", { name: /비슷하지만 달라요 · 상의 디자인/ })
+    .getByRole("button", { name: /비슷하지만 달라요 · 끈·소매/ })
     .click();
   await page
-    .getByLabel("상의 디자인에서 다른 점")
+    .getByLabel("끈·소매에서 다른 점")
     .fill("소매가 팔꿈치까지 내려오는 가장 가까운 선택");
-  await page.getByLabel("상의 디자인에서 다른 점").blur();
-  await chooseCoreOption(page, /미카도 새틴/);
-  await chooseCoreOption(page, /샴페인/);
-  await chooseCoreOption(page, /내추럴 웨이스트/);
-  await chooseCoreOption(page, /오픈 백/);
-  await chooseCoreOption(page, /채플 트레인/);
-  await chooseCoreOption(page, /^코르셋 몸통/);
+  await page.getByLabel("끈·소매에서 다른 점").blur();
+  await chooseCoreOption(page, /실크/);
+  await chooseCoreOption(page, /기본 허리선/);
+  await chooseCoreOption(page, /^코르셋/);
   await page.getByRole("button", { name: "신부 픽" }).click();
   await expect(page.getByRole("button", { name: "신부 픽" })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
   await page.reload();
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
   await settleOptionArtwork(page);
-  await expect(page.getByLabel("상의 디자인에서 다른 점")).toHaveValue(
+  await expect(page.getByLabel("끈·소매에서 다른 점")).toHaveValue(
     "소매가 팔꿈치까지 내려오는 가장 가까운 선택",
   );
+  await expect(page.getByRole("button", { name: /^코르셋/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  for (const category of ["color", "backStyle", "train"])
+    await expect(
+      page.locator(`[data-option-category="${category}"]`),
+    ).toHaveCount(0);
+  for (const tag of [
+    "가벼움",
+    "편함",
+    "조임",
+    "흘러내림",
+    "무거움",
+    "불편함",
+    "까슬거림",
+  ])
+    await expect(
+      page.getByRole("button", { name: tag, exact: true }),
+    ).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: /^코르셋 몸통/ }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await captureSurface(page, "details-nine-categories-390");
+    page.getByRole("button", { name: /탈부착 소매|뒤 리본/ }),
+  ).toHaveCount(0);
+  await captureSurface(page, "details-categories-390");
 });
 
 test.describe("option artwork failure", () => {
@@ -591,7 +780,9 @@ test.describe("option artwork failure", () => {
     );
     await createBaseTour(page);
     await page.reload();
-    await page.getByRole("button", { name: "핵심 기록 수정" }).click();
+    await page
+      .getByRole("button", { name: "자세히 기록", exact: true })
+      .click();
     const artwork = page.locator('[data-option-art="top-offShoulder"]');
     await expect(artwork).toHaveAttribute(
       "data-option-art-kind",
@@ -601,7 +792,7 @@ test.describe("option artwork failure", () => {
   });
 });
 
-test("offline app opens, edits, reloads, and compares saved dresses", async ({
+test("offline app opens, edits, reloads, and reopens each saved record", async ({
   page,
 }) => {
   const tourId = await createBaseTour(page, { two: true });
@@ -609,77 +800,95 @@ test("offline app opens, edits, reloads, and compares saved dresses", async ({
   if (!(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))))
     await page.reload();
   await page.context().setOffline(true);
+  await page.getByText("느낌·평가 남기기 · 선택", { exact: true }).click();
   await page.getByRole("button", { name: "5점" }).click();
   await expect(page.getByRole("button", { name: "5점" })).toHaveClass(
     /text-amber-400/,
   );
   await page.reload();
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
   await expect(page.getByRole("button", { name: "5점" })).toHaveClass(
     /text-amber-400/,
   );
   await page.goto(`/tour/${tourId}/review`);
-  await page.getByRole("button", { name: "2벌 비교" }).click();
-  await page.getByRole("button", { name: /Dress 01/ }).click();
-  await page.getByRole("button", { name: /Dress 02/ }).click();
-  await page.getByRole("button", { name: /선택한 2벌 비교하기/ }).click();
+  await expect(page.getByRole("button", { name: /비교/ })).toHaveCount(0);
+  await page.getByRole("button", { name: /드레스 01/ }).click();
+  await expect(page).toHaveURL(/view=record/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("드레스 01");
   await expect(
-    page.getByRole("heading", { name: /두 벌의 차이/ }),
+    page.getByRole("definition").filter({ hasText: /^레이스$/ }),
   ).toBeVisible();
-  await captureSurface(page, "offline-compare-390");
+  await page.goto(`/tour/${tourId}/review`);
+  await page.getByRole("button", { name: /드레스 02/ }).click();
+  await expect(page).toHaveURL(/view=record/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("드레스 02");
+  await expect(
+    page.locator('svg[data-renderer="memory-sketch"][data-view="full"]'),
+  ).toHaveCount(1);
+  await captureSurface(page, "offline-record-390");
   await page.context().setOffline(false);
 });
 
-test("editor, details, review, compare, import, and export have no serious axe violations", async ({
+test("editor, details, shop, review, individual record, import, and export have no serious axe violations", async ({
   page,
 }) => {
   const tourId = await createBaseTour(page, { two: true });
   const editorUrl = page.url();
   await expectNoSeriousAccessibilityViolations(page);
   await captureSurface(page, "axe-editor-390");
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
   await settleOptionArtwork(page);
   await expectNoSeriousAccessibilityViolations(page);
   await captureSurface(page, "axe-details-390");
+  await page.getByLabel("뒤로").click();
+  const shopUrl = page.url();
+  await expect(page.getByRole("button", { name: /비교/ })).toHaveCount(0);
+  await expectNoSeriousAccessibilityViolations(page);
+  await captureSurface(page, "axe-shop-390");
   await page.goto(`/tour/${tourId}/review`);
+  await expect(page.getByRole("button", { name: /비교/ })).toHaveCount(0);
   await expectNoSeriousAccessibilityViolations(page);
   await captureSurface(page, "axe-review-390");
-  await page.getByRole("button", { name: "2벌 비교" }).click();
-  await page.getByRole("button", { name: /Dress 01/ }).click();
-  await page.getByRole("button", { name: /Dress 02/ }).click();
-  await page.getByRole("button", { name: /선택한 2벌 비교하기/ }).click();
-  const compareUrl = page.url();
+  await page.getByRole("button", { name: /드레스 01/ }).click();
+  await expect(page).toHaveURL(/view=record/);
+  const individualRecordUrl = page.url();
   await expectNoSeriousAccessibilityViolations(page);
-  await captureSurface(page, "axe-compare-390");
+  await captureSurface(page, "axe-individual-record-390");
   await page.goto("/import");
   await expect(
-    page.getByRole("heading", { name: /다른 폰의 기록을/ }),
+    page.getByRole("heading", { name: /PDF에서 기록 가져오기/ }),
   ).toBeVisible();
   await expectNoSeriousAccessibilityViolations(page);
   await captureSurface(page, "axe-import-390");
   await page.goto(`/tour/${tourId}/export`);
-  await expect(page.getByText("저장할 PDF를", { exact: false })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "PDF로 저장하기" }),
+  ).toBeVisible();
   await expectNoSeriousAccessibilityViolations(page);
   await captureSurface(page, "axe-export-390");
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto(editorUrl);
     await expectNoHorizontalOverflow(page);
-    await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+    await page
+      .getByRole("button", { name: "자세히 기록", exact: true })
+      .click();
     await settleOptionArtwork(page);
+    await expectNoHorizontalOverflow(page);
+    await page.goto(shopUrl);
     await expectNoHorizontalOverflow(page);
     await page.goto(`/tour/${tourId}/review`);
     await expectNoHorizontalOverflow(page);
-    await page.goto(compareUrl);
+    await page.goto(individualRecordUrl);
     await expectNoHorizontalOverflow(page);
     await page.goto("/import");
     await expect(
-      page.getByRole("heading", { name: /다른 폰의 기록을/ }),
+      page.getByRole("heading", { name: /PDF에서 기록 가져오기/ }),
     ).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await page.goto(`/tour/${tourId}/export`);
     await expect(
-      page.getByText("저장할 PDF를", { exact: false }),
+      page.getByRole("heading", { name: "PDF로 저장하기" }),
     ).toBeVisible();
     await expectNoHorizontalOverflow(page);
   }

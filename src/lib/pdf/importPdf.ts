@@ -14,7 +14,7 @@ import type { LocalAsset, TourSnapshot } from "../../types/domain";
 import type {
   ImportPreview,
   ImportStrategy,
-  PortableTourV1,
+  PortableTour,
 } from "../../types/portable";
 import { db } from "../../db/database";
 import { importSnapshot } from "../../db/repositories";
@@ -25,6 +25,7 @@ import {
   parsePortablePayload,
   PORTABLE_MANIFEST_FILE_NAME,
   PORTABLE_TOUR_FILE_NAME,
+  UnsupportedPortableVersionError,
   verifyPortableFaceBytes,
   verifyPortableTourBytes,
 } from "./portable";
@@ -154,7 +155,7 @@ function parseJsonAttachment(entry: PdfAttachmentEntry, errorMessage: string) {
 }
 
 async function collectAssetBytes(
-  payload: PortableTourV1,
+  payload: PortableTour,
   entries: PdfAttachmentEntry[],
   verifyManifestFace?: (bytes: Uint8Array) => Promise<void>,
 ) {
@@ -225,9 +226,9 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
 
   const entries = extractAttachments(pdf);
   if (!entries.length)
-    throw new Error("복원 가능한 드레스노트 PDF가 아니에요.");
+    throw new Error("기록을 가져올 수 있는 드레스노트 백업용 PDF가 아니에요.");
 
-  let payload: PortableTourV1;
+  let payload: PortableTour;
   let integrityVerified = false;
   let legacyFormat = false;
   let assetBytes = new Map<string, Uint8Array>();
@@ -238,23 +239,23 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
     let manifest;
     try {
       manifest = parsePortableManifest(
-        parseJsonAttachment(
-          manifestEntry,
-          "PDF의 복원 매니페스트가 손상됐어요.",
-        ),
+        parseJsonAttachment(manifestEntry, "PDF의 백업 정보를 읽을 수 없어요."),
       );
     } catch (error) {
+      if (error instanceof UnsupportedPortableVersionError) throw error;
       if (
         error instanceof Error &&
-        error.message === "PDF의 복원 매니페스트가 손상됐어요."
+        error.message === "PDF의 백업 정보를 읽을 수 없어요."
       ) {
         throw error;
       }
-      throw new Error("지원하지 않거나 손상된 드레스노트 PDF예요.");
+      throw new Error(
+        "PDF의 백업 정보가 손상됐어요. 원본 파일을 다시 선택해 주세요.",
+      );
     }
 
     const tourEntry = findAttachment(entries, manifest.tourAttachment);
-    if (!tourEntry) throw new Error("PDF의 투어 데이터 파일이 없어요.");
+    if (!tourEntry) throw new Error("PDF에 백업 기록이 없어요.");
     payload = await verifyPortableTourBytes(manifest, tourEntry[1].content);
 
     const assets = await collectAssetBytes(
@@ -271,20 +272,26 @@ export async function inspectPortablePdf(file: File): Promise<ImportPreview> {
     const legacyEntry =
       findAttachment(entries, LEGACY_PORTABLE_FILE_NAME) ??
       findAttachment(entries, PORTABLE_TOUR_FILE_NAME);
-    if (!legacyEntry) throw new Error("복원 가능한 드레스노트 PDF가 아니에요.");
+    if (!legacyEntry)
+      throw new Error(
+        "기록을 가져올 수 있는 드레스노트 백업용 PDF가 아니에요.",
+      );
 
     let raw: unknown;
     try {
-      raw = parseJsonAttachment(legacyEntry, "PDF의 복원 데이터가 손상됐어요.");
+      raw = parseJsonAttachment(legacyEntry, "PDF의 백업 기록이 손상됐어요.");
       payload = parsePortablePayload(raw);
     } catch (error) {
+      if (error instanceof UnsupportedPortableVersionError) throw error;
       if (
         error instanceof Error &&
-        error.message === "PDF의 복원 데이터가 손상됐어요."
+        error.message === "PDF의 백업 기록이 손상됐어요."
       ) {
         throw error;
       }
-      throw new Error("지원하지 않거나 손상된 드레스노트 PDF예요.");
+      throw new Error(
+        "PDF의 백업 정보가 손상됐어요. 원본 파일을 다시 선택해 주세요.",
+      );
     }
     const assets = await collectAssetBytes(payload, entries);
     assetBytes = assets.assetBytes;

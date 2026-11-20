@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   acknowledgeRecallDraft,
   queueRecallDraft,
@@ -14,19 +14,38 @@ import {
 import type { RecallDraft, RecallKey } from "./DressRecallNotes";
 import type { SaveStatus } from "../../stores/uiStore";
 
+const defaultWrite = (id: string, patch: Partial<Dress>) =>
+  patchDress(id, patch);
+
 export function useDressEditorDraft({
   dressId,
+  stylingId = "base",
   dress,
   face,
   onSaveStatus,
-  writeDress = (id, patch) => patchDress(id, patch),
+  writeDress = defaultWrite,
 }: {
   dressId: string;
+  stylingId?: string;
   dress: Dress | undefined;
   face: LocalAsset | undefined;
   onSaveStatus: (status: SaveStatus) => void;
   writeDress?: (dressId: string, patch: Partial<Dress>) => Promise<void>;
 }) {
+  const identity = `${dressId}:${stylingId}`;
+  const activeIdentity = useRef(identity);
+  useEffect(() => {
+    activeIdentity.current = identity;
+    return () => {
+      activeIdentity.current = "";
+    };
+  }, [identity]);
+  const reportSaveStatus = useCallback(
+    (status: SaveStatus) => {
+      if (activeIdentity.current === identity) onSaveStatus(status);
+    },
+    [identity, onSaveStatus],
+  );
   const [recall, setRecall] = useState<RecallDraft>({
     memoryCue: "",
     likedReason: "",
@@ -43,80 +62,114 @@ export function useDressEditorDraft({
   const latestLabel = useRef("");
   const latestTransform = useRef<FaceTransform>(DEFAULT_FACE_TRANSFORM);
   const hasFace = useRef(false);
+  const previousFaceId = useRef(face?.id);
+  const [hydratedDressId, setHydratedDressId] = useState("");
 
   useEffect(() => {
-    if (dress && initialized.current !== dress.id) {
-      initialized.current = dress.id;
-      const pendingRecall = readRecallDraft(dress.id);
-      const initialRecall = pendingRecall?.values ?? {
-        memoryCue: dress.memoryCue ?? "",
-        likedReason: dress.likedReason ?? "",
-        concern: dress.concern ?? "",
+    if (dress && initialized.current !== identity) {
+      initialized.current = identity;
+      const pendingRecall = readRecallDraft(dress.id, stylingId);
+      const initialRecall = {
+        memoryCue: pendingRecall?.values.memoryCue ?? dress.memoryCue ?? "",
+        likedReason:
+          pendingRecall?.values.likedReason ?? dress.likedReason ?? "",
+        concern: pendingRecall?.values.concern ?? dress.concern ?? "",
       };
       latestRecall.current = initialRecall;
       setRecall(initialRecall);
       if (pendingRecall) {
-        onSaveStatus("saving");
+        reportSaveStatus("saving");
         void writeDress(dress.id, pendingRecall.values).then(
           () => {
-            acknowledgeRecallDraft(dress.id, pendingRecall.revision);
-            onSaveStatus("saved");
+            acknowledgeRecallDraft(dress.id, pendingRecall.revision, stylingId);
+            reportSaveStatus("saved");
           },
-          () => onSaveStatus("error"),
+          () => reportSaveStatus("error"),
         );
-      }
-      latestMemo.current = dress.memo;
+      } else reportSaveStatus("saved");
+      latestMemo.current = pendingRecall?.values.memo ?? dress.memo;
       latestLabel.current = dress.label;
       latestTransform.current = dress.faceTransform ?? DEFAULT_FACE_TRANSFORM;
-      setMemo(dress.memo);
+      setMemo(latestMemo.current);
       setLabel(dress.label);
       setTransform(latestTransform.current);
+      setHydratedDressId(identity);
     }
     hasFace.current = Boolean(face);
-  }, [dress, face, onSaveStatus, writeDress]);
+    if (previousFaceId.current !== face?.id) {
+      previousFaceId.current = face?.id;
+      latestTransform.current = dress?.faceTransform ?? DEFAULT_FACE_TRANSFORM;
+      setTransform(latestTransform.current);
+    }
+  }, [dress, face, identity, stylingId, reportSaveStatus, writeDress]);
 
   useEffect(() => {
-    if (!dress || memo === dress.memo) return;
-    onSaveStatus("saving");
+    if (!dress || hydratedDressId !== identity || memo === dress.memo) return;
+    reportSaveStatus("saving");
     const timeout = window.setTimeout(async () => {
+      const pending = readRecallDraft(dressId, stylingId);
       try {
-        await writeDress(dressId, { memo });
-        onSaveStatus("saved");
+        await writeDress(dressId, {
+          ...(pending?.values ?? latestRecall.current),
+          memo,
+        });
+        if (pending?.values.memo === memo)
+          acknowledgeRecallDraft(dressId, pending.revision, stylingId);
+        reportSaveStatus("saved");
       } catch {
-        onSaveStatus("error");
+        reportSaveStatus("error");
       }
     }, 400);
     return () => clearTimeout(timeout);
-  }, [memo, dressId, dress?.memo, onSaveStatus, writeDress]);
+  }, [
+    memo,
+    dressId,
+    dress?.memo,
+    identity,
+    stylingId,
+    hydratedDressId,
+    reportSaveStatus,
+    writeDress,
+  ]);
 
   useEffect(() => {
-    if (!dress) return;
+    if (!dress || !face || !hasFace.current || hydratedDressId !== identity)
+      return;
     const current = dress.faceTransform ?? DEFAULT_FACE_TRANSFORM;
     if (JSON.stringify(transform) === JSON.stringify(current)) return;
     const timeout = window.setTimeout(async () => {
       try {
         await writeDress(dressId, { faceTransform: transform });
-        onSaveStatus("saved");
+        reportSaveStatus("saved");
       } catch {
-        onSaveStatus("error");
+        reportSaveStatus("error");
       }
     }, 220);
     return () => clearTimeout(timeout);
-  }, [transform, dressId, dress, onSaveStatus, writeDress]);
+  }, [
+    transform,
+    dressId,
+    dress,
+    face,
+    identity,
+    hydratedDressId,
+    reportSaveStatus,
+    writeDress,
+  ]);
 
   useEffect(
     () => () => {
-      if (initialized.current !== dressId) return;
+      if (initialized.current !== identity) return;
       const finalLabel = latestLabel.current.trim();
       const patch: Partial<Dress> = {
-        memo: latestMemo.current,
         ...latestRecall.current,
+        memo: latestMemo.current,
       };
       if (finalLabel) patch.label = finalLabel;
       if (hasFace.current) patch.faceTransform = latestTransform.current;
-      void writeDress(dressId, patch);
+      void writeDress(dressId, patch).catch(() => undefined);
     },
-    [dressId, writeDress],
+    [dressId, identity, writeDress],
   );
 
   const updateTransform = (patch: Partial<FaceTransform>) => {
@@ -126,22 +179,28 @@ export function useDressEditorDraft({
     setTransform(next);
   };
   const flushTransform = () => {
-    void writeDress(dressId, { faceTransform: latestTransform.current });
+    void writeDress(dressId, { faceTransform: latestTransform.current }).catch(
+      () => reportSaveStatus("error"),
+    );
   };
 
   const updateRecall = (key: RecallKey, value: string) => {
     const next = { ...latestRecall.current, [key]: value };
     latestRecall.current = next;
     setRecall(next);
-    const pendingRecall = queueRecallDraft(dressId, next);
-    onSaveStatus("saving");
-    void writeDress(dressId, next).then(
+    const pendingRecall = queueRecallDraft(
+      dressId,
+      { ...next, memo: latestMemo.current },
+      stylingId,
+    );
+    reportSaveStatus("saving");
+    void writeDress(dressId, { ...next, memo: latestMemo.current }).then(
       () => {
         if (pendingRecall)
-          acknowledgeRecallDraft(dressId, pendingRecall.revision);
-        onSaveStatus("saved");
+          acknowledgeRecallDraft(dressId, pendingRecall.revision, stylingId);
+        reportSaveStatus("saved");
       },
-      () => onSaveStatus("error"),
+      () => reportSaveStatus("error"),
     );
   };
 
@@ -150,7 +209,15 @@ export function useDressEditorDraft({
     latestRecall,
     updateRecall,
     memo,
-    setMemo,
+    setMemo: (value: string) => {
+      latestMemo.current = value;
+      setMemo(value);
+      queueRecallDraft(
+        dressId,
+        { ...latestRecall.current, memo: value },
+        stylingId,
+      );
+    },
     label,
     setLabel,
     transform,

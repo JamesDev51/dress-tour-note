@@ -3,6 +3,27 @@ import { describe, expect, it, vi } from "vitest";
 import { usePendingWrites } from "./usePendingWrites";
 
 describe("usePendingWrites", () => {
+  it("serializes newer edits behind older writes", async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const order: string[] = [];
+    const { result } = renderHook(() => usePendingWrites());
+    const older = result.current.run(async () => {
+      await gate;
+      order.push("older");
+    });
+    const newer = result.current.run(async () => {
+      order.push("newer");
+    });
+    expect(order).toEqual([]);
+    await act(async () => {
+      release();
+      await Promise.all([older, newer]);
+    });
+    expect(order).toEqual(["older", "newer"]);
+  });
   it("starts a write before the caller can immediately navigate or reload", () => {
     const write = vi.fn(async () => undefined);
     const { result } = renderHook(() => usePendingWrites());

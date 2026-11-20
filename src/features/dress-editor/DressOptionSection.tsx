@@ -1,21 +1,28 @@
+import { OptionGuide } from "../../components/OptionGuide";
 import {
   OptionArtwork,
   type OptionArtworkCategory,
 } from "../../components/OptionArtwork";
 import { OptionTile } from "../../components/OptionTile";
 import type { Option } from "../../lib/dress/options";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 const categoryLabels = {
-  top: "상의 디자인",
-  neckline: "네크라인",
-  silhouette: "실루엣",
-  fabric: "소재",
+  top: "끈·소매",
+  neckline: "목·가슴선",
+  silhouette: "전체 모양",
+  fabric: "소재·표면",
   color: "색상",
   waistline: "허리선",
   backStyle: "등 디자인",
-  train: "트레인",
-  details: "디테일",
+  train: "뒤로 끌리는 길이",
+  details: "장식과 세부 특징",
 } as const satisfies Readonly<Record<OptionArtworkCategory, string>>;
 
 function isCompactCandidate(category: OptionArtworkCategory) {
@@ -32,6 +39,7 @@ type SharedDressOptionSectionProps<T extends string> = {
   onCustomCommit: (value: string) => void;
   onClearAndSelect?: (id: T) => void;
   allowCustom?: boolean;
+  renderArtwork?: (id: T) => ReactNode;
 };
 
 type SingleDressOptionSectionProps<T extends string> =
@@ -162,8 +170,9 @@ export function DressOptionSection<T extends string>(
   };
   return (
     <section data-option-category={category} className="mt-8">
-      <h2 className="mb-3 text-xl font-black">{title}</h2>
+      <h2 className="bridal-section-title mb-3">{title}</h2>
       {hint && <p className="-mt-2 mb-3 text-sm text-ink-muted">{hint}</p>}
+      <OptionGuide category={category} />
       {unknownOption && (
         <button
           type="button"
@@ -172,7 +181,7 @@ export function DressOptionSection<T extends string>(
           className={`mb-3 min-h-[44px] rounded-control border px-3 text-left text-sm font-semibold transition active:scale-[.985] ${
             selected(unknownOption.id)
               ? "border-accent bg-accent-soft text-accent-copy ring-2 ring-accent/15"
-              : "border-stone-200 bg-white text-stone-600"
+              : "border-rule bg-white text-stone-600"
           } ${disabled?.(unknownOption.id) ? "cursor-not-allowed opacity-35" : ""}`}
           disabled={disabled?.(unknownOption.id)}
           onClick={() => pick(unknownOption.id)}
@@ -195,7 +204,13 @@ export function DressOptionSection<T extends string>(
             selected={selected(option.id)}
             disabled={disabled?.(option.id)}
             onClick={() => pick(option.id)}
-            icon={<OptionArtwork category={category} id={option.id} />}
+            icon={
+              props.renderArtwork ? (
+                props.renderArtwork(option.id)
+              ) : (
+                <OptionArtwork category={category} id={option.id} />
+              )
+            }
           />
         ))}
       </div>
@@ -219,7 +234,7 @@ export function DressOptionSection<T extends string>(
                 value={custom}
                 maxLength={80}
                 placeholder="어떤 점이 달랐는지 적어주세요"
-                className="h-12 w-full rounded-control border border-stone-200 bg-white px-4 text-sm font-normal text-stone-800 focus:border-accent"
+                className="h-12 w-full rounded-control border border-rule bg-white px-4 text-sm font-normal text-stone-800 focus:border-accent"
                 onChange={(event) => setCustom(event.target.value)}
                 onBlur={() => onCustomCommit(custom.trim())}
               />
@@ -231,16 +246,16 @@ export function DressOptionSection<T extends string>(
         <dialog
           open
           aria-label="메모 처리 선택"
-          className="fixed inset-x-5 bottom-24 z-30 rounded-card border border-stone-200 bg-white p-4 shadow-xl"
+          className="bridal-surface fixed inset-x-6 bottom-24 z-30 p-4 shadow-lg"
         >
-          <p className="text-sm font-bold">
+          <p className="text-sm font-semibold">
             {categoryLabels[category]} 메모를 어떻게 할까요?
           </p>
           <div className="mt-3 grid gap-2">
             {pendingChoice !== "unknown" && (
               <button
                 type="button"
-                className="min-h-11 rounded-control bg-stone-900 px-3 text-sm font-bold text-white"
+                className="min-h-11 rounded-control bridal-primary px-3 text-sm font-semibold text-white"
                 onClick={() => applyPick(pendingChoice, true)}
               >
                 메모 유지하고 변경
@@ -248,7 +263,7 @@ export function DressOptionSection<T extends string>(
             )}
             <button
               type="button"
-              className="min-h-11 rounded-control border border-accent bg-accent-soft px-3 text-sm font-bold text-accent-copy"
+              className="min-h-11 rounded-control border border-accent bg-accent-soft px-3 text-sm font-semibold text-accent-copy"
               onClick={() => applyPick(pendingChoice, false)}
             >
               {pendingChoice === "unknown"

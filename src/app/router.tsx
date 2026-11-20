@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import { RouteErrorRecovery } from "../components/RecordRecovery";
 import { MobileShell } from "../components/MobileShell";
 import { HomePage } from "../features/home/HomePage";
 import { NewTourPage } from "../features/tours/NewTourPage";
@@ -7,7 +8,6 @@ import { TourDashboardPage } from "../features/tours/TourDashboardPage";
 import { ShopPage } from "../features/shops/ShopPage";
 import { DressEditorPage } from "../features/dress-editor/DressEditorPage";
 import { ReviewPage } from "../features/review/ReviewPage";
-import { ComparePage } from "../features/compare/ComparePage";
 import { PrivacyPage } from "../features/privacy/PrivacyPage";
 const ExportPage = lazy(() =>
   import("../features/pdf-export/ExportPage").then((m) => ({
@@ -27,6 +27,7 @@ const Loading = () => (
 export const router = createBrowserRouter([
   {
     element: <MobileShell />,
+    errorElement: <RouteErrorRecovery />,
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/tour/new", element: <NewTourPage /> },
@@ -34,7 +35,6 @@ export const router = createBrowserRouter([
       { path: "/tour/:tourId/shop/:shopId", element: <ShopPage /> },
       { path: "/tour/:tourId/dress/:dressId", element: <DressEditorPage /> },
       { path: "/tour/:tourId/review", element: <ReviewPage /> },
-      { path: "/tour/:tourId/compare", element: <ComparePage /> },
       {
         path: "/tour/:tourId/export",
         element: (

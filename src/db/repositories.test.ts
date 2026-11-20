@@ -4,11 +4,14 @@ import {
   addDress,
   addShop,
   createTour,
+  deleteDress,
   deleteShop,
   duplicateDress,
   getTourSnapshot,
   importSnapshot,
   patchDress,
+  patchShop,
+  patchTour,
   reorderDresses,
 } from "./repositories";
 import { necklineOptions, topStyleOptions } from "../lib/dress/options";
@@ -42,6 +45,64 @@ afterEach(async () => {
   await db.open();
 });
 describe("repositories", () => {
+  it("rejects blank names without making saved records impossible to back up", async () => {
+    const tourId = await createTour({ title: "원래 투어" });
+    const shopId = await addShop(tourId, { name: "원래 샵" });
+    const dressId = await addDress(shopId, { label: "기억하는 드레스" });
+
+    await expect(patchTour(tourId, { title: "   " })).rejects.toThrow(
+      "투어 제목",
+    );
+    await expect(patchShop(shopId, { name: "" })).rejects.toThrow(
+      "드레스샵 이름",
+    );
+    await expect(patchDress(dressId, { label: "\t" })).rejects.toThrow(
+      "드레스 이름",
+    );
+    await expect(addShop(tourId, { name: "   " })).rejects.toThrow(
+      "드레스샵 이름",
+    );
+
+    const snapshot = await getTourSnapshot(tourId);
+    expect(snapshot.tour.title).toBe("원래 투어");
+    expect(snapshot.shops).toHaveLength(1);
+    expect(snapshot.shops[0].name).toBe("원래 샵");
+    expect(snapshot.dresses[0].label).toBe("기억하는 드레스");
+  });
+
+  it("trims saved names while preserving their user-provided content", async () => {
+    const tourId = await createTour();
+    const shopId = await addShop(tourId, { name: "  첫 샵  " });
+    const dressId = await addDress(shopId);
+
+    await patchTour(tourId, { title: "  봄 투어  " });
+    await patchShop(shopId, { name: "  두 번째 샵  " });
+    await patchDress(dressId, { label: "  엄마가 좋아한 드레스  " });
+
+    expect((await db.tours.get(tourId))?.title).toBe("봄 투어");
+    expect((await db.shops.get(shopId))?.name).toBe("두 번째 샵");
+    expect((await db.dresses.get(dressId))?.label).toBe("엄마가 좋아한 드레스");
+  });
+
+  it("preserves custom names when reordering and deleting other dresses", async () => {
+    const tourId = await createTour();
+    const shopId = await addShop(tourId, { name: "샵" });
+    const customId = await addDress(shopId, { label: "엄마가 좋아한 드레스" });
+    const automaticId = await addDress(shopId);
+
+    await reorderDresses(shopId, [automaticId, customId]);
+    expect((await db.dresses.get(customId))?.label).toBe(
+      "엄마가 좋아한 드레스",
+    );
+    expect((await db.dresses.get(automaticId))?.label).toBe("드레스 01");
+
+    await deleteDress(automaticId);
+    expect(await db.dresses.get(customId)).toMatchObject({
+      order: 0,
+      label: "엄마가 좋아한 드레스",
+    });
+  });
+
   it("persists the optional core acknowledgement without a schema or index change", async () => {
     const t = await createTour({ title: "투어" });
     const s = await addShop(t, { name: "샵" });
@@ -83,7 +144,7 @@ describe("repositories", () => {
     await reorderDresses(s, [d2, d1]);
     ds = (await getTourSnapshot(t)).dresses.sort((a, b) => a.order - b.order);
     expect(ds[0].id).toBe(d2);
-    expect(ds[0].label).toBe("Dress 01");
+    expect(ds[0].label).toBe("드레스 01");
   });
 
   it("saves every canonical shoulder and neckline pair in either selection order", async () => {

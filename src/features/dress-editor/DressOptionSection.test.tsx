@@ -17,7 +17,7 @@ describe("DressOptionSection", () => {
       />,
     );
 
-    const option = screen.getByRole("button", { name: /오프숄더/ });
+    const option = screen.getByRole("button", { name: /어깨 감쌈/ });
     expect(option).toHaveAttribute("aria-pressed", "true");
     expect(option.querySelector("[data-option-art]")).toBeInTheDocument();
     expect(option).toHaveTextContent(
@@ -65,7 +65,7 @@ describe("DressOptionSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /비슷하지만 달라요/ }));
     const note = screen.getByRole("textbox", {
-      name: "상의 디자인에서 다른 점",
+      name: "끈·소매에서 다른 점",
     });
     expect(note).toHaveAttribute("maxLength", "80");
   });
@@ -117,7 +117,7 @@ describe("DressOptionSection", () => {
         title="디테일"
         options={[
           { id: "corset", label: "코르셋", description: "몸통 구조" },
-          { id: "draping", label: "드레이핑", description: "천 주름" },
+          { id: "draping", label: "겹쳐진 주름", description: "천 주름" },
         ]}
         selectionMode="multiple"
         selectedValues={["corset"]}
@@ -127,7 +127,7 @@ describe("DressOptionSection", () => {
     );
 
     const corset = screen.getByRole("button", { name: /코르셋/ });
-    const draping = screen.getByRole("button", { name: /드레이핑/ });
+    const draping = screen.getByRole("button", { name: /겹쳐진 주름/ });
     fireEvent.click(draping);
 
     expect(corset).toHaveAttribute("aria-pressed", "true");
@@ -150,7 +150,7 @@ describe("DressOptionSection", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /오프숄더/ }));
+    fireEvent.click(screen.getByRole("button", { name: /어깨 감쌈/ }));
     expect(onPick).not.toHaveBeenCalled();
     expect(
       screen.getByRole("dialog", { name: "메모 처리 선택" }),

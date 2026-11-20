@@ -1,4 +1,5 @@
 import type {
+  BackClosure,
   BackStyle,
   Dress,
   DressColor,
@@ -13,6 +14,7 @@ import type {
   Waistline,
 } from "../../types/domain";
 import { QUICK_TAGS } from "../../types/domain";
+import { resolveBackClosure } from "./backDetails";
 
 // allow: SIZE_OK — this module is the indivisible, pure-data dress catalog.
 export type Option<T extends string> = {
@@ -55,62 +57,58 @@ export const topStyleOptions: readonly Option<TopStyle>[] = [
   },
   {
     id: "strapless",
-    label: "스트랩리스",
+    label: "끈 없음",
     description: "어깨 끈 없이 가슴선을 드러내는 상의예요.",
-    aliases: ["끈 없음"],
     technical: "Strapless",
   },
   {
     id: "offShoulder",
-    label: "오프숄더",
+    label: "어깨 감쌈",
     description: "어깨를 살짝 드러내고 소매가 팔 윗부분을 감싸요.",
     aliases: ["오프 숄더"],
     technical: "Off-shoulder",
   },
   {
     id: "strap",
-    label: "스트랩",
+    label: "일반 끈",
     description: "어깨를 지나는 일반적인 끈이 있는 형태예요.",
     aliases: ["끈 있는 형태"],
     technical: "Strap",
   },
   {
     id: "spaghetti",
-    label: "스파게티 스트랩",
+    label: "가는 끈",
     description: "가느다란 끈이 어깨를 지지하는 형태예요.",
-    aliases: ["가는 끈"],
     technical: "Spaghetti strap",
   },
   {
     id: "wideStrap",
-    label: "와이드 스트랩",
+    label: "넓은 끈",
     description: "넓은 끈이 어깨를 안정감 있게 덮는 형태예요.",
-    aliases: ["넓은 끈"],
     technical: "Wide strap",
   },
   {
     id: "halter",
-    label: "홀터넥",
+    label: "목 뒤로 연결",
     description: "끈이나 천이 목 뒤로 올라가 어깨를 드러내요.",
     technical: "Halter",
   },
   {
     id: "oneShoulder",
-    label: "원숄더",
+    label: "한쪽 어깨",
     description: "한쪽 어깨만 덮고 반대쪽 어깨를 드러내는 형태예요.",
-    aliases: ["한쪽 어깨"],
     technical: "One-shoulder",
   },
   {
     id: "shortSleeve",
-    label: "캡 소매",
+    label: "짧은 소매",
     description: "팔 윗부분을 짧게 덮는 소매가 있어요.",
     aliases: ["반소매"],
     technical: "Short/Cap sleeve",
   },
   {
     id: "longSleeve",
-    label: "롱슬리브",
+    label: "긴 소매",
     description: "손목 가까이까지 이어지는 긴 소매가 있어요.",
     technical: "Long sleeve",
   },
@@ -124,14 +122,14 @@ export const necklineOptions: readonly Option<Neckline>[] = [
   },
   {
     id: "straight",
-    label: "스트레이트 네크라인",
+    label: "일자 가슴선",
     description: "가슴 위를 수평에 가깝게 가로지르는 목선이에요.",
     aliases: ["일자 네크라인"],
     technical: "Straight",
   },
   {
     id: "sweetheart",
-    label: "스위트하트 네크라인",
+    label: "하트 가슴선",
     description: "가슴 중앙이 하트 윗선처럼 굴곡진 목선이에요.",
     aliases: ["하트 네크라인"],
     technical: "Sweetheart",
@@ -144,34 +142,34 @@ export const necklineOptions: readonly Option<Neckline>[] = [
   },
   {
     id: "square",
-    label: "스퀘어넥",
+    label: "사각 목선",
     description: "가슴 위가 네모난 선처럼 각진 목선이에요.",
     aliases: ["사각 네크라인"],
     technical: "Square",
   },
   {
     id: "scoop",
-    label: "스쿱넥",
+    label: "둥근 목선",
     description: "둥근 U자 곡선으로 깊게 파인 목선이에요.",
     aliases: ["U넥"],
     technical: "Scoop",
   },
   {
     id: "high",
-    label: "하이넥",
+    label: "목까지 덮임",
     description: "목 가까이까지 올라와 쇄골을 덮는 목선이에요.",
     technical: "High neck",
   },
   {
     id: "illusion",
-    label: "일루전 네크라인",
+    label: "망사로 덮인 목선",
     description: "살결처럼 보이는 얇은 망사 위로 목선이 이어져 보여요.",
     aliases: ["시스루 네크라인"],
     technical: "Illusion",
   },
   {
     id: "asymmetric",
-    label: "비대칭 네크라인",
+    label: "사선 목·가슴선",
     description: "좌우 높이나 선이 서로 다른 목선이에요.",
     aliases: ["언밸런스 네크라인"],
     technical: "Asymmetric",
@@ -192,14 +190,13 @@ export const silhouetteOptions: readonly Option<Silhouette>[] = [
   },
   {
     id: "ballGown",
-    label: "볼가운",
-    description: "허리는 잘록하고 치마가 풍성하게 크게 퍼지는 실루엣이에요.",
-    aliases: ["벨라인"],
+    label: "벨라인",
+    description: "허리부터 둥글고 풍성하게 퍼져요.",
     technical: "Ball gown",
   },
   {
     id: "empire",
-    label: "엠파이어 실루엣",
+    label: "가슴 아래부터 퍼짐",
     description: "가슴 바로 아래에서 치마가 시작해 아래로 흐르는 실루엣이에요.",
     technical: "Empire",
   },
@@ -212,19 +209,19 @@ export const silhouetteOptions: readonly Option<Silhouette>[] = [
   {
     id: "mermaid",
     label: "머메이드",
-    description: "무릎 부근까지 몸에 붙었다가 아래에서 크게 퍼져요.",
+    description: "몸선을 따라 내려오다가 허벅지나 무릎 부근부터 퍼져요.",
     technical: "Mermaid",
   },
   {
     id: "sheath",
-    label: "시스 실루엣",
+    label: "슬림라인",
     description: "몸선을 따라 비교적 곧고 슬림하게 떨어지는 실루엣이에요.",
     aliases: ["슬림 라인"],
     technical: "Sheath",
   },
   {
     id: "teaLength",
-    label: "티 렝스",
+    label: "발목 위 길이",
     description: "종아리 중간에서 발목 사이 길이로 떨어지는 실루엣이에요.",
     technical: "Tea length",
   },
@@ -238,10 +235,10 @@ export const fabricOptions: readonly Option<Fabric>[] = [
   },
   {
     id: "mikadoSatin",
-    label: "미카도 새틴",
-    description: "힘 있고 매끈한 광택이 살아 있는 두꺼운 새틴 소재예요.",
-    aliases: ["미카도", "새틴"],
-    technical: "Mikado/Satin",
+    label: "실크",
+    description: "표면이 매끈하고 은은한 광택이 나요.",
+    aliases: ["미카도"],
+    technical: "Silk",
   },
   {
     id: "lace",
@@ -263,13 +260,13 @@ export const fabricOptions: readonly Option<Fabric>[] = [
   },
   {
     id: "tulle",
-    label: "튤",
+    label: "망사",
     description: "가볍고 망사처럼 비치는 얇은 겹 소재예요.",
     technical: "Tulle",
   },
   {
     id: "organzaChiffon",
-    label: "오간자·쉬폰",
+    label: "얇고 흐르는 원단",
     description: "가볍고 흐르며 공기감 있게 움직이는 얇은 소재예요.",
     aliases: ["쉬폰"],
     technical: "Organza/Chiffon",
@@ -282,9 +279,8 @@ export const fabricOptions: readonly Option<Fabric>[] = [
   },
   {
     id: "floral3D",
-    label: "입체 플라워",
+    label: "입체 꽃",
     description: "입체적인 꽃 장식이 표면 위로 도드라져 보여요.",
-    aliases: ["입체 꽃"],
     technical: "3D Floral",
   },
 ];
@@ -297,7 +293,7 @@ export const colorOptions: readonly Option<DressColor>[] = [
   },
   {
     id: "pureWhite",
-    label: "퓨어 화이트",
+    label: "흰색",
     description: "푸른 기 없이 또렷하고 밝은 흰색이에요.",
     aliases: ["새하얀 화이트"],
     technical: "Pure white",
@@ -325,25 +321,25 @@ export const waistlineOptions: readonly Option<Waistline>[] = [
   },
   {
     id: "natural",
-    label: "내추럴 웨이스트",
+    label: "기본 허리선",
     description: "원래 허리 위치에 절개선이 놓인 형태예요.",
     technical: "Natural waist",
   },
   {
     id: "basque",
-    label: "바스크 웨이스트",
+    label: "V자·곡선 허리선",
     description: "허리선이 아래로 V자나 곡선으로 내려오는 형태예요.",
     technical: "Basque waist",
   },
   {
     id: "drop",
-    label: "드롭 웨이스트",
+    label: "골반 쪽 허리선",
     description: "허리선이 골반 쪽으로 낮게 내려간 형태예요.",
     technical: "Drop waist",
   },
   {
     id: "empire",
-    label: "엠파이어 웨이스트",
+    label: "가슴 아래 허리선",
     description: "가슴 바로 아래에 허리선이 놓인 형태예요.",
     technical: "Empire waist",
   },
@@ -357,39 +353,62 @@ export const backStyleOptions: readonly Option<BackStyle>[] = [
   },
   {
     id: "openBack",
-    label: "오픈 백",
+    label: "등이 넓게 파임",
     description: "등이 넓게 드러나도록 파인 디자인이에요.",
     technical: "Open back",
   },
   {
     id: "vBack",
-    label: "브이 백",
+    label: "V자로 파인 등",
     description: "등 쪽이 V자 형태로 파인 디자인이에요.",
     technical: "V-back",
   },
   {
     id: "buttonBack",
-    label: "버튼 백",
+    label: "등 단추",
     description: "등 중앙을 따라 단추가 이어지는 디자인이에요.",
     technical: "Button back",
   },
   {
     id: "corsetBack",
-    label: "코르셋 백",
+    label: "등 뒤 묶는 끈",
     description: "등 뒤 끈을 교차로 묶어 조이는 디자인이에요.",
     technical: "Corset back",
   },
   {
     id: "illusionBack",
-    label: "일루전 백",
+    label: "망사로 덮인 등",
     description: "얇은 망사 위로 등 디자인이 이어져 보이는 형태예요.",
     technical: "Illusion back",
   },
   {
     id: "bowBack",
-    label: "리본 백",
+    label: "뒤 리본",
     description: "등 뒤에 리본 장식이 중심이 되는 디자인이에요.",
     technical: "Bow back",
+  },
+];
+
+export const backClosureOptions: readonly Option<BackClosure>[] = [
+  {
+    id: "unknown",
+    label: "기억 안 남",
+    description: "등 뒤 여밈이 기억나지 않아요.",
+  },
+  {
+    id: "none",
+    label: "여밈 없음",
+    description: "등 뒤에 단추나 묶는 끈이 없어요.",
+  },
+  {
+    id: "buttons",
+    label: "등 단추",
+    description: "등 중앙을 따라 단추가 이어져요.",
+  },
+  {
+    id: "laceUp",
+    label: "등 뒤 묶는 끈",
+    description: "등 뒤 끈을 교차로 묶어요.",
   },
 ];
 
@@ -401,25 +420,25 @@ export const trainOptions: readonly Option<Train>[] = [
   },
   {
     id: "none",
-    label: "트레인 없음",
+    label: "끌림 없음",
     description: "뒤로 끌리는 치맛자락 없이 바닥선에서 끝나요.",
     technical: "No train",
   },
   {
     id: "sweep",
-    label: "스윕 트레인",
+    label: "짧게 끌림",
     description: "바닥에 살짝 닿을 만큼 짧게 뒤로 이어져요.",
     technical: "Sweep train",
   },
   {
     id: "chapel",
-    label: "채플 트레인",
+    label: "중간 길이로 끌림",
     description: "예식장 바닥 위로 적당히 길게 이어지는 트레인이에요.",
     technical: "Chapel train",
   },
   {
     id: "cathedral",
-    label: "캐서드럴 트레인",
+    label: "길게 끌림",
     description: "예식장 통로를 덮을 만큼 길고 풍성하게 이어지는 트레인이에요.",
     technical: "Cathedral train",
   },
@@ -434,7 +453,7 @@ export const detailOptions: readonly Option<DressDetail>[] = [
   },
   {
     id: "draping",
-    label: "드레이핑",
+    label: "겹쳐진 주름",
     description: "천을 주름지게 겹쳐 흐르게 만든 디테일이에요.",
     technical: "Draping",
   },
@@ -446,7 +465,7 @@ export const detailOptions: readonly Option<DressDetail>[] = [
   },
   {
     id: "backBow",
-    label: "백 리본",
+    label: "뒤 리본",
     description: "등 뒤나 치맛자락 뒤에 리본 장식이 있는 디테일이에요.",
     technical: "Back bow",
   },
@@ -464,19 +483,19 @@ export const detailOptions: readonly Option<DressDetail>[] = [
   },
   {
     id: "floral",
-    label: "플라워 장식",
+    label: "꽃 장식",
     description: "꽃무늬나 꽃 장식이 더해진 디테일이에요.",
     technical: "Floral",
   },
   {
     id: "slit",
-    label: "슬릿",
+    label: "치마 트임",
     description: "치마에 다리가 보이도록 낸 트임이 있어요.",
     technical: "Slit",
   },
   {
     id: "sheer",
-    label: "시어",
+    label: "비치는 부분",
     description: "피부가 은은히 비치는 얇은 원단 디테일이에요.",
     technical: "Sheer",
   },
@@ -488,13 +507,13 @@ export const detailOptions: readonly Option<DressDetail>[] = [
   },
   {
     id: "overskirt",
-    label: "오버스커트",
+    label: "덧치마",
     description: "기본 치마 위에 덧입히는 추가 스커트예요.",
     technical: "Overskirt",
   },
   {
     id: "buttons",
-    label: "버튼 장식",
+    label: "단추 장식",
     description: "앞이나 뒤에 장식용 단추가 이어지는 디테일이에요.",
     technical: "Buttons",
   },
@@ -515,7 +534,12 @@ export type PresentedFabric = Fabric;
 export type PresentedDress = Dress;
 
 export type DressCatalogCategory =
-  DressOptionCategory | "waistline" | "backStyle" | "train" | "details";
+  | DressOptionCategory
+  | "waistline"
+  | "backStyle"
+  | "backClosure"
+  | "train"
+  | "details";
 
 export type DressPresentationItem = {
   readonly category: DressCatalogCategory;
@@ -531,15 +555,16 @@ export type DressPresentation = {
 };
 
 const categoryLabels: Record<DressCatalogCategory, string> = {
-  top: "상의 디자인",
-  neckline: "네크라인",
-  silhouette: "실루엣",
-  fabric: "소재",
+  top: "끈·소매",
+  neckline: "목·가슴선",
+  silhouette: "전체 모양",
+  fabric: "소재·표면",
   color: "색상",
   waistline: "허리선",
-  backStyle: "등 디자인",
-  train: "트레인",
-  details: "디테일",
+  backStyle: "등 파임",
+  backClosure: "등 뒤 여밈",
+  train: "뒤로 끌리는 길이",
+  details: "장식과 세부 특징",
 };
 
 function optionFor<T extends string>(
@@ -578,19 +603,29 @@ export function dressForPresentation(dress: Dress): Dress {
 
 export function formatDressPresentation(dress: Dress): DressPresentation {
   const core = [
-    selectedItem("top", topStyleOptions, dress.topStyle),
-    selectedItem("neckline", necklineOptions, dress.neckline),
     selectedItem("silhouette", silhouetteOptions, dress.silhouette),
     selectedItem("fabric", fabricOptions, dress.fabric),
+    selectedItem("top", topStyleOptions, dress.topStyle),
+    selectedItem("neckline", necklineOptions, dress.neckline),
     selectedItem("color", colorOptions, dress.color),
   ].filter((item): item is DressPresentationItem => Boolean(item));
   const details = [
     selectedItem("waistline", waistlineOptions, dress.waistline),
-    selectedItem("backStyle", backStyleOptions, dress.backStyle),
-    selectedItem("train", trainOptions, dress.train),
-    ...dress.details.map((detail) =>
-      selectedItem("details", detailOptions, detail),
+    selectedItem(
+      "backStyle",
+      backStyleOptions,
+      ["buttonBack", "corsetBack", "bowBack"].includes(dress.backStyle ?? "")
+        ? undefined
+        : dress.backStyle,
     ),
+    selectedItem("backClosure", backClosureOptions, resolveBackClosure(dress)),
+    selectedItem("train", trainOptions, dress.train),
+    ...[
+      ...new Set([
+        ...dress.details,
+        ...(dress.backStyle === "bowBack" ? ["backBow" as const] : []),
+      ]),
+    ].map((detail) => selectedItem("details", detailOptions, detail)),
   ].filter((item): item is DressPresentationItem => Boolean(item));
   const exceptions = [
     {

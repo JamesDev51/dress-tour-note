@@ -9,6 +9,13 @@ import {
   type DressPresentationItem,
 } from "./options";
 
+import {
+  activeAppearance,
+  lowerFabricFor,
+  materialLabel,
+  upperFabricFor,
+} from "./activeOptions";
+
 export type DecisionField = {
   readonly key: DecisionFieldKey;
   readonly label: string;
@@ -19,6 +26,7 @@ export type DecisionField = {
 export type DecisionFieldKey =
   | DressOptionCategory
   | `exception:${DressOptionCategory}`
+  | "backClosure"
   | "candidate"
   | "rating"
   | "tags"
@@ -37,35 +45,20 @@ export type DressDecisionPresentation = {
   readonly memo: DecisionField;
 };
 
-export type DressComparisonRow = {
-  readonly group: "reasons" | "observed" | "missing" | "same";
-  readonly key: DecisionFieldKey;
-  readonly label: string;
-  readonly left: DecisionField;
-  readonly right: DecisionField;
-};
-
 const CATEGORY_LABELS: Record<DressOptionCategory, string> = {
-  top: "상의 디자인",
-  neckline: "네크라인",
-  silhouette: "실루엣",
-  fabric: "소재",
+  top: "끈·소매",
+  neckline: "목·가슴선",
+  silhouette: "전체 모양",
+  fabric: "소재·표면",
   color: "색상",
   waistline: "허리선",
-  backStyle: "등 디자인",
-  train: "트레인",
-  details: "디테일",
+  backStyle: "등 파임",
+  train: "뒤로 끌리는 길이",
+  details: "장식과 세부 특징",
 };
 
-const CORE_CATEGORIES = ["top", "neckline", "silhouette"] as const;
-const DETAIL_CATEGORIES = [
-  "fabric",
-  "color",
-  "waistline",
-  "backStyle",
-  "train",
-  "details",
-] as const;
+const CORE_CATEGORIES = ["silhouette", "fabric", "neckline", "top"] as const;
+const DETAIL_CATEGORIES = ["waistline", "details"] as const;
 
 function field(
   key: DecisionFieldKey,
@@ -119,6 +112,15 @@ function categoryField(
   items: readonly DressPresentationItem[],
   category: DressOptionCategory,
 ): DecisionField {
+  if (category === "fabric") {
+    return field(
+      category,
+      "소재",
+      materialLabel(dress),
+      upperFabricFor(dress) === "unknown" ||
+        lowerFabricFor(dress) === "unknown",
+    );
+  }
   const unknown = isUnknown(dress, category);
   return field(
     category,
@@ -131,7 +133,7 @@ function categoryField(
 export function createDressDecisionPresentation(
   dress: Dress,
 ): DressDecisionPresentation {
-  const visibleDress = dressForPresentation(dress);
+  const visibleDress = activeAppearance(dressForPresentation(dress));
   const catalog = formatDressPresentation(visibleDress);
   const catalogItems = [...catalog.core, ...catalog.details];
   const core = CORE_CATEGORIES.map((category) =>
@@ -174,7 +176,7 @@ export function createDressDecisionPresentation(
       field(
         "candidate",
         "후보",
-        visibleDress.isFavorite ? "후보" : "후보 아님",
+        visibleDress.isFavorite ? "후보" : "후보 표시 없음",
       ),
       field(
         "rating",
@@ -193,5 +195,3 @@ export function createDressDecisionPresentation(
     memo: field("memo", "메모", visibleDress.memo.trim() || undefined),
   };
 }
-
-export { compareDressPresentations } from "./dressComparison";

@@ -35,52 +35,53 @@ const catalogExpectations = [
     exportName: "topStyleOptions",
     ids: "unknown|strapless|offShoulder|strap|spaghetti|wideStrap|halter|oneShoulder|shortSleeve|longSleeve",
     labels:
-      "기억 안 남|스트랩리스|오프숄더|스트랩|스파게티 스트랩|와이드 스트랩|홀터넥|원숄더|캡 소매|롱슬리브",
+      "기억 안 남|끈 없음|어깨 감쌈|일반 끈|가는 끈|넓은 끈|목 뒤로 연결|한쪽 어깨|짧은 소매|긴 소매",
   },
   {
     exportName: "necklineOptions",
     ids: "unknown|straight|sweetheart|v|square|scoop|high|illusion|asymmetric",
     labels:
-      "기억 안 남|스트레이트 네크라인|스위트하트 네크라인|브이넥|스퀘어넥|스쿱넥|하이넥|일루전 네크라인|비대칭 네크라인",
+      "기억 안 남|일자 가슴선|하트 가슴선|브이넥|사각 목선|둥근 목선|목까지 덮임|망사로 덮인 목선|사선 목·가슴선",
   },
   {
     exportName: "silhouetteOptions",
     ids: "unknown|aLine|ballGown|empire|fitAndFlare|mermaid|sheath|teaLength",
     labels:
-      "기억 안 남|A라인|볼가운|엠파이어 실루엣|피트 앤 플레어|머메이드|시스 실루엣|티 렝스",
+      "기억 안 남|A라인|벨라인|가슴 아래부터 퍼짐|피트 앤 플레어|머메이드|슬림라인|발목 위 길이",
   },
   {
     exportName: "fabricOptions",
     ids: "unknown|mikadoSatin|lace|subtleBeaded|ornateBeaded|tulle|organzaChiffon|glitterBeaded|floral3D",
     labels:
-      "기억 안 남|미카도 새틴|레이스|은은한 비즈|화려한 비즈|튤|오간자·쉬폰|글리터 비즈|입체 플라워",
+      "기억 안 남|실크|레이스|은은한 비즈|화려한 비즈|망사|얇고 흐르는 원단|글리터 비즈|입체 꽃",
   },
   {
     exportName: "colorOptions",
     ids: "unknown|pureWhite|ivory|champagne",
-    labels: "기억 안 남|퓨어 화이트|아이보리|샴페인",
+    labels: "기억 안 남|흰색|아이보리|샴페인",
   },
   {
     exportName: "waistlineOptions",
     ids: "unknown|natural|basque|drop|empire",
     labels:
-      "기억 안 남|내추럴 웨이스트|바스크 웨이스트|드롭 웨이스트|엠파이어 웨이스트",
+      "기억 안 남|기본 허리선|V자·곡선 허리선|골반 쪽 허리선|가슴 아래 허리선",
   },
   {
     exportName: "backStyleOptions",
     ids: "unknown|openBack|vBack|buttonBack|corsetBack|illusionBack|bowBack",
-    labels: "기억 안 남|오픈 백|브이 백|버튼 백|코르셋 백|일루전 백|리본 백",
+    labels:
+      "기억 안 남|등이 넓게 파임|V자로 파인 등|등 단추|등 뒤 묶는 끈|망사로 덮인 등|뒤 리본",
   },
   {
     exportName: "trainOptions",
     ids: "unknown|none|sweep|chapel|cathedral",
-    labels: "기억 안 남|트레인 없음|스윕 트레인|채플 트레인|캐서드럴 트레인",
+    labels: "기억 안 남|끌림 없음|짧게 끌림|중간 길이로 끌림|길게 끌림",
   },
   {
     exportName: "detailOptions",
     ids: "corset|draping|waistBow|backBow|pearl|sequin|floral|slit|sheer|detachableSleeve|overskirt|buttons",
     labels:
-      "코르셋|드레이핑|허리 리본|백 리본|진주 장식|스팽글|플라워 장식|슬릿|시어|탈부착 소매|오버스커트|버튼 장식",
+      "코르셋|겹쳐진 주름|허리 리본|뒤 리본|진주 장식|스팽글|꽃 장식|치마 트임|비치는 부분|탈부착 소매|덧치마|단추 장식",
   },
 ] as const;
 
@@ -191,35 +192,50 @@ describe("dress presentation", () => {
     ).toEqual({
       core: [
         {
-          category: "top",
-          categoryLabel: "상의 디자인",
-          value: "스파게티 스트랩",
-        },
-        { category: "neckline", categoryLabel: "네크라인", value: "하이넥" },
-        {
           category: "silhouette",
-          categoryLabel: "실루엣",
+          categoryLabel: "전체 모양",
           value: "피트 앤 플레어",
         },
-        { category: "fabric", categoryLabel: "소재", value: "글리터 비즈" },
+        {
+          category: "fabric",
+          categoryLabel: "소재·표면",
+          value: "글리터 비즈",
+        },
+        { category: "top", categoryLabel: "끈·소매", value: "가는 끈" },
+        {
+          category: "neckline",
+          categoryLabel: "목·가슴선",
+          value: "목까지 덮임",
+        },
         { category: "color", categoryLabel: "색상", value: "아이보리" },
       ],
       details: [
         {
           category: "waistline",
           categoryLabel: "허리선",
-          value: "엠파이어 웨이스트",
+          value: "가슴 아래 허리선",
         },
-        { category: "backStyle", categoryLabel: "등 디자인", value: "리본 백" },
-        { category: "train", categoryLabel: "트레인", value: "채플 트레인" },
-        { category: "details", categoryLabel: "디테일", value: "백 리본" },
-        { category: "details", categoryLabel: "디테일", value: "진주 장식" },
+        {
+          category: "train",
+          categoryLabel: "뒤로 끌리는 길이",
+          value: "중간 길이로 끌림",
+        },
+        {
+          category: "details",
+          categoryLabel: "장식과 세부 특징",
+          value: "뒤 리본",
+        },
+        {
+          category: "details",
+          categoryLabel: "장식과 세부 특징",
+          value: "진주 장식",
+        },
       ],
       exceptions: [
         {
           category: "neckline",
-          categoryLabel: "네크라인",
-          value: "하이넥",
+          categoryLabel: "목·가슴선",
+          value: "목까지 덮임",
           note: "목선에 잔꽃 레이스",
         },
       ],
@@ -233,17 +249,16 @@ describe("dress presentation", () => {
         customOptions: { neckline: "목선에 잔꽃 레이스" },
       }),
     ).toEqual([
-      "스파게티 스트랩",
-      "하이넥",
       "피트 앤 플레어",
       "글리터 비즈",
+      "가는 끈",
+      "목까지 덮임",
       "아이보리",
-      "엠파이어 웨이스트",
-      "리본 백",
-      "채플 트레인",
-      "백 리본",
+      "가슴 아래 허리선",
+      "중간 길이로 끌림",
+      "뒤 리본",
       "진주 장식",
-      "네크라인: 하이넥 (목선에 잔꽃 레이스)",
+      "목·가슴선: 목까지 덮임 (목선에 잔꽃 레이스)",
     ]);
   });
 });

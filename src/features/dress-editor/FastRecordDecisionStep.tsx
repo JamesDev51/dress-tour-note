@@ -24,7 +24,7 @@ export function FastRecordDecisionStep({
 }) {
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-black">후보로 남길까요?</h2>
+      <h2 className="bridal-section-title">후보로 남길까요?</h2>
       <div className="mt-3 grid grid-cols-2 gap-2">
         {[true, false].map((value) => (
           <button
@@ -32,10 +32,10 @@ export function FastRecordDecisionStep({
             key={String(value)}
             aria-pressed={acknowledged && isFavorite === value}
             disabled={saving}
-            className={`min-h-12 rounded-control border px-3 font-bold ${
+            className={`min-h-12 rounded-control border px-3 font-semibold ${
               acknowledged && isFavorite === value
                 ? "border-accent bg-accent-soft text-accent-copy"
-                : "border-stone-200 bg-white"
+                : "border-rule bg-white"
             }`}
             onClick={() => onCandidate(value)}
           >
@@ -43,15 +43,16 @@ export function FastRecordDecisionStep({
           </button>
         ))}
       </div>
-      <h3 className="mt-6 font-bold">별점 · 선택</h3>
+      <h3 className="mt-6 font-semibold">별점 · 선택</h3>
       <div className="mt-2 flex items-center gap-1">
         {RATINGS.map((value) => (
           <button
             type="button"
             key={value}
             aria-label={`${value}점`}
+            aria-pressed={value === rating}
             disabled={saving}
-            className={`grid h-11 w-11 place-items-center text-xl ${
+            className={`rating-choice grid h-11 w-11 shrink-0 place-items-center text-xl ${
               value <= (rating ?? 0) ? "text-amber-400" : "text-stone-200"
             }`}
             onClick={() => onRating(value)}
@@ -60,7 +61,7 @@ export function FastRecordDecisionStep({
           </button>
         ))}
       </div>
-      <h3 className="mt-6 font-bold">첫인상 · 선택</h3>
+      <h3 className="mt-6 font-semibold">첫인상 · 선택</h3>
       <div className="mt-2 flex flex-wrap gap-2">
         {quickTagOptions.map((option) => (
           <button
@@ -71,7 +72,7 @@ export function FastRecordDecisionStep({
             className={`min-h-11 rounded-full border px-4 text-sm ${
               quickTags.includes(option.id)
                 ? "border-accent bg-accent-soft text-accent-copy"
-                : "border-stone-200 bg-white text-ink-muted"
+                : "border-rule bg-white text-ink-muted"
             }`}
             onClick={() => onTag(option.id)}
           >

@@ -10,10 +10,21 @@ import koreanFontUrl from "../../assets/pretendard-pdf-static.ttf?url";
 import { getTourSnapshot, patchTour } from "../../db/repositories";
 import type { Dress, Shop } from "../../types/domain";
 import type { ExportOptions, ExportProgress } from "../../types/portable";
-import { blobToDataUrl, toArrayBuffer } from "../image/processFace";
-import { fabricOptions, optionLabel, summarizeDress } from "../dress/options";
-import { dressRenderTokens } from "../dress/renderTokens";
+import { toArrayBuffer } from "../image/processFace";
+import { activeAppearance, materialLabel } from "../dress/activeOptions";
+import {
+  getDressLooks,
+  getPreferredStylingId,
+  resolveDressLook,
+} from "../dress/styling";
+import { previewAspectRatio } from "../renderer/previewFrame";
 import { dressSvgToJpeg, type DressSketchView } from "../renderer/dressSvg";
+import {
+  buildGarmentArtworkMarkup,
+  prepareGarmentArtwork,
+  type GarmentArtworkResult,
+  type GarmentAsset,
+} from "../renderer/garment";
 import {
   buildPortableBundle,
   PORTABLE_MANIFEST_FILE_NAME,
@@ -49,13 +60,8 @@ const pdfColors = {
 const sketchViews = [
   "full",
   "upper",
-  "back",
 ] as const satisfies readonly DressSketchView[];
-const sketchViewLabels: Readonly<Record<DressSketchView, string>> = {
-  full: "전체",
-  upper: "상체",
-  back: "뒤태",
-};
+const sketchViewLabels = { full: "전체", upper: "상체" } as const;
 
 type DetailFlow = {
   page: PDFPage;
@@ -138,6 +144,15 @@ function footer(
   total: number,
   portable: boolean,
 ) {
+  if (index === 1) {
+    page.drawText("제작 · 할미눈나 (@halminunna)", {
+      x: margin,
+      y: 41,
+      size: 9,
+      font,
+      color: pdfColors.inkMuted,
+    });
+  }
   page.drawText(`${index} / ${total}`, {
     x: 500,
     y: 24,
@@ -154,15 +169,26 @@ function footer(
 }
 
 function dressLabel(dress: Dress, shop: Shop) {
-  return `${shop.name} · ${dress.label}`;
+  return `${shop.name} · ${dress.order + 1}번째 · ${dress.label}`;
 }
 
-function hexColor(value: string) {
-  const normalized = value.startsWith("#") ? value.slice(1) : value;
-  return rgb(
-    Number.parseInt(normalized.slice(0, 2), 16) / 255,
-    Number.parseInt(normalized.slice(2, 4), 16) / 255,
-    Number.parseInt(normalized.slice(4, 6), 16) / 255,
+function headingSize(font: PDFFont, label: string, maxSize: number) {
+  let size = Math.min(maxSize, (511 * 2.95) / font.widthOfTextAtSize(label, 1));
+  while (wrap(font, label, size, 511).length > 3) size -= 0.25;
+  return size;
+}
+
+function drawBoundedHeading(page: PDFPage, font: PDFFont, label: string) {
+  return drawTextLines(
+    page,
+    font,
+    label,
+    margin,
+    790,
+    headingSize(font, label, 15),
+    511,
+    16,
+    pdfColors.inkHeading,
   );
 }
 
@@ -172,20 +198,16 @@ function drawDetailHeader(
   label: string,
   continuation: boolean,
 ) {
-  page.drawText(label, {
-    x: margin,
-    y: 790,
-    size: 15,
-    font,
-    color: pdfColors.inkHeading,
-  });
+  const headingEnd = drawBoundedHeading(page, font, label);
+  const subtitleY = Math.min(758, headingEnd - 6);
   page.drawText(continuation ? "상세 기록 · 계속" : "상세 기록", {
     x: margin,
-    y: 758,
+    y: subtitleY,
     size: 9,
     font,
     color: pdfColors.accent,
   });
+  return subtitleY - 32;
 }
 
 function drawFlowBlocks(
@@ -198,8 +220,7 @@ function drawFlowBlocks(
   let flow = initial;
   const nextPage = () => {
     const page = pdf.addPage(A4);
-    drawDetailHeader(page, font, label, true);
-    flow = { page, y: 726 };
+    flow = { page, y: drawDetailHeader(page, font, label, true) };
   };
 
   for (const block of blocks) {
@@ -234,11 +255,13 @@ function drawSketchPanel(
   page: PDFPage,
   font: PDFFont,
   image: PDFImage,
-  view: DressSketchView,
+  view: (typeof sketchViews)[number],
   x: number,
 ) {
-  const width = 155;
-  const height = 276;
+  const width = 247;
+  const imageWidth = width - 2;
+  const imageHeight = imageWidth / previewAspectRatio[view];
+  const top = 708;
   page.drawText(sketchViewLabels[view], {
     x,
     y: 728,
@@ -248,18 +271,74 @@ function drawSketchPanel(
   });
   page.drawRectangle({
     x,
-    y: 432,
+    y: top - imageHeight - 2,
     width,
-    height,
+    height: imageHeight + 2,
     borderWidth: 0.75,
     borderColor: pdfColors.border,
   });
   page.drawImage(image, {
     x: x + 1,
-    y: 433,
-    width: width - 2,
-    height: height - 2,
+    y: top - imageHeight - 1,
+    width: imageWidth,
+    height: imageHeight,
   });
+}
+
+function artworkAssets(artwork: GarmentArtworkResult): readonly GarmentAsset[] {
+  return [
+    ...artwork.layers.map(({ asset }) => asset),
+    ...artwork.textures.map(({ asset }) => asset),
+    ...(artwork.detailAssets ?? []),
+  ].filter(
+    (asset, index, assets) =>
+      assets.findIndex((candidate) => candidate.assetId === asset.assetId) ===
+      index,
+  );
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  const chunks: string[] = [];
+  for (let offset = 0; offset < bytes.length; offset += 0x8000)
+    chunks.push(
+      String.fromCharCode(...bytes.subarray(offset, offset + 0x8000)),
+    );
+  return btoa(chunks.join(""));
+}
+
+async function embedRemainingGarmentAssets(
+  artwork: GarmentArtworkResult,
+  namespace: string,
+): Promise<GarmentArtworkResult> {
+  if (!artwork.markup.includes('href="/assets/garment/')) return artwork;
+  const loaded = await Promise.all(
+    artworkAssets(artwork).map(async (asset) => {
+      if (!asset.path.startsWith("/assets/garment/"))
+        throw new Error("드레스 이미지 경로가 올바르지 않아요.");
+      const response = await fetch(asset.path);
+      if (!response.ok)
+        throw new Error("드레스 이미지를 PDF에 포함하지 못했어요.");
+      return [
+        asset.assetId,
+        `data:image/webp;base64,${bytesToBase64(
+          new Uint8Array(await response.arrayBuffer()),
+        )}`,
+      ] as const;
+    }),
+  );
+  const hrefs = new Map(loaded);
+  return {
+    ...artwork,
+    markup: buildGarmentArtworkMarkup(artwork, {
+      namespace,
+      assetHrefs: hrefs,
+    }),
+  };
+}
+
+function assertEmbeddedGarmentArtwork(markup: string): void {
+  if (markup.includes('href="/assets/garment/'))
+    throw new Error("드레스 이미지를 PDF에 포함하지 못했어요.");
 }
 
 export async function exportPortablePdf(
@@ -268,43 +347,69 @@ export async function exportPortablePdf(
   onProgress?: (progress: ExportProgress) => void,
 ) {
   const portable = options.mode === "portable";
-  const includeFace = portable && options.includeFace;
 
   onProgress?.({ step: "prepare", percent: 5, label: "데이터 준비" });
   const snapshot = await getTourSnapshot(tourId);
   if (!snapshot.dresses.length)
     throw new Error("드레스를 한 벌 이상 기록해 주세요.");
 
-  const bundle = buildPortableBundle(snapshot, includeFace);
-  const face = bundle.assets[0];
-  const faceData = face ? await blobToDataUrl(face.blob) : undefined;
+  const bundle = buildPortableBundle(snapshot, false);
+  const looks = snapshot.dresses.flatMap((dress) =>
+    getDressLooks(dress).map((look) => ({
+      dress: activeAppearance(resolveDressLook(dress, look.id)),
+      label: dress.stylingVariants?.length ? look.label : undefined,
+      id: look.id,
+      key: JSON.stringify([dress.id, look.id]),
+      preferred: getPreferredStylingId(dress) === look.id,
+    })),
+  );
 
   onProgress?.({ step: "render", percent: 15, label: "드레스 이미지 생성" });
   const rendered = new Map<string, Uint8Array>();
-  for (let index = 0; index < snapshot.dresses.length; index += 1) {
-    const dress = snapshot.dresses[index];
+  const artworkStates = new Map<string, "ready" | "partial" | "unavailable">();
+  for (let index = 0; index < looks.length; index += 1) {
+    const look = looks[index];
+    const { dress } = look;
     for (const view of sketchViews) {
+      const artworkNamespace = `pdf-${dress.id}-${look.id}-${view}`;
+      const prepared = await prepareGarmentArtwork(dress, {
+        view,
+        embedAssets: true,
+        namespace: artworkNamespace,
+      });
+      const artwork = await embedRemainingGarmentAssets(
+        prepared,
+        artworkNamespace,
+      );
+      assertEmbeddedGarmentArtwork(artwork.markup);
+      artworkStates.set(`${look.key}:${view}`, artwork.status);
+      const pixelWidth = 480;
       rendered.set(
-        `${dress.id}:${view}`,
+        `${look.key}:${view}`,
         await dressSvgToJpeg(
           dress,
-          faceData,
-          includeFace && view !== "back",
-          360,
-          640,
+          undefined,
+          false,
+          pixelWidth,
+          pixelWidth / previewAspectRatio[view],
           view,
+          {
+            preparedArtwork: artwork,
+            namespace: artworkNamespace,
+            mode: "visual",
+          },
         ),
       );
     }
     onProgress?.({
       step: "render",
-      percent: 15 + Math.round(((index + 1) / snapshot.dresses.length) * 40),
-      label: `드레스 이미지 ${index + 1}/${snapshot.dresses.length}`,
+      percent: 15 + Math.round(((index + 1) / looks.length) * 40),
+      label: `연출 이미지 ${index + 1}/${looks.length}`,
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
-  onProgress?.({ step: "assemble", percent: 60, label: "PDF 조립" });
+  onProgress?.({ step: "assemble", percent: 60, label: "PDF 만드는 중" });
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const fontBytes = await fetch(koreanFontUrl).then((response) => {
@@ -317,9 +422,9 @@ export async function exportPortablePdf(
   );
   const embeddedJpegs = new Map(
     await Promise.all(
-      snapshot.dresses.flatMap((dress) =>
+      looks.flatMap((look) =>
         sketchViews.map(async (view) => {
-          const key = `${dress.id}:${view}`;
+          const key = `${look.key}:${view}`;
           const renderedJpg = rendered.get(key);
           if (!renderedJpg) throw new Error("드레스 이미지가 손상됐어요.");
           return [key, await pdf.embedJpg(renderedJpg)] as const;
@@ -329,11 +434,13 @@ export async function exportPortablePdf(
   );
   pdf.setTitle(`${snapshot.tour.title} - 드레스노트`);
   pdf.setSubject(
-    portable ? "복원 가능한 드레스투어 기록" : "보기 전용 드레스투어 기록",
+    portable ? "백업용 드레스투어 기록" : "보기 전용 드레스투어 기록",
   );
   pdf.setCreator("드레스노트");
 
-  const favorites = snapshot.dresses.filter((dress) => dress.isFavorite);
+  const favorites = looks.filter(
+    ({ dress, preferred }) => dress.isFavorite && preferred,
+  );
   let page = pdf.addPage(A4);
   page.drawText("드레스노트", {
     x: margin,
@@ -342,14 +449,24 @@ export async function exportPortablePdf(
     font,
     color: pdfColors.accent,
   });
-  page.drawText(snapshot.tour.title, {
-    x: margin,
-    y: 730,
-    size: 28,
-    font,
-    color: pdfColors.inkStrong,
+  page.drawLine({
+    start: { x: margin, y: 755 },
+    end: { x: margin + 48, y: 755 },
+    thickness: 2,
+    color: pdfColors.accent,
   });
-  let y = 690;
+  let y =
+    drawTextLines(
+      page,
+      font,
+      snapshot.tour.title,
+      margin,
+      724,
+      26,
+      511,
+      34,
+      pdfColors.inkStrong,
+    ) - 16;
   y = drawTextLines(
     page,
     font,
@@ -361,11 +478,18 @@ export async function exportPortablePdf(
     18,
     pdfColors.inkMuted,
   );
-  y -= 14;
-  page.drawText(`드레스샵 ${snapshot.shops.length}곳`, {
+  y -= 20;
+  page.drawRectangle({
     x: margin,
+    y: y - 18,
+    width: 511,
+    height: 48,
+    color: pdfColors.surface,
+  });
+  page.drawText(`드레스샵 ${snapshot.shops.length}곳`, {
+    x: margin + 16,
     y,
-    size: 12,
+    size: 13,
     font,
   });
   page.drawText(`드레스 ${snapshot.dresses.length}벌`, {
@@ -374,12 +498,12 @@ export async function exportPortablePdf(
     size: 12,
     font,
   });
-  page.drawText(`후보 ${favorites.length}벌`, { x: 330, y, size: 12, font });
+  page.drawText(`후보 ${favorites.length}벌`, { x: 360, y, size: 12, font });
   y -= 50;
-  page.drawText("SHOP LIST", {
+  page.drawText("방문한 드레스샵", {
     x: margin,
     y,
-    size: 9,
+    size: 10,
     font,
     color: pdfColors.accent,
   });
@@ -388,91 +512,88 @@ export async function exportPortablePdf(
     const count = snapshot.dresses.filter(
       (dress) => dress.shopId === shop.id,
     ).length;
-    page.drawText(`${shop.order + 1}. ${shop.name}`, {
-      x: margin,
-      y,
-      size: 12,
-      font,
-    });
+    const shopLabel = `${shop.order + 1}. ${shop.name}`;
+    const rowHeight = wrap(font, shopLabel, 12, 430).length * 18 + 12;
+    if (y - rowHeight < bottomContentY) {
+      page = pdf.addPage(A4);
+      page.drawText("방문한 드레스샵 · 계속", {
+        x: margin,
+        y: 775,
+        size: 13,
+        font,
+        color: pdfColors.accent,
+      });
+      y = 735;
+    }
     page.drawText(`${count}벌`, {
-      x: 470,
+      x: 510,
       y,
       size: 10,
       font,
       color: pdfColors.inkSoft,
     });
-    y -= 28;
+    y = drawTextLines(page, font, shopLabel, margin, y, 12, 430, 18) - 12;
   }
-  for (const dress of snapshot.dresses) {
+  for (const look of looks) {
+    const { dress } = look;
     const shop = shopsById.get(dress.shopId);
     if (!shop) throw new Error("드레스샵 연결 정보가 손상됐어요.");
 
     page = pdf.addPage(A4);
-    page.drawText(dressLabel(dress, shop), {
-      x: margin,
-      y: 790,
-      size: 16,
-      font,
-      color: pdfColors.inkHeading,
-    });
+    const label = [
+      dressLabel(dress, shop),
+      look.label,
+      look.label && look.preferred && "대표 연출",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    drawBoundedHeading(page, font, label);
     if (dress.isFavorite)
       page.drawText("♥ 후보", {
         x: 485,
-        y: 790,
+        y: 744,
         size: 9,
         font,
         color: pdfColors.favorite,
       });
 
     sketchViews.forEach((view, index) => {
-      const image = embeddedJpegs.get(`${dress.id}:${view}`);
+      const image = embeddedJpegs.get(`${look.key}:${view}`);
       if (!image) throw new Error("드레스 이미지가 손상됐어요.");
-      drawSketchPanel(page, font, image, view, margin + index * 170);
+      drawSketchPanel(page, font, image, view, margin + index * 264);
     });
-    page.drawText("기록을 바탕으로 만든 드레스 기억 스케치", {
-      x: margin,
-      y: 402,
-      size: 9,
-      font,
-      color: pdfColors.inkMuted,
-    });
-    page.drawText(
-      includeFace
-        ? "얼굴 사진은 전체·상체에만 포함되며 뒤태에는 포함되지 않습니다."
-        : "얼굴 사진은 보이는 스케치와 복원 데이터에 포함되지 않습니다.",
-      {
-        x: margin,
-        y: 382,
-        size: 8,
-        font,
-        color: pdfColors.inkLight,
-      },
+    const dressArtworkStatuses = sketchViews.map(
+      (view) => artworkStates.get(`${look.key}:${view}`) ?? "unavailable",
     );
+    if (dressArtworkStatuses.includes("unavailable")) {
+      page.drawText(
+        "이미지를 만들지 못한 부분은 기록한 특징을 간단한 그림으로 표시했어요.",
+        {
+          x: margin,
+          y: 255,
+          size: 9,
+          font,
+          color: pdfColors.inkMuted,
+        },
+      );
+    }
     page.drawRectangle({
       x: margin,
-      y: 314,
+      y: 202,
       width: 511,
       height: 48,
       color: pdfColors.surface,
     });
-    page.drawCircle({
-      x: margin + 25,
-      y: 338,
-      size: 14,
-      color: hexColor(dressRenderTokens.garmentColor[dress.color]),
-      borderColor: hexColor(dressRenderTokens.garmentEdge[dress.color]),
-      borderWidth: 1,
-    });
-    page.drawText("소재 스와치", {
-      x: margin + 50,
-      y: 345,
+    page.drawText("소재", {
+      x: margin + 16,
+      y: 233,
       size: 8,
       font,
       color: pdfColors.accent,
     });
-    page.drawText(optionLabel(fabricOptions, dress.fabric), {
-      x: margin + 50,
-      y: 327,
+    page.drawText(materialLabel(dress), {
+      x: margin + 16,
+      y: 215,
       size: 10,
       font,
       color: pdfColors.ink,
@@ -484,16 +605,17 @@ export async function exportPortablePdf(
         .map(({ label, text }) => `${label} ${text}`)
         .join(" · "),
       margin,
-      282,
+      170,
       8,
       511,
       14,
     );
 
     page = pdf.addPage(A4);
-    const label = dressLabel(dress, shop);
-    drawDetailHeader(page, font, label, false);
-    let flow: DetailFlow = { page, y: 726 };
+    let flow: DetailFlow = {
+      page,
+      y: drawDetailHeader(page, font, label, false),
+    };
     flow = drawFlowBlocks(pdf, font, label, flow, recallBlocks(dress));
     flow = drawFlowBlocks(pdf, font, label, flow, dressTermBlocks(dress));
     flow = drawFlowBlocks(pdf, font, label, flow, exceptionBlocks(dress));
@@ -511,49 +633,83 @@ export async function exportPortablePdf(
   }
 
   if (favorites.length) {
-    favorites.forEach((dress, index) => {
+    favorites.forEach((look, index) => {
+      const { dress } = look;
       const shop = shopsById.get(dress.shopId);
       if (!shop) return;
       page = pdf.addPage(A4);
-      page.drawText(index === 0 ? "MY FAVORITES" : "MY FAVORITES · 계속", {
+      page.drawText(index === 0 ? "후보 드레스" : "후보 드레스 · 계속", {
         x: margin,
         y: 790,
         size: 10,
         font,
         color: pdfColors.accent,
       });
-      page.drawText(`♥ ${shop.name} · ${dress.label}`, {
-        x: margin,
-        y: 746,
-        size: 18,
+      const favoriteLabel = [
+        `♥ ${dressLabel(dress, shop)}`,
+        look.label,
+        look.label && "대표 연출",
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      const favoriteLabelSize = headingSize(font, favoriteLabel, 14);
+      drawTextLines(
+        page,
         font,
-        color: pdfColors.favoriteInk,
-      });
-      const fullSketch = embeddedJpegs.get(`${dress.id}:full`);
+        favoriteLabel,
+        margin,
+        756,
+        favoriteLabelSize,
+        511,
+        18,
+        pdfColors.favoriteInk,
+      );
+      const fullSketch = embeddedJpegs.get(`${look.key}:full`);
       if (!fullSketch) throw new Error("드레스 이미지가 손상됐어요.");
+      const favoriteWidth = 210;
+      const favoriteHeight = favoriteWidth / previewAspectRatio.full;
+      const favoriteBottom = 699 - favoriteHeight;
       page.drawImage(fullSketch, {
         x: margin,
-        y: 326,
-        width: 210,
-        height: 373,
+        y: favoriteBottom,
+        width: favoriteWidth,
+        height: favoriteHeight,
       });
+      const favoriteArtworkStatus = artworkStates.get(`${dress.id}:full`);
+      if (favoriteArtworkStatus && favoriteArtworkStatus !== "ready") {
+        page.drawText(
+          favoriteArtworkStatus === "partial"
+            ? "일부 기록만 반영했어요."
+            : "이미지를 만들지 못해 기록한 특징을 간단한 그림으로 표시했어요.",
+          {
+            x: margin,
+            y: favoriteBottom - 17,
+            size: 8,
+            font,
+            color: pdfColors.inkLight,
+          },
+        );
+      }
       const summaryX = 280;
       page.drawText("후보 결정 요약", {
         x: summaryX,
         y: 690,
-        size: 9,
+        size: 10,
         font,
         color: pdfColors.accent,
       });
       let favoriteY = drawTextLines(
         page,
         font,
-        summarizeDress(dress).slice(0, 3).join(" · ") || "형태 기록 없음",
+        dressTermBlocks(dress)
+          .slice(0, 4)
+          .map(({ text }) => text)
+          .join(" · "),
         summaryX,
         665,
-        9,
+        10,
         273,
-        15,
+        16,
         pdfColors.summary,
       );
       for (const block of recallBlocks(dress)) {
@@ -564,9 +720,9 @@ export async function exportPortablePdf(
           block.label,
           summaryX,
           favoriteY,
-          8,
+          9,
           273,
-          13,
+          14,
           pdfColors.accent,
         );
         favoriteY = drawTextLines(
@@ -575,9 +731,9 @@ export async function exportPortablePdf(
           block.text,
           summaryX,
           favoriteY,
-          8,
+          10,
           273,
-          13,
+          16,
         );
       }
       favoriteY -= 12;
@@ -587,9 +743,9 @@ export async function exportPortablePdf(
         `별점 ${dress.rating ? `${dress.rating} / 5` : "미기록"}`,
         summaryX,
         favoriteY,
-        9,
+        10,
         273,
-        15,
+        16,
       );
       favoriteY -= 12;
       favoriteY = drawTextLines(
@@ -598,9 +754,9 @@ export async function exportPortablePdf(
         `태그 ${dress.quickTags.length ? dress.quickTags.join(" · ") : "미기록"}`,
         summaryX,
         favoriteY,
-        9,
+        10,
         273,
-        15,
+        16,
       );
       favoriteY -= 12;
       const boundedMemo =
@@ -611,9 +767,9 @@ export async function exportPortablePdf(
         `메모 ${boundedMemo || "미기록"}`,
         summaryX,
         favoriteY,
-        8,
+        9,
         273,
-        14,
+        15,
         pdfColors.inkMuted,
       );
     });
@@ -628,32 +784,21 @@ export async function exportPortablePdf(
     Awaited<ReturnType<typeof serializePortableBundle>> | undefined;
 
   if (portable) {
-    onProgress?.({ step: "attach", percent: 90, label: "복원 데이터 첨부" });
+    onProgress?.({ step: "attach", percent: 90, label: "백업 기록 담는 중" });
     const serialized = await serializePortableBundle(bundle);
     portableSerialized = serialized;
     await pdf.attach(serialized.manifestBytes, PORTABLE_MANIFEST_FILE_NAME, {
       mimeType: "application/json",
-      description: "드레스노트 복원 매니페스트",
+      description: "드레스노트 백업 정보",
     });
     await pdf.attach(serialized.tourBytes, serialized.manifest.tourAttachment, {
       mimeType: "application/json",
       description: "드레스노트 투어 원본 데이터",
     });
-    if (serialized.faceBytes && serialized.manifest.faceAttachment) {
-      const faceRef = bundle.payload.assets[0];
-      await pdf.attach(
-        serialized.faceBytes,
-        serialized.manifest.faceAttachment,
-        {
-          mimeType: faceRef.mimeType,
-          description: "로컬 얼굴 이미지",
-        },
-      );
-    }
     onProgress?.({
       step: "verify",
       percent: 96,
-      label: "복원 데이터 무결성 확인",
+      label: "백업 기록 확인 중",
     });
   } else {
     onProgress?.({

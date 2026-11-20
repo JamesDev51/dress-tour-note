@@ -28,7 +28,11 @@ export default defineConfig({
     { name: "mobile-chromium", use: { browserName: "chromium" } },
     {
       name: "mobile-webkit",
-      testMatch: "recall.spec.ts",
+      testMatch: [
+        "recall.spec.ts",
+        "styling.spec.ts",
+        "simplified-recording.spec.ts",
+      ],
       use: { browserName: "webkit" },
     },
   ],

@@ -1,45 +1,38 @@
 import type { Dress, DressOptionCategory } from "../../types/domain";
 import {
-  backStyleOptions,
-  colorOptions,
-  detailOptions,
-  fabricOptions,
   necklineOptions,
   optionLabel,
-  silhouetteOptions,
   topStyleOptions,
-  trainOptions,
   waistlineOptions,
 } from "../dress/options";
+import {
+  activeAppearance,
+  activeDetailOptions,
+  activeSilhouetteOptions,
+  lowerFabricFor,
+  materialLabel,
+  materialRegionLabels,
+  upperFabricFor,
+} from "../dress/activeOptions";
 
 const exceptionCategories = [
   "top",
   "neckline",
   "silhouette",
   "fabric",
-  "color",
   "waistline",
-  "backStyle",
-  "train",
   "details",
 ] as const satisfies readonly DressOptionCategory[];
-
-const categoryLabels: Readonly<Record<DressOptionCategory, string>> = {
-  top: "상의 디자인",
-  neckline: "네크라인",
-  silhouette: "실루엣",
+const categoryLabels = {
+  top: "끈·소매",
+  neckline: "목·가슴선",
+  silhouette: "전체 모양",
   fabric: "소재",
-  color: "색상",
   waistline: "허리선",
-  backStyle: "등 디자인",
-  train: "트레인",
-  details: "디테일",
-};
+  details: "장식과 세부 특징",
+} as const;
 
-export type TextBlock = {
-  readonly label: string;
-  readonly text: string;
-};
+export type TextBlock = { readonly label: string; readonly text: string };
 
 export function recallBlocks(dress: Dress): readonly TextBlock[] {
   return [
@@ -49,8 +42,27 @@ export function recallBlocks(dress: Dress): readonly TextBlock[] {
   ];
 }
 
-export function dressTermBlocks(dress: Dress): readonly TextBlock[] {
+export function dressTermBlocks(record: Dress): readonly TextBlock[] {
+  const dress = activeAppearance(record);
+  const upper = upperFabricFor(dress);
+  const lower = lowerFabricFor(dress);
+  const parts = materialRegionLabels(dress);
+  const materialBlocks =
+    upper === lower
+      ? [{ label: "소재", text: materialLabel(upper) }]
+      : [
+          { label: `${parts.upper} 소재`, text: materialLabel(upper) },
+          {
+            label: parts.lower === "치마" ? "치마 소재" : parts.lower,
+            text: materialLabel(lower),
+          },
+        ];
   return [
+    {
+      label: categoryLabels.silhouette,
+      text: optionLabel(activeSilhouetteOptions, dress.silhouette),
+    },
+    ...materialBlocks,
     {
       label: categoryLabels.top,
       text: optionLabel(topStyleOptions, dress.topStyle),
@@ -60,34 +72,14 @@ export function dressTermBlocks(dress: Dress): readonly TextBlock[] {
       text: optionLabel(necklineOptions, dress.neckline),
     },
     {
-      label: categoryLabels.silhouette,
-      text: optionLabel(silhouetteOptions, dress.silhouette),
-    },
-    {
-      label: categoryLabels.fabric,
-      text: optionLabel(fabricOptions, dress.fabric),
-    },
-    {
-      label: categoryLabels.color,
-      text: optionLabel(colorOptions, dress.color),
-    },
-    {
       label: categoryLabels.waistline,
       text: optionLabel(waistlineOptions, dress.waistline),
-    },
-    {
-      label: categoryLabels.backStyle,
-      text: optionLabel(backStyleOptions, dress.backStyle),
-    },
-    {
-      label: categoryLabels.train,
-      text: optionLabel(trainOptions, dress.train),
     },
     {
       label: categoryLabels.details,
       text: dress.details.length
         ? dress.details
-            .map((detail) => optionLabel(detailOptions, detail))
+            .map((detail) => optionLabel(activeDetailOptions, detail))
             .join(" · ")
         : "미기록",
     },

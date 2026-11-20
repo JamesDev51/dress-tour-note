@@ -4,6 +4,7 @@ import {
   clearRecallDrafts,
   queueRecallDraft,
   readRecallDraft,
+  removeRecallDraft,
 } from "./recallDraft";
 
 afterEach(() => sessionStorage.clear());
@@ -14,6 +15,23 @@ const values = {
 };
 
 describe("interrupted recall draft boundary", () => {
+  it("isolates base and added styling drafts, including the last memo character", () => {
+    const base = queueRecallDraft("dress", values);
+    const added = queueRecallDraft(
+      "dress",
+      { ...values, memo: "연출 메모" },
+      "look-1",
+    );
+    expect(
+      sessionStorage.getItem("dress-note:recall-draft:dress"),
+    ).not.toBeNull();
+    expect(readRecallDraft("dress", "look-1")).toEqual(added);
+    acknowledgeRecallDraft("dress", added!.revision);
+    expect(readRecallDraft("dress")).toEqual(base);
+    removeRecallDraft("dress", "look-1");
+    expect(readRecallDraft("dress", "look-1")).toBeUndefined();
+    expect(readRecallDraft("dress")).toEqual(base);
+  });
   it("keeps the newest draft when an older write finishes", () => {
     const older = queueRecallDraft("dress", values);
     const newer = queueRecallDraft("dress", { ...values, concern: "무거움" });

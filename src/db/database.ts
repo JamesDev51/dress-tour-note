@@ -13,6 +13,8 @@ export class GudressDatabase extends Dexie {
   meta!: Table<MetaRecord, string>;
   constructor(name = "gudress") {
     super(name);
+    // Optional regional fabric overrides are unindexed values on existing records;
+    // old rows use fabric and a waist start as fallbacks; no index migration is needed.
     this.version(1).stores({
       tours: "id, updatedAt, lastOpenedAt, status",
       shops: "id, tourId, [tourId+order]",

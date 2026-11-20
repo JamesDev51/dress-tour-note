@@ -2,6 +2,7 @@ node_modules
 dist
 coverage
 .omo
+.omd/runs
 .reviews
 .debug-journal.md
 test-results

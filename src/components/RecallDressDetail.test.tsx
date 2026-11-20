@@ -1,7 +1,14 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Dress } from "../types/domain";
 import { RecallDressDetail } from "./RecallDressDetail";
+import { snapshotDressLook } from "../lib/dress/styling";
 
 const dress: Dress = {
   id: "recall-dress",
@@ -31,6 +38,58 @@ const dress: Dress = {
 };
 
 describe("RecallDressDetail", () => {
+  it("identifies the resolved look without replacing its fields with the representative look", () => {
+    render(
+      <RecallDressDetail
+        dress={{
+          ...dress,
+          memoryCue: "현재 보는 기본형",
+          preferredStylingId: "other-look",
+          stylingVariants: [
+            {
+              id: "other-look",
+              label: "다른 연출",
+              snapshot: {
+                ...snapshotDressLook(dress),
+                memoryCue: "다른 연출의 기억",
+              },
+              createdAt: dress.createdAt,
+              updatedAt: dress.updatedAt,
+            },
+          ],
+        }}
+        stylingLabel="기본 연출"
+        onEditCore={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("기본 연출")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "현재 보는 기본형" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("다른 연출의 기억")).not.toBeInTheDocument();
+  });
+
+  it("places optional feedback editing after the visual and before the saved reasons", () => {
+    render(
+      <RecallDressDetail
+        dress={dress}
+        feedbackEditor={<button>느낌 덧붙이기</button>}
+        onEditCore={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    const editor = screen.getByRole("button", { name: "느낌 덧붙이기" });
+    expect(
+      screen.getByLabelText("드레스 보기").compareDocumentPosition(editor),
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(
+      editor.compareDocumentPosition(
+        screen.getByRole("heading", { name: "느낌과 평가" }),
+      ),
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
   it("puts recall before taxonomy and keeps every saved note readable", () => {
     render(
       <RecallDressDetail
@@ -44,7 +103,7 @@ describe("RecallDressDetail", () => {
       name: "실크 광택이 선명했던 드레스",
     });
     const liked = screen.getByText("허리선과 가벼운 느낌이 좋았어요.");
-    const taxonomy = screen.getByText("상의 디자인");
+    const taxonomy = screen.getByText("끈·소매");
     expect(cue.compareDocumentPosition(liked)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
@@ -53,7 +112,7 @@ describe("RecallDressDetail", () => {
     );
     expect(screen.getByText("가슴선이 조금 떴어요.")).toBeInTheDocument();
     expect(screen.getByText("꽃잎이 목선을 따라 이어짐")).toBeInTheDocument();
-    expect(screen.getByText("진주 장식 · 버튼 장식")).toBeInTheDocument();
+    expect(screen.getByText("진주 장식 · 단추 장식")).toBeInTheDocument();
     expect(screen.getByText("가".repeat(160))).toHaveTextContent(
       "가".repeat(160),
     );
@@ -81,7 +140,7 @@ describe("RecallDressDetail", () => {
     );
   });
 
-  it("switches visual views and exposes only detail-level actions", () => {
+  it("defaults to the selection-aware image and keeps the recorded sketch views", async () => {
     const onEditCore = vi.fn();
     const onOpenDetails = vi.fn();
     const { container } = render(
@@ -93,23 +152,78 @@ describe("RecallDressDetail", () => {
     );
 
     const viewer = screen.getByLabelText("드레스 보기");
-    expect(within(viewer).getAllByRole("button")).toHaveLength(3);
-    fireEvent.click(screen.getByRole("button", { name: "뒤태" }));
-    expect(container.querySelector("svg")).toHaveAttribute("data-view", "back");
-    expect(container.querySelector("svg")).toHaveAttribute(
-      "data-mode",
-      "visual",
+    expect(within(viewer).getAllByRole("button")).toHaveLength(2);
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toBeInTheDocument(),
     );
-    expect(container.querySelector("image")).not.toBeInTheDocument();
+    expect(
+      container.querySelector("[data-reference-gown]"),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "상체" }));
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toHaveAttribute("data-view", "upper"),
+    );
+    expect(
+      container.querySelector('svg[data-renderer="memory-sketch"]'),
+    ).toHaveAttribute("data-mode", "visual");
+    expect(
+      container.querySelector('svg[data-renderer="memory-sketch"] image'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(
+        'svg[data-renderer="memory-sketch"] [data-layer="face"]',
+      ),
+    ).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "핵심 기록 수정" }));
-    fireEvent.click(screen.getByRole("button", { name: "상세 기록" }));
+    if (
+      !screen
+        .getByText("고른 특징의 예시 보기")
+        .parentElement?.hasAttribute("open")
+    )
+      fireEvent.click(screen.getByText("고른 특징의 예시 보기"));
+    fireEvent.click(screen.getByRole("button", { name: "전체 모양 예시" }));
+    expect(container.querySelector("[data-reference-gown]")).toHaveAttribute(
+      "data-reference-state",
+      "available",
+    );
+    expect(
+      container.querySelector('svg[data-renderer="memory-sketch"]'),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "기본 기록 수정" }));
+    fireEvent.click(screen.getByRole("button", { name: "자세히 기록" }));
     expect(onEditCore).toHaveBeenCalledOnce();
     expect(onOpenDetails).toHaveBeenCalledOnce();
   });
 
-  it("shows known selected examples and does not invent unknown artwork", () => {
-    const { rerender } = render(
+  it("omits retired rear and color controls even for legacy records", async () => {
+    render(
+      <RecallDressDetail
+        dress={{
+          ...dress,
+          backStyle: "corsetBack",
+          color: "champagne",
+          train: "cathedral",
+        }}
+        onEditCore={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: "뒷모습" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("등 파임")).not.toBeInTheDocument();
+    expect(screen.queryByText("등 뒤 여밈")).not.toBeInTheDocument();
+    expect(screen.queryByText("색상")).not.toBeInTheDocument();
+    expect(screen.queryByText("뒤로 끌리는 길이")).not.toBeInTheDocument();
+  });
+
+  it("shows known selected examples and does not invent unknown artwork", async () => {
+    const { container, rerender } = render(
       <RecallDressDetail
         dress={dress}
         onEditCore={vi.fn()}
@@ -117,13 +231,25 @@ describe("RecallDressDetail", () => {
       />,
     );
 
-    expect(screen.getByText("선택한 특징 · 예시 이미지")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        container.querySelector('svg[data-renderer="memory-sketch"]'),
+      ).toBeInTheDocument(),
+    );
+    if (
+      !screen
+        .getByText("고른 특징의 예시 보기")
+        .parentElement?.hasAttribute("open")
+    )
+      fireEvent.click(screen.getByText("고른 특징의 예시 보기"));
+    fireEvent.click(screen.getByRole("button", { name: "전체 모양 예시" }));
+    expect(screen.getAllByText("고른 특징의 예시").length).toBeGreaterThan(0);
     expect(
       document.querySelector('[data-option-art="fabric-lace"]'),
     ).not.toBeNull();
     expect(
       document.querySelector('[data-option-art="backStyle-buttonBack"]'),
-    ).not.toBeNull();
+    ).toBeNull();
     expect(
       document.querySelector('[data-option-art="details-pearl"]'),
     ).not.toBeNull();
@@ -169,6 +295,59 @@ describe("RecallDressDetail", () => {
     expect(
       screen.getByText("기억할 특징을 아직 적지 않았어요."),
     ).toBeInTheDocument();
+  });
+
+  it("does not substitute a silhouette reference for an unknown or custom silhouette", () => {
+    const { container, rerender } = render(
+      <RecallDressDetail
+        dress={{ ...dress, silhouette: "unknown" }}
+        onEditCore={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+
+    if (
+      !screen
+        .getByText("고른 특징의 예시 보기")
+        .parentElement?.hasAttribute("open")
+    )
+      fireEvent.click(screen.getByText("고른 특징의 예시 보기"));
+    fireEvent.click(screen.getByRole("button", { name: "전체 모양 예시" }));
+    expect(container.querySelector("[data-reference-gown]")).toHaveAttribute(
+      "data-reference-state",
+      "no-reference",
+    );
+    expect(
+      container.querySelector('[data-option-art^="silhouette-"]'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/전체 모양 예시 이미지를 표시할 수 없어요/),
+    ).toBeInTheDocument();
+
+    rerender(
+      <RecallDressDetail
+        dress={{
+          ...dress,
+          customOptions: { silhouette: "허리선이 더 길었어요" },
+        }}
+        onEditCore={vi.fn()}
+        onOpenDetails={vi.fn()}
+      />,
+    );
+    if (
+      !screen
+        .getByText("고른 특징의 예시 보기")
+        .parentElement?.hasAttribute("open")
+    )
+      fireEvent.click(screen.getByText("고른 특징의 예시 보기"));
+    fireEvent.click(screen.getByRole("button", { name: "전체 모양 예시" }));
+    expect(container.querySelector("[data-reference-gown]")).toHaveAttribute(
+      "data-reference-state",
+      "no-reference",
+    );
+    expect(
+      container.querySelector('[data-option-art^="silhouette-"]'),
+    ).not.toBeInTheDocument();
   });
 });
 

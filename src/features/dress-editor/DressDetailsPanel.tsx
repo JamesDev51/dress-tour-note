@@ -1,240 +1,144 @@
-import { useEffect, useRef, useState } from "react";
-import { DressFaceSection } from "./DressFaceSection";
 import { DressFeedbackSection } from "./DressFeedbackSection";
+import { NecklineThumbnail } from "./UpperBodyThumbnail";
 import { DressOptionSection } from "./DressOptionSection";
+import { DressMaterialPicker } from "./DressMaterialPicker";
 import {
-  backStyleOptions,
-  colorOptions,
-  detailOptions,
-  fabricOptions,
+  activeDetailOptions,
+  activeFabricOptions,
+  activeSilhouetteOptions,
+  normalizeActiveSilhouette,
+} from "../../lib/dress/activeOptions";
+import {
   necklineOptions,
-  silhouetteOptions,
   topStyleOptions,
-  trainOptions,
   waistlineOptions,
 } from "../../lib/dress/options";
-import type {
-  Dress,
-  DressOptionCategory,
-  FaceTransform,
-  LocalAsset,
-} from "../../types/domain";
+import type { Dress, DressOptionCategory } from "../../types/domain";
 
+const activeDetailIds = new Set(activeDetailOptions.map((option) => option.id));
+function currentDetails(dress: Dress) {
+  return dress.details.filter((detail) => activeDetailIds.has(detail));
+}
 export function DressDetailsPanel({
   dress,
   memo,
-  transform,
-  face,
-  includeFace,
   onPatch,
   onCustomCommit,
   onMemoChange,
   onMemoBlur,
-  onRemoveFace,
-  onUploadFace,
-  onIncludeFaceChange,
-  onTransformPatch,
-  onTransformCommit,
-  onResetFace,
   onClose,
 }: {
   dress: Dress;
   memo: string;
-  transform: FaceTransform;
-  face: LocalAsset | undefined;
-  includeFace: boolean;
   onPatch: (patch: Partial<Dress>) => Promise<void>;
   onCustomCommit: (category: DressOptionCategory, value: string) => void;
   onMemoChange: (value: string) => void;
   onMemoBlur: () => void;
-  onRemoveFace: () => Promise<void>;
-  onUploadFace: (file: File) => Promise<void>;
-  onIncludeFaceChange: (include: boolean) => void;
-  onTransformPatch: (patch: Partial<FaceTransform>) => void;
-  onTransformCommit: () => void;
-  onResetFace: () => void;
   onClose: () => void;
 }) {
-  const [selectedDetails, setSelectedDetails] = useState(dress.details);
-  const [detailBusy, setDetailBusy] = useState(false);
-  const detailBusyRef = useRef(false);
-
-  useEffect(() => {
-    setSelectedDetails(dress.details);
-  }, [dress.details]);
-
-  const customOptionsWithout = (category: DressOptionCategory) => ({
+  const save = (patch: Partial<Dress>) => {
+    void onPatch(patch).catch(() => undefined);
+  };
+  const selectedDetails = currentDetails(dress);
+  const without = (category: DressOptionCategory) => ({
     [category]: undefined,
   });
-  const toggleDetail = async (
+  const toggleDetail = (
     value: Dress["details"][number],
     clearCustom = false,
   ) => {
-    if (detailBusyRef.current) return;
-    detailBusyRef.current = true;
-    setDetailBusy(true);
-    const next = selectedDetails.includes(value)
-      ? selectedDetails.filter((detail) => detail !== value)
-      : [...selectedDetails, value];
-    setSelectedDetails(next);
-    try {
-      await onPatch({
-        details: next,
-        ...(clearCustom
-          ? { customOptions: customOptionsWithout("details") }
-          : {}),
-      });
-    } catch (error) {
-      setSelectedDetails(dress.details);
-      throw error;
-    } finally {
-      detailBusyRef.current = false;
-      setDetailBusy(false);
-    }
+    const remove = selectedDetails.includes(value);
+    if (!remove && selectedDetails.length >= 4) return;
+    save({
+      details: remove
+        ? selectedDetails.filter((detail) => detail !== value)
+        : [...selectedDetails, value],
+      ...(clearCustom ? { customOptions: without("details") } : {}),
+    });
   };
-
   return (
-    <div className="px-5 pb-32 pt-4">
-      <button
-        type="button"
-        className="min-h-11 rounded-control px-3 text-sm font-bold text-accent-copy underline underline-offset-4"
-        onClick={onClose}
-      >
-        핵심 기록으로 돌아가기
-      </button>
-      <DressOptionSection
-        category="top"
-        title="어깨/상의"
-        options={topStyleOptions}
-        value={dress.topStyle}
-        onPick={(value) => void onPatch({ topStyle: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            topStyle: value,
-            customOptions: customOptionsWithout("top"),
-          })
-        }
-        customValue={dress.customOptions?.top}
-        onCustomCommit={(value) => onCustomCommit("top", value)}
-      />
+    <div className="bridal-content pb-48 pt-4">
       <DressOptionSection
         category="neckline"
-        title="네크라인"
+        title="목·가슴선"
         options={necklineOptions}
         value={dress.neckline}
-        onPick={(value) => void onPatch({ neckline: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            neckline: value,
-            customOptions: customOptionsWithout("neckline"),
-          })
+        renderArtwork={(neckline) => (
+          <NecklineThumbnail topStyle={dress.topStyle} neckline={neckline} />
+        )}
+        onPick={(neckline) => save({ neckline })}
+        onClearAndSelect={(neckline) =>
+          save({ neckline, customOptions: without("neckline") })
         }
         customValue={dress.customOptions?.neckline}
         onCustomCommit={(value) => onCustomCommit("neckline", value)}
       />
       <DressOptionSection
+        category="top"
+        title="끈·소매"
+        options={topStyleOptions}
+        value={dress.topStyle}
+        onPick={(topStyle) => save({ topStyle })}
+        onClearAndSelect={(topStyle) =>
+          save({ topStyle, customOptions: without("top") })
+        }
+        customValue={dress.customOptions?.top}
+        onCustomCommit={(value) => onCustomCommit("top", value)}
+      />
+      <DressOptionSection
         category="silhouette"
-        title="실루엣"
-        options={silhouetteOptions}
-        value={dress.silhouette}
-        onPick={(value) => void onPatch({ silhouette: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            silhouette: value,
-            customOptions: customOptionsWithout("silhouette"),
-          })
+        title="전체 모양"
+        options={activeSilhouetteOptions}
+        value={normalizeActiveSilhouette(dress.silhouette)}
+        onPick={(silhouette) => save({ silhouette })}
+        onClearAndSelect={(silhouette) =>
+          save({ silhouette, customOptions: without("silhouette") })
         }
         customValue={dress.customOptions?.silhouette}
         onCustomCommit={(value) => onCustomCommit("silhouette", value)}
       />
-      <DressOptionSection
-        category="fabric"
-        title="소재"
-        options={fabricOptions}
-        value={dress.fabric}
-        onPick={(value) => void onPatch({ fabric: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            fabric: value,
-            customOptions: customOptionsWithout("fabric"),
-          })
-        }
-        customValue={dress.customOptions?.fabric}
-        onCustomCommit={(value) => onCustomCommit("fabric", value)}
-      />
-      <DressOptionSection
-        category="color"
-        title="색상"
-        options={colorOptions}
-        value={dress.color}
-        onPick={(value) => void onPatch({ color: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            color: value,
-            customOptions: customOptionsWithout("color"),
-          })
-        }
-        customValue={dress.customOptions?.color}
-        onCustomCommit={(value) => onCustomCommit("color", value)}
-      />
+      <div className="mt-8">
+        <DressMaterialPicker
+          values={dress}
+          onPatch={onPatch}
+          commonSection={(fabric, select) => (
+            <DressOptionSection
+              category="fabric"
+              title="소재·표면"
+              options={activeFabricOptions}
+              value={fabric}
+              onPick={select}
+              onClearAndSelect={(value) => select(value, true)}
+              customValue={dress.customOptions?.fabric}
+              onCustomCommit={(value) => onCustomCommit("fabric", value)}
+            />
+          )}
+        />
+      </div>
       <DressOptionSection
         category="waistline"
         title="허리선"
         options={waistlineOptions}
         value={dress.waistline}
-        onPick={(value) => void onPatch({ waistline: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            waistline: value,
-            customOptions: customOptionsWithout("waistline"),
-          })
+        onPick={(waistline) => save({ waistline })}
+        onClearAndSelect={(waistline) =>
+          save({ waistline, customOptions: without("waistline") })
         }
         customValue={dress.customOptions?.waistline}
         onCustomCommit={(value) => onCustomCommit("waistline", value)}
       />
       <DressOptionSection
-        category="backStyle"
-        title="등 디자인"
-        options={backStyleOptions}
-        value={dress.backStyle ?? "unknown"}
-        onPick={(value) => void onPatch({ backStyle: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            backStyle: value,
-            customOptions: customOptionsWithout("backStyle"),
-          })
-        }
-        customValue={dress.customOptions?.backStyle}
-        onCustomCommit={(value) => onCustomCommit("backStyle", value)}
-      />
-      <DressOptionSection
-        category="train"
-        title="트레인"
-        options={trainOptions}
-        value={dress.train}
-        onPick={(value) => void onPatch({ train: value })}
-        onClearAndSelect={(value) =>
-          void onPatch({
-            train: value,
-            customOptions: customOptionsWithout("train"),
-          })
-        }
-        customValue={dress.customOptions?.train}
-        onCustomCommit={(value) => onCustomCommit("train", value)}
-      />
-      <DressOptionSection
         category="details"
-        title="디테일"
+        title="장식과 세부 특징"
         hint={`최대 4개 선택 · ${selectedDetails.length}/4`}
-        options={detailOptions}
+        options={activeDetailOptions}
         selectionMode="multiple"
         selectedValues={selectedDetails}
         disabled={(value) =>
-          detailBusy ||
-          (selectedDetails.length >= 4 && !selectedDetails.includes(value))
+          selectedDetails.length >= 4 && !selectedDetails.includes(value)
         }
-        onToggle={(value) => void toggleDetail(value)}
-        onClearAndSelect={(value) => void toggleDetail(value, true)}
+        onToggle={toggleDetail}
+        onClearAndSelect={(value) => toggleDetail(value, true)}
         customValue={dress.customOptions?.details}
         onCustomCommit={(value) => onCustomCommit("details", value)}
       />
@@ -245,24 +149,13 @@ export function DressDetailsPanel({
         onMemoChange={onMemoChange}
         onMemoBlur={onMemoBlur}
       />
-      <DressFaceSection
-        face={face}
-        includeFace={includeFace}
-        transform={transform}
-        onRemove={onRemoveFace}
-        onUpload={onUploadFace}
-        onIncludeChange={onIncludeFaceChange}
-        onTransformPatch={onTransformPatch}
-        onTransformCommit={onTransformCommit}
-        onReset={onResetFace}
-      />
-      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[480px] border-t border-stone-100 bg-white/95 p-4 backdrop-blur">
+      <div className="bridal-action-bar fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[480px] border-t border-rule py-4 backdrop-blur">
         <button
           type="button"
-          className="min-h-12 w-full rounded-control bg-stone-900 px-4 font-bold text-white"
+          className="min-h-12 w-full rounded-control bridal-primary px-4 font-semibold text-white"
           onClick={onClose}
         >
-          핵심 기록으로
+          기록으로 돌아가기
         </button>
       </div>
     </div>

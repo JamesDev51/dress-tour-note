@@ -1,14 +1,28 @@
-import type { TourSnapshot } from "../../types/domain";
+import type {
+  Dress,
+  DressLookSnapshot,
+  TourSnapshot,
+} from "../../types/domain";
 import type {
   PortableBundle,
-  PortableManifestV1,
+  PortableManifest,
   PortableSerializedFiles,
-  PortableTourV1,
+  PortableTour,
 } from "../../types/portable";
 import { sha256Hex } from "../image/processFace";
 import {
   portableManifestV1Schema,
+  portableManifestV2Schema,
+  portableManifestV3Schema,
+  portableManifestV4Schema,
+  portableManifestV5Schema,
+  portableManifestV6Schema,
   portableTourV1Schema,
+  portableTourV2Schema,
+  portableTourV3Schema,
+  portableTourV4Schema,
+  portableTourV5Schema,
+  portableTourV6Schema,
 } from "../validation/schemas";
 
 export const PORTABLE_MANIFEST_FILE_NAME = "gudress-manifest.json";
@@ -19,6 +33,11 @@ export const PORTABLE_FORMAT = "gudress-portable-tour" as const;
 export const PORTABLE_PDF_FORMAT = "gudress-portable-pdf" as const;
 export const PORTABLE_APP_ID = "kr.gudress.web" as const;
 export const SCHEMA_VERSION = 1 as const;
+export const STYLING_SCHEMA_VERSION = 2 as const;
+export const BACK_CLOSURE_SCHEMA_VERSION = 3 as const;
+export const REGIONAL_MATERIAL_SCHEMA_VERSION = 4 as const;
+export const MATERIAL_START_SCHEMA_VERSION = 5 as const;
+export const SKETCH_SCHEMA_VERSION = 6 as const;
 export const FORMAT_VERSION = 1 as const;
 export const APP_VERSION = "1.0.0";
 
@@ -39,6 +58,29 @@ export function canonicalJson(value: unknown) {
   return JSON.stringify(sortJson(value));
 }
 
+function portableVersionFor(dresses: Dress[]) {
+  const looks: DressLookSnapshot[] = dresses.flatMap((dress) => [
+    dress,
+    ...(dress.stylingVariants ?? []).map(({ snapshot }) => snapshot),
+  ]);
+  if (looks.some((look) => look.sketchStrokes !== undefined))
+    return SKETCH_SCHEMA_VERSION;
+  if (looks.some((look) => look.lowerFabricStart !== undefined))
+    return MATERIAL_START_SCHEMA_VERSION;
+  if (
+    looks.some(
+      (look) =>
+        look.upperFabric !== undefined || look.lowerFabric !== undefined,
+    )
+  )
+    return REGIONAL_MATERIAL_SCHEMA_VERSION;
+  if (looks.some((look) => look.backClosure !== undefined))
+    return BACK_CLOSURE_SCHEMA_VERSION;
+  return dresses.some((dress) => dress.stylingVariants?.length)
+    ? STYLING_SCHEMA_VERSION
+    : SCHEMA_VERSION;
+}
+
 export function buildPortableBundle(
   snapshot: TourSnapshot,
   includeFace: boolean,
@@ -57,9 +99,9 @@ export function buildPortableBundle(
     face?.mimeType === "image/jpeg"
       ? "gudress-face.jpg"
       : PORTABLE_FACE_FILE_NAME;
-  const payload: PortableTourV1 = {
+  const payload: PortableTour = {
     format: PORTABLE_FORMAT,
-    schemaVersion: SCHEMA_VERSION,
+    schemaVersion: portableVersionFor(dresses),
     appVersion: APP_VERSION,
     exportId: crypto.randomUUID(),
     exportedAt: new Date().toISOString(),
@@ -79,7 +121,7 @@ export function buildPortableBundle(
       sha256: asset.sha256,
     })),
   };
-  return { payload: portableTourV1Schema.parse(payload), assets };
+  return { payload: parsePortablePayload(payload), assets };
 }
 
 export async function serializePortableBundle(
@@ -97,11 +139,11 @@ export async function serializePortableBundle(
     throw new Error(
       "기기에 저장된 얼굴 사진 검증에 실패했어요. 사진을 다시 추가해 주세요.",
     );
-  const manifest: PortableManifestV1 = portableManifestV1Schema.parse({
+  const manifest = parsePortableManifest({
     appId: PORTABLE_APP_ID,
     format: PORTABLE_PDF_FORMAT,
     formatVersion: FORMAT_VERSION,
-    schemaVersion: SCHEMA_VERSION,
+    schemaVersion: bundle.payload.schemaVersion,
     createdAt: bundle.payload.exportedAt,
     tourAttachment: PORTABLE_TOUR_FILE_NAME,
     faceAttachment,
@@ -117,27 +159,101 @@ export async function serializePortableBundle(
   };
 }
 
+export class UnsupportedPortableVersionError extends Error {
+  constructor() {
+    super("지원하지 않는 드레스노트 PDF 버전이에요.");
+    this.name = "UnsupportedPortableVersionError";
+  }
+}
+
+function schemaVersion(input: unknown) {
+  const version =
+    input && typeof input === "object" && "schemaVersion" in input
+      ? input.schemaVersion
+      : undefined;
+  if (
+    version !== SCHEMA_VERSION &&
+    version !== STYLING_SCHEMA_VERSION &&
+    version !== BACK_CLOSURE_SCHEMA_VERSION &&
+    version !== REGIONAL_MATERIAL_SCHEMA_VERSION &&
+    version !== MATERIAL_START_SCHEMA_VERSION &&
+    version !== SKETCH_SCHEMA_VERSION
+  )
+    throw new UnsupportedPortableVersionError();
+  return version;
+}
+
 export function parsePortablePayload(input: unknown) {
-  return portableTourV1Schema.parse(input);
+  const version = schemaVersion(input);
+  // The v1 schema strips fields it predates. Reject later look data before that
+  // projection can silently discard newer material fields inside a styling.
+  if (
+    version === SCHEMA_VERSION &&
+    input &&
+    typeof input === "object" &&
+    "dresses" in input &&
+    Array.isArray(input.dresses)
+  ) {
+    const hasLaterLooks = input.dresses.some(
+      (dress) =>
+        dress &&
+        typeof dress === "object" &&
+        (("stylingVariants" in dress &&
+          dress.stylingVariants !== undefined &&
+          (!Array.isArray(dress.stylingVariants) ||
+            dress.stylingVariants.length > 0)) ||
+          ("preferredStylingId" in dress &&
+            dress.preferredStylingId !== undefined)),
+    );
+    if (hasLaterLooks)
+      throw new Error("추가 연출은 PDF 데이터 버전 2 이상이 필요해요.");
+  }
+  switch (version) {
+    case SKETCH_SCHEMA_VERSION:
+      return portableTourV6Schema.parse(input);
+    case MATERIAL_START_SCHEMA_VERSION:
+      return portableTourV5Schema.parse(input);
+    case REGIONAL_MATERIAL_SCHEMA_VERSION:
+      return portableTourV4Schema.parse(input);
+    case BACK_CLOSURE_SCHEMA_VERSION:
+      return portableTourV3Schema.parse(input);
+    case STYLING_SCHEMA_VERSION:
+      return portableTourV2Schema.parse(input);
+    default:
+      return portableTourV1Schema.parse(input);
+  }
 }
 
 export function parsePortableManifest(input: unknown) {
-  return portableManifestV1Schema.parse(input);
+  switch (schemaVersion(input)) {
+    case SKETCH_SCHEMA_VERSION:
+      return portableManifestV6Schema.parse(input);
+    case MATERIAL_START_SCHEMA_VERSION:
+      return portableManifestV5Schema.parse(input);
+    case REGIONAL_MATERIAL_SCHEMA_VERSION:
+      return portableManifestV4Schema.parse(input);
+    case BACK_CLOSURE_SCHEMA_VERSION:
+      return portableManifestV3Schema.parse(input);
+    case STYLING_SCHEMA_VERSION:
+      return portableManifestV2Schema.parse(input);
+    default:
+      return portableManifestV1Schema.parse(input);
+  }
 }
 
 export async function verifyPortableTourBytes(
-  manifest: PortableManifestV1,
+  manifest: PortableManifest,
   tourBytes: Uint8Array,
-): Promise<PortableTourV1> {
+): Promise<PortableTour> {
   if ((await sha256Hex(tourBytes)) !== manifest.tourSha256)
     throw new Error(
-      "PDF의 투어 데이터 해시가 일치하지 않아요. 파일이 손상되었거나 변경됐어요.",
+      "PDF에 담긴 기록이 손상되었거나 변경됐어요. 원본 파일을 다시 선택해 주세요.",
     );
   let raw: unknown;
   try {
     raw = JSON.parse(new TextDecoder().decode(tourBytes));
   } catch {
-    throw new Error("PDF의 투어 데이터를 읽을 수 없어요.");
+    throw new Error("PDF에 담긴 기록을 읽을 수 없어요.");
   }
   const payload = parsePortablePayload(raw);
   if (payload.schemaVersion !== manifest.schemaVersion)
@@ -161,7 +277,7 @@ export async function verifyPortableTourBytes(
 }
 
 export async function verifyPortableFaceBytes(
-  manifest: PortableManifestV1,
+  manifest: PortableManifest,
   faceBytes: Uint8Array,
 ) {
   if (!manifest.faceAttachment || !manifest.faceSha256)

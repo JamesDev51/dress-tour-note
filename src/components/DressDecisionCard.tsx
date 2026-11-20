@@ -6,6 +6,11 @@ import {
 } from "../lib/dress/decisionPresentation";
 import { DressPreview } from "./DressPreview";
 import { SelectedDressArtwork } from "./SelectedDressArtwork";
+import {
+  getDressLooks,
+  getPreferredStylingId,
+  resolveDressLook,
+} from "../lib/dress/styling";
 
 function FavoriteMark({ size }: { readonly size: number }) {
   return (
@@ -18,45 +23,18 @@ function FavoriteMark({ size }: { readonly size: number }) {
   );
 }
 
-function CompareCard({
-  dress,
-  presentation,
-  metadata,
-  title,
-}: {
-  readonly dress: Dress;
-  readonly presentation: DressDecisionPresentation;
-  readonly metadata: string;
-  readonly title: string;
-}) {
-  return (
-    <div className="min-w-0">
-      <DressPreview dress={presentation.dress} view="full" mode="visual" />
-      <div className="min-w-0 px-1 pb-2 pt-3">
-        <p className="truncate text-xs leading-[18px] text-stone-400">
-          {metadata}
-        </p>
-        <div className="mt-1 flex min-w-0 items-center gap-1">
-          <p className="min-w-0 break-keep text-sm font-bold [overflow-wrap:anywhere]">
-            {title}
-          </p>
-          {dress.isFavorite && <FavoriteMark size={12} />}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function StandardCard({
   dress,
   presentation,
   metadata,
   title,
+  stylingLabel,
 }: {
   readonly dress: Dress;
   readonly presentation: DressDecisionPresentation;
   readonly metadata: string;
   readonly title: string;
+  readonly stylingLabel?: string;
 }) {
   const candidate = presentation.decision[0];
   const rating = presentation.decision[1];
@@ -69,19 +47,30 @@ function StandardCard({
     <div className="min-w-0">
       <div className="flex min-w-0 gap-3">
         <div className="w-[40%] min-w-[108px] max-w-[140px] shrink-0">
-          <DressPreview dress={presentation.dress} view="full" mode="visual" />
+          <DressPreview
+            dress={presentation.dress}
+            allowRetry={false}
+            view="full"
+            mode="visual"
+            className="aspect-[3/4]"
+          />
         </div>
         <div className="min-w-0 flex-1 py-1">
-          <p className="truncate text-xs leading-[18px] text-stone-400">
+          <p className="break-keep text-xs leading-[18px] text-stone-400 [overflow-wrap:anywhere]">
             {metadata}
           </p>
+          {stylingLabel && (
+            <p className="mt-1 break-keep text-xs leading-5 text-ink-muted [overflow-wrap:anywhere]">
+              대표 연출 · {stylingLabel}
+            </p>
+          )}
           <div className="flex min-w-0 items-center gap-1.5">
-            <h3 className="min-w-0 break-keep font-bold leading-6 [overflow-wrap:anywhere]">
+            <h3 className="min-w-0 break-keep font-medium leading-6 [text-wrap:balance] [overflow-wrap:break-word]">
               {title}
             </h3>
             {dress.isFavorite && <FavoriteMark size={14} />}
           </div>
-          <div className="mt-2 flex flex-wrap gap-1 text-[11px]">
+          <div className="mt-2 flex flex-wrap gap-1 text-xs">
             <span className="rounded-full bg-accent-soft px-2 py-1 font-semibold text-accent-copy">
               {candidate.value}
             </span>
@@ -106,10 +95,11 @@ function StandardCard({
           )}
         </div>
       </div>
-      <div className="mt-3 border-t border-stone-100 pt-3">
+      <div className="mt-3 border-t border-rule pt-3">
         <SelectedDressArtwork
           dress={presentation.dress}
-          categories={["fabric", "backStyle"]}
+          categories={["fabric"]}
+          columns={1}
           compact
         />
       </div>
@@ -119,35 +109,29 @@ function StandardCard({
 
 export function DressDecisionCard({
   dress,
-  variant,
   shopName,
 }: {
   readonly dress: Dress;
-  readonly variant: "shop" | "review" | "compare";
   readonly shopName?: string;
 }) {
-  const presentation = createDressDecisionPresentation(dress);
-  const title = dress.memoryCue?.trim() || dress.label;
+  const stylingId = getPreferredStylingId(dress);
+  const visibleDress = resolveDressLook(dress, stylingId);
+  const presentation = createDressDecisionPresentation(visibleDress);
+  const title = visibleDress.memoryCue?.trim() || dress.label;
+  const stylingLabel = dress.stylingVariants?.length
+    ? getDressLooks(dress).find(({ id }) => id === stylingId)?.label
+    : undefined;
   const metadata = [shopName, `${dress.order + 1}번째`, dress.label]
     .filter(Boolean)
     .join(" · ");
 
-  if (variant === "compare") {
-    return (
-      <CompareCard
-        dress={dress}
-        presentation={presentation}
-        metadata={metadata}
-        title={title}
-      />
-    );
-  }
   return (
     <StandardCard
       dress={dress}
       presentation={presentation}
       metadata={metadata}
       title={title}
+      stylingLabel={stylingLabel}
     />
   );
 }

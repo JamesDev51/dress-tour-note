@@ -13,9 +13,31 @@ import {
   DRESS_OPTION_CATEGORIES,
 } from "../types/domain";
 import { requestPersistentStorage } from "../lib/storage/persist";
+import {
+  BASE_STYLING_ID,
+  LOOK_FIELDS,
+  MAX_STYLING_VARIANTS,
+  cloneDressStyling,
+  isDressLook,
+  resolveDressLook,
+  snapshotDressLook,
+} from "../lib/dress/styling";
+import {
+  dressLookSnapshotSchema,
+  sketchStrokesSchema,
+} from "../lib/validation/schemas";
 
 const now = () => new Date().toISOString();
 const id = () => crypto.randomUUID();
+const automaticDressLabel = (order: number) =>
+  `드레스 ${String(order + 1).padStart(2, "0")}`;
+const requiredName = (value: string | undefined, label: string) => {
+  const name = value?.trim();
+  if (!name) throw new Error(`${label}을 입력해 주세요.`);
+  if (name.length > 50)
+    throw new Error(`${label}은 50자 이내로 입력해 주세요.`);
+  return name;
+};
 const touchTour = (tourId: string) =>
   db.tours.update(tourId, { updatedAt: now(), lastOpenedAt: now() });
 
@@ -69,6 +91,9 @@ export async function createTour(
 export async function patchTour(tourId: Id, patch: Partial<Tour>) {
   await db.tours.update(tourId, {
     ...patch,
+    ...(Object.hasOwn(patch, "title")
+      ? { title: requiredName(patch.title, "투어 제목") }
+      : {}),
     updatedAt: now(),
     lastOpenedAt: now(),
   });
@@ -82,7 +107,7 @@ export async function addShop(
   const shop: Shop = {
     id: id(),
     tourId,
-    name: input.name.trim(),
+    name: requiredName(input.name, "드레스샵 이름"),
     order,
     appointmentAt: input.appointmentAt,
     createdAt: t,
@@ -95,10 +120,16 @@ export async function addShop(
   return shop.id;
 }
 export async function patchShop(shopId: Id, patch: Partial<Shop>) {
+  const next = {
+    ...patch,
+    ...(Object.hasOwn(patch, "name")
+      ? { name: requiredName(patch.name, "드레스샵 이름") }
+      : {}),
+  };
   const shop = await db.shops.get(shopId);
   if (!shop) return;
   await db.transaction("rw", db.shops, db.tours, async () => {
-    await db.shops.update(shopId, { ...patch, updatedAt: now() });
+    await db.shops.update(shopId, { ...next, updatedAt: now() });
     await touchTour(shop.tourId);
   });
 }
@@ -131,7 +162,7 @@ function defaultDress(tourId: string, shopId: string, order: number): Dress {
     tourId,
     shopId,
     order,
-    label: `Dress ${String(order + 1).padStart(2, "0")}`,
+    label: automaticDressLabel(order),
     topStyle: "unknown",
     neckline: "unknown",
     silhouette: "unknown",
@@ -156,7 +187,9 @@ export async function addDress(shopId: Id, seed?: Partial<Dress>) {
     ...seed,
     id: id(),
     order,
-    label: seed?.label || `Dress ${String(order + 1).padStart(2, "0")}`,
+    label: seed?.label?.trim()
+      ? requiredName(seed.label, "드레스 이름")
+      : automaticDressLabel(order),
     isFavorite: seed?.isFavorite ?? false,
     memoryCue: trimRecallText(seed?.memoryCue),
     likedReason: trimRecallText(seed?.likedReason),
@@ -165,6 +198,8 @@ export async function addDress(shopId: Id, seed?: Partial<Dress>) {
     createdAt: now(),
     updatedAt: now(),
   };
+  if (seed?.sketchStrokes !== undefined)
+    dress.sketchStrokes = sketchStrokesSchema.parse(seed.sketchStrokes);
   await db.transaction("rw", db.dresses, db.tours, async () => {
     await db.dresses.add(dress);
     await touchTour(shop.tourId);
@@ -182,18 +217,31 @@ export async function duplicateDress(dressId: Id) {
     updatedAt: _____,
     ...seed
   } = d;
-  return addDress(d.shopId, { ...seed, isFavorite: false });
+  return addDress(d.shopId, {
+    ...seed,
+    ...cloneDressStyling(d),
+    isFavorite: false,
+  });
 }
 export async function patchDress(dressId: Id, patch: Partial<Dress>) {
+  if (
+    Object.hasOwn(patch, "stylingVariants") ||
+    Object.hasOwn(patch, "preferredStylingId")
+  )
+    throw new Error("연출 전용 저장 기능을 사용해 주세요.");
   const { customOptions, memoryCue, likedReason, concern, ...rest } = patch;
   const next: Partial<Dress> = { ...rest };
+  if (patch.sketchStrokes !== undefined)
+    next.sketchStrokes = sketchStrokesSchema.parse(patch.sketchStrokes);
+  if (Object.hasOwn(patch, "label"))
+    next.label = requiredName(patch.label, "드레스 이름");
   if (Object.hasOwn(patch, "memoryCue"))
     next.memoryCue = trimRecallText(memoryCue);
   if (Object.hasOwn(patch, "likedReason"))
     next.likedReason = trimRecallText(likedReason);
   if (Object.hasOwn(patch, "concern")) next.concern = trimRecallText(concern);
   if (next.details && next.details.length > 4)
-    next.details = next.details.slice(0, 4);
+    throw new Error("장식과 세부 특징은 최대 4개까지 기록할 수 있어요.");
   await db.transaction("rw", db.dresses, db.tours, async () => {
     const d = await db.dresses.get(dressId);
     if (!d) return;
@@ -204,14 +252,184 @@ export async function patchDress(dressId: Id, patch: Partial<Dress>) {
     await touchTour(d.tourId);
   });
 }
+
+function stylingName(value: string) {
+  const label = value.trim();
+  if (!label || label.length > 30)
+    throw new Error("연출 이름은 1~30자로 입력해 주세요.");
+  return label;
+}
+
+async function updateStyling(
+  dressId: Id,
+  update: (dress: Dress) => Partial<Dress>,
+) {
+  await db.transaction("rw", db.dresses, db.tours, async () => {
+    const dress = await db.dresses.get(dressId);
+    if (!dress) throw new Error("드레스를 찾을 수 없습니다.");
+    await db.dresses.update(dressId, { ...update(dress), updatedAt: now() });
+    await touchTour(dress.tourId);
+  });
+}
+
+export async function addDressStylingVariant(
+  dressId: Id,
+  sourceStylingId = BASE_STYLING_ID,
+): Promise<Id> {
+  const stylingId = id();
+  await updateStyling(dressId, (dress) => {
+    const current = dress.stylingVariants ?? [];
+    if (current.length >= MAX_STYLING_VARIANTS)
+      throw new Error("추가 연출은 최대 8개까지 기록할 수 있어요.");
+    const source = resolveDressLook(dress, sourceStylingId);
+    const snapshot = snapshotDressLook({
+      ...source,
+      memoryCue: undefined,
+      likedReason: undefined,
+      concern: undefined,
+      quickTags: [],
+      memo: "",
+    });
+    let number = 1;
+    while (current.some(({ label }) => label === `연출 ${number}`)) number += 1;
+    const timestamp = now();
+    return {
+      stylingVariants: [
+        ...current,
+        {
+          id: stylingId,
+          label: `연출 ${number}`,
+          snapshot: dressLookSnapshotSchema.parse(snapshot),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+      ],
+    };
+  });
+  return stylingId;
+}
+
+export async function patchDressLook(
+  dressId: Id,
+  stylingId: string,
+  patch: Partial<Dress>,
+): Promise<void> {
+  const commonFields = [
+    "label",
+    "rating",
+    "isFavorite",
+    "faceTransform",
+    "coreRecordedAt",
+  ] as const;
+  const allowed = new Set<string>([...LOOK_FIELDS, ...commonFields]);
+  if (Object.keys(patch).some((key) => !allowed.has(key)))
+    throw new Error("수정할 수 없는 기록 항목이에요.");
+  if (patch.details && patch.details.length > 4)
+    throw new Error("디테일은 최대 4개까지 선택할 수 있어요.");
+  await updateStyling(dressId, (dress) => {
+    const current = resolveDressLook(dress, stylingId);
+    const lookPatch = Object.fromEntries(
+      LOOK_FIELDS.filter((key) => Object.hasOwn(patch, key)).map((key) => [
+        key,
+        patch[key],
+      ]),
+    );
+    const commonPatch: Partial<Dress> = Object.fromEntries(
+      commonFields
+        .filter((key) => Object.hasOwn(patch, key))
+        .map((key) => [key, patch[key]]),
+    );
+    if (Object.hasOwn(patch, "label"))
+      commonPatch.label = requiredName(patch.label, "드레스 이름");
+    if (dress.coreRecordedAt && Object.hasOwn(patch, "coreRecordedAt"))
+      commonPatch.coreRecordedAt = dress.coreRecordedAt;
+    if (patch.customOptions)
+      lookPatch.customOptions = mergeCustomOptions(
+        current.customOptions,
+        patch.customOptions,
+      );
+    const snapshot = dressLookSnapshotSchema.parse({
+      ...snapshotDressLook(current),
+      ...lookPatch,
+    });
+    if (stylingId === BASE_STYLING_ID)
+      return { ...commonPatch, ...snapshotDressLook(snapshot) };
+    return {
+      ...commonPatch,
+      stylingVariants: dress.stylingVariants!.map((styling) =>
+        styling.id === stylingId
+          ? { ...styling, snapshot, updatedAt: now() }
+          : styling,
+      ),
+    };
+  });
+}
+
+export async function renameDressStylingVariant(
+  dressId: Id,
+  stylingId: string,
+  label: string,
+): Promise<void> {
+  const name = stylingName(label);
+  await updateStyling(dressId, (dress) => {
+    if (stylingId === BASE_STYLING_ID || !isDressLook(dress, stylingId))
+      throw new Error("연출을 찾을 수 없습니다.");
+    return {
+      stylingVariants: dress.stylingVariants!.map((styling) =>
+        styling.id === stylingId
+          ? { ...styling, label: name, updatedAt: now() }
+          : styling,
+      ),
+    };
+  });
+}
+
+export async function removeDressStylingVariant(
+  dressId: Id,
+  stylingId: string,
+): Promise<void> {
+  await updateStyling(dressId, (dress) => {
+    if (stylingId === BASE_STYLING_ID)
+      throw new Error("기본 연출은 삭제할 수 없어요.");
+    if (!isDressLook(dress, stylingId))
+      throw new Error("연출을 찾을 수 없습니다.");
+    const variants = dress.stylingVariants!.filter(
+      ({ id }) => id !== stylingId,
+    );
+    return {
+      stylingVariants: variants.length ? variants : undefined,
+      preferredStylingId:
+        dress.preferredStylingId === stylingId
+          ? undefined
+          : dress.preferredStylingId,
+    };
+  });
+}
+
+export async function setPreferredStylingVariant(
+  dressId: Id,
+  stylingId: string,
+): Promise<void> {
+  await updateStyling(dressId, (dress) => {
+    if (!isDressLook(dress, stylingId))
+      throw new Error("연출을 찾을 수 없습니다.");
+    return {
+      preferredStylingId: stylingId === BASE_STYLING_ID ? undefined : stylingId,
+    };
+  });
+}
 export async function reorderDresses(shopId: Id, orderedIds: Id[]) {
   const shop = await db.shops.get(shopId);
   if (!shop) return;
   await db.transaction("rw", db.dresses, db.tours, async () => {
     for (let i = 0; i < orderedIds.length; i++) {
+      const dress = await db.dresses.get(orderedIds[i]);
+      if (!dress || dress.shopId !== shopId) continue;
       await db.dresses.update(orderedIds[i], {
         order: i,
-        label: `Dress ${String(i + 1).padStart(2, "0")}`,
+        ...(dress.label === automaticDressLabel(dress.order)
+          ? { label: automaticDressLabel(i) }
+          : {}),
         updatedAt: now(),
       });
     }
@@ -230,7 +448,9 @@ export async function deleteDress(dressId: Id) {
     for (let i = 0; i < rest.length; i++)
       await db.dresses.update(rest[i].id, {
         order: i,
-        label: `Dress ${String(i + 1).padStart(2, "0")}`,
+        ...(rest[i].label === automaticDressLabel(rest[i].order)
+          ? { label: automaticDressLabel(i) }
+          : {}),
       });
     await touchTour(d.tourId);
   });
@@ -342,6 +562,7 @@ export async function importSnapshot(
     });
     dresses = dresses.map((d) => ({
       ...d,
+      ...cloneDressStyling(d),
       id: id(),
       tourId: newTourId,
       shopId: shopMap.get(d.shopId)!,

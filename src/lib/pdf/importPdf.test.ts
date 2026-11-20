@@ -5,6 +5,14 @@ import { describe, expect, it } from "vitest";
 import type { TourSnapshot } from "../../types/domain";
 import { sha256Hex } from "../image/processFace";
 import { inspectPortablePdf } from "./importPdf";
+import { snapshotDressLook } from "../dress/styling";
+import { appendPortableTrailer } from "./portableTrailer";
+import {
+  portableManifestV1Schema,
+  portableManifestV2Schema,
+  portableTourV1Schema,
+  portableTourV2Schema,
+} from "../validation/schemas";
 import {
   buildPortableBundle,
   PORTABLE_MANIFEST_FILE_NAME,
@@ -116,6 +124,117 @@ async function makePortablePdf(
 }
 
 describe("inspectPortablePdf", () => {
+  it.each([
+    { schemaVersion: 4, baseStart: undefined, variantStart: undefined },
+    { schemaVersion: 5, baseStart: "hip", variantStart: "knee" },
+  ] as const)(
+    "restores regional-material v$schemaVersion records through attachments and the unchanged trailer",
+    async ({ schemaVersion, baseStart, variantStart }) => {
+      const source = snapshot();
+      const base = source.dresses[0];
+      base.upperFabric = "lace";
+      base.lowerFabric = "organzaChiffon";
+      base.lowerFabricStart = baseStart;
+      base.stylingVariants = [
+        {
+          id: "mixed-variant",
+          label: "새틴 상체",
+          createdAt: now,
+          updatedAt: now,
+          snapshot: snapshotDressLook({
+            ...base,
+            upperFabric: "mikadoSatin",
+            lowerFabricStart: variantStart,
+          }),
+        },
+      ];
+      base.preferredStylingId = "mixed-variant";
+      const serialized = await serializePortableBundle(
+        buildPortableBundle(source, false),
+      );
+      const pdf = await PDFDocument.create();
+      pdf.addPage([300, 300]);
+      for (const file of [
+        await makePortablePdf(source, false),
+        fileFrom(appendPortableTrailer(await pdf.save(), serialized)),
+      ]) {
+        const restored = await inspectPortablePdf(file);
+        expect(restored.payload.schemaVersion).toBe(schemaVersion);
+        expect(restored.payload.dresses[0]).toMatchObject({
+          upperFabric: "lace",
+          lowerFabric: "organzaChiffon",
+          preferredStylingId: "mixed-variant",
+          stylingVariants: [
+            {
+              snapshot: {
+                upperFabric: "mikadoSatin",
+                lowerFabric: "organzaChiffon",
+              },
+            },
+          ],
+        });
+        expect(restored.payload.dresses[0].lowerFabricStart).toBe(baseStart);
+        expect(
+          restored.payload.dresses[0].stylingVariants![0].snapshot
+            .lowerFabricStart,
+        ).toBe(variantStart);
+        expect(restored.integrityVerified).toBe(true);
+        expect(restored.faceIncluded).toBe(false);
+      }
+    },
+  );
+  it("restores v2 snapshots through both attachments and the unchanged v1 trailer", async () => {
+    const source = snapshot();
+    const base = source.dresses[0];
+    base.stylingVariants = [
+      {
+        id: "variant-1",
+        label: "어깨 천 추가",
+        createdAt: now,
+        updatedAt: now,
+        snapshot: snapshotDressLook({
+          ...base,
+          topStyle: "longSleeve",
+          memo: "다른 연출 메모",
+          memoryCue: undefined,
+        }),
+      },
+    ];
+    base.preferredStylingId = "variant-1";
+    const bundle = buildPortableBundle(source, false);
+    const serialized = await serializePortableBundle(bundle);
+    expect(portableTourV1Schema.safeParse(bundle.payload).success).toBe(false);
+    expect(
+      portableManifestV1Schema.safeParse(serialized.manifest).success,
+    ).toBe(false);
+    const pdf = await PDFDocument.create();
+    pdf.addPage([300, 300]);
+    const bytes = appendPortableTrailer(await pdf.save(), serialized);
+    expect(new TextDecoder().decode(bytes)).toContain("%GUDRESS-PORTABLE-V1");
+    for (const file of [
+      await makePortablePdf(source, false),
+      fileFrom(bytes),
+    ]) {
+      const restored = await inspectPortablePdf(file);
+      expect(restored.payload.schemaVersion).toBe(2);
+      expect(restored.payload.dresses[0]).toMatchObject({
+        preferredStylingId: "variant-1",
+        stylingVariants: [
+          {
+            id: "variant-1",
+            label: "어깨 천 추가",
+            snapshot: { topStyle: "longSleeve", memo: "다른 연출 메모" },
+          },
+        ],
+      });
+      expect(
+        restored.payload.dresses[0].stylingVariants?.[0].snapshot.memoryCue,
+      ).toBeUndefined();
+      expect(restored.dressCount).toBe(1);
+      expect(restored.favoriteCount).toBe(1);
+    }
+  });
+
   it("reads the manifest and tour attachment written by pdf-lib", async () => {
     const result = await inspectPortablePdf(
       await makePortablePdf(snapshot(), false),
@@ -255,6 +374,60 @@ describe("inspectPortablePdf", () => {
     pdf.addPage([300, 300]);
     await expect(
       inspectPortablePdf(fileFrom(await pdf.save(), "view-only.pdf")),
-    ).rejects.toThrow("복원 가능한 드레스노트 PDF가 아니에요.");
+    ).rejects.toThrow(
+      "기록을 가져올 수 있는 드레스노트 백업용 PDF가 아니에요.",
+    );
   });
+});
+
+it("restores independent opening and closure through v3 PDF attachments and the unchanged trailer", async () => {
+  const source = snapshot();
+  const base = source.dresses[0];
+  base.backStyle = "vBack";
+  base.backClosure = "buttons";
+  base.stylingVariants = [
+    {
+      id: "v3-look",
+      label: "등 끈 연출",
+      createdAt: now,
+      updatedAt: now,
+      snapshot: snapshotDressLook({
+        ...base,
+        backClosure: "laceUp",
+        memoryCue: "교차 끈",
+        memo: "",
+      }),
+    },
+  ];
+  base.preferredStylingId = "v3-look";
+  const bundle = buildPortableBundle(source, false);
+  const serialized = await serializePortableBundle(bundle);
+  expect(portableTourV2Schema.safeParse(bundle.payload).success).toBe(false);
+  expect(portableManifestV2Schema.safeParse(serialized.manifest).success).toBe(
+    false,
+  );
+  const pdf = await PDFDocument.create();
+  pdf.addPage([300, 300]);
+  const bytes = appendPortableTrailer(await pdf.save(), serialized);
+  for (const file of [await makePortablePdf(source, false), fileFrom(bytes)]) {
+    const restored = await inspectPortablePdf(file);
+    expect(restored.payload.schemaVersion).toBe(3);
+    expect(restored.payload.dresses[0]).toMatchObject({
+      backStyle: "vBack",
+      backClosure: "buttons",
+      preferredStylingId: "v3-look",
+      stylingVariants: [
+        {
+          snapshot: {
+            backStyle: "vBack",
+            backClosure: "laceUp",
+            memoryCue: "교차 끈",
+          },
+        },
+      ],
+    });
+    expect(restored.integrityVerified).toBe(true);
+    expect(restored.faceIncluded).toBe(false);
+    expect(restored.assetBytes.size).toBe(0);
+  }
 });

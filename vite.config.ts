@@ -32,6 +32,7 @@ const pwaPlugins = VitePWA({
   includeManifestIcons: false,
   manifestFilename: pwaManifestFilename,
   manifest: {
+    lang: "ko",
     name: "드레스노트 - 드레스투어 기록",
     short_name: "드레스노트",
     description: "사진 대신 모양으로 기록하는 드레스투어 노트",
@@ -66,7 +67,7 @@ const pwaPlugins = VitePWA({
     clientsClaim: true,
     navigateFallback: "/index.html",
     navigateFallbackDenylist: [/^\/__review(?:\/|$)/],
-    globPatterns: ["**/*.{js,css,html,svg,png,jpg,webmanifest,webp,woff2}"],
+    globPatterns: ["**/*.{js,css,html,svg,png,jpg,webmanifest,webp,woff2,ttf}"],
     manifestTransforms: [sortPrecacheManifest],
     maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
     cleanupOutdatedCaches: true,

@@ -1,3 +1,4 @@
+import { OfflineStatus } from "../../components/OfflineStatus";
 import { clearRecallDrafts } from "../../lib/storage/recallDraft";
 import {
   ArrowLeft,
@@ -15,22 +16,24 @@ export function PrivacyPage() {
   const nav = useNavigate();
   const toast = useUIStore((s) => s.showToast);
   return (
-    <main className="min-h-dvh px-5 pb-12 pt-[calc(18px+env(safe-area-inset-top))]">
-      <p className="mb-4 text-sm font-black tracking-[-0.04em]">드레스노트</p>
+    <main className="bridal-page bridal-content pb-12 pt-[calc(16px+env(safe-area-inset-top))]">
+      <p className="mb-4 text-xl font-medium leading-7 tracking-[-0.03em]">
+        드레스노트
+      </p>
       <button
         aria-label="뒤로"
-        className="grid h-11 w-11 place-items-center rounded-full bg-stone-50"
+        className="bridal-icon-button grid place-items-center"
         onClick={() => nav(-1)}
       >
         <ArrowLeft />
       </button>
-      <p className="mt-8 text-xs font-semibold text-accent-dark">PRIVACY</p>
-      <h1 className="mt-2 text-3xl font-black tracking-[-.04em]">
-        기록은 내 기기에만
-      </h1>
-      <div className="mt-7 space-y-3">
+      <p className="mt-8 text-xs font-semibold text-accent-dark">
+        기록과 개인정보
+      </p>
+      <h1 className="mt-2 bridal-title">기록은 내 브라우저에</h1>
+      <div className="mt-7 space-y-5">
         <Info icon={<ShieldCheck />} title="서버 전송 없음">
-          사진과 기록은 현재 브라우저에만 저장해요. 계정, 클라우드, 다른 기기와
+          투어 기록은 현재 브라우저에만 저장해요. 계정, 클라우드, 다른 기기와
           자동으로 동기화하지 않아요.
         </Info>
         <Info icon={<Database />} title="브라우저 데이터 삭제에 주의">
@@ -41,27 +44,28 @@ export function PrivacyPage() {
           시크릿·비공개 모드에서는 창을 닫을 때 기록이 사라질 수 있어요. 오래
           남길 기록은 일반 브라우저에서 작성해 주세요.
         </Info>
-        <Info icon={<FileDown />} title="복원 가능한 PDF로 백업">
-          복원 가능한 PDF는 다시 불러와 편집할 수 있어요. 보기 전용 PDF는
-          결과표일 뿐 백업으로 복원할 수 없어요.
-        </Info>
-        <Info icon={<ShieldCheck />} title="얼굴 포함 여부 확인">
-          얼굴을 포함한 백업에는 사진이 복원 데이터에도 들어가요. 다른 사람에게
-          보내기 전에 내보내기 화면에서 포함 여부를 확인해 주세요.
+        <Info icon={<FileDown />} title="다른 기기로 기록 옮기기">
+          백업용 PDF를 새 기기에서 불러오면 기록을 이어서 편집할 수 있어요. 보기
+          전용 PDF는 결과를 읽거나 공유할 때 사용해요.
         </Info>
       </div>
+      <div className="bridal-note mt-6 p-4">
+        <OfflineStatus />
+      </div>
       <div className="mt-8 rounded-card border border-red-100 bg-error-surface p-5">
-        <h2 className="font-bold text-error">이 기기의 기록 전체 삭제</h2>
+        <h2 className="bridal-section-title text-error">
+          이 브라우저의 기록 전체 삭제
+        </h2>
         <p className="mt-2 text-sm leading-6 text-error">
           이 브라우저의 기록, 화면 설정, 오프라인 캐시를 지워요. 기기에 따로
           저장한 PDF 파일은 삭제하지 않아요.
         </p>
         <button
-          className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-error font-bold text-white"
+          className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-error font-semibold text-white"
           onClick={async () => {
             if (
               !confirm(
-                "이 기기의 모든 드레스노트 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.",
+                "이 브라우저의 모든 드레스노트 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.",
               )
             )
               return;
@@ -69,12 +73,12 @@ export function PrivacyPage() {
             clearPreferences();
             clearRecallDrafts();
             await clearAllCaches();
-            toast("이 기기의 기록을 모두 삭제했어요.");
+            toast("이 브라우저의 기록을 모두 삭제했어요.");
             nav("/", { replace: true });
           }}
         >
           <Trash2 size={17} />
-          전체 데이터 삭제
+          기록 전체 삭제
         </button>
       </div>
     </main>
@@ -90,12 +94,12 @@ function Info({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-3 rounded-card bg-artwork-surface p-4">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-accent-dark">
+    <div className="flex gap-3 border-b border-rule pb-5 last:border-0">
+      <div className="grid h-10 w-8 shrink-0 place-items-center text-accent-copy">
         {icon}
       </div>
       <div>
-        <div className="font-bold">{title}</div>
+        <div className="bridal-section-title">{title}</div>
         <p className="mt-1 text-sm leading-6 text-stone-400">{children}</p>
       </div>
     </div>

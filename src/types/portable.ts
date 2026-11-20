@@ -38,8 +38,68 @@ export interface PortableManifestV1 {
   generator: string;
 }
 
+export interface PortableTourV2 extends Omit<PortableTourV1, "schemaVersion"> {
+  schemaVersion: 2;
+}
+export interface PortableManifestV2 extends Omit<
+  PortableManifestV1,
+  "schemaVersion"
+> {
+  schemaVersion: 2;
+}
+export interface PortableTourV3 extends Omit<PortableTourV1, "schemaVersion"> {
+  schemaVersion: 3;
+}
+export interface PortableManifestV3 extends Omit<
+  PortableManifestV1,
+  "schemaVersion"
+> {
+  schemaVersion: 3;
+}
+export interface PortableTourV4 extends Omit<PortableTourV1, "schemaVersion"> {
+  schemaVersion: 4;
+}
+export interface PortableManifestV4 extends Omit<
+  PortableManifestV1,
+  "schemaVersion"
+> {
+  schemaVersion: 4;
+}
+export interface PortableTourV5 extends Omit<PortableTourV1, "schemaVersion"> {
+  schemaVersion: 5;
+}
+export interface PortableManifestV5 extends Omit<
+  PortableManifestV1,
+  "schemaVersion"
+> {
+  schemaVersion: 5;
+}
+export interface PortableTourV6 extends Omit<PortableTourV1, "schemaVersion"> {
+  schemaVersion: 6;
+}
+export interface PortableManifestV6 extends Omit<
+  PortableManifestV1,
+  "schemaVersion"
+> {
+  schemaVersion: 6;
+}
+export type PortableTour =
+  | PortableTourV1
+  | PortableTourV2
+  | PortableTourV3
+  | PortableTourV4
+  | PortableTourV5
+  | PortableTourV6;
+export type PortableManifest =
+  | PortableManifestV1
+  | PortableManifestV2
+  | PortableManifestV3
+  | PortableManifestV4
+  | PortableManifestV5
+  | PortableManifestV6;
+
 export interface ImportPreview {
-  payload: PortableTourV1;
+  payload: PortableTour;
   hasConflict: boolean;
   faceIncluded: boolean;
   faceWarning?: string;
@@ -55,7 +115,8 @@ export type ImportStrategy = "copy" | "overwrite";
 export type PdfExportMode = "portable" | "viewOnly";
 
 export interface ExportOptions {
-  includeFace: boolean;
+  /** Ignored for current exports; retained for older callers. */
+  includeFace?: boolean;
   mode: PdfExportMode;
 }
 
@@ -66,12 +127,12 @@ export type ExportProgress = {
 };
 
 export interface PortableBundle {
-  payload: PortableTourV1;
+  payload: PortableTour;
   assets: LocalAsset[];
 }
 
 export interface PortableSerializedFiles {
-  manifest: PortableManifestV1;
+  manifest: PortableManifest;
   manifestBytes: Uint8Array;
   tourBytes: Uint8Array;
   faceBytes?: Uint8Array;

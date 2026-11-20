@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { PDFDocument } from "pdf-lib";
 import { LEGACY_PORTABLE_FILE_NAME } from "../src/lib/pdf/portable";
+import { inspectPortableTrailer } from "../src/lib/pdf/portableTrailer";
+import { chooseUpper } from "./helpers/selectUpper";
 
 const tinyPng = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8Dwn4GBgYGJAQoAHQkCAWJ6+ygAAAAASUVORK5CYII=",
@@ -81,6 +83,63 @@ const optionAssetPaths = [
   ].map((id) => `/assets/options/detail/${id}.webp`),
 ];
 
+async function seedLegacyFace(page: Page, tourId: string) {
+  await page.evaluate(
+    async ({ tourId, data }) => {
+      const bytes = new Uint8Array(data);
+      const sha = [
+        ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
+      ]
+        .map((n) => n.toString(16).padStart(2, "0"))
+        .join("");
+      await new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open("gudress");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction(
+            ["tours", "assets", "dresses"],
+            "readwrite",
+          );
+          const id = "legacy-face-" + tourId;
+          tx.objectStore("assets").put({
+            id,
+            tourId,
+            kind: "face",
+            mimeType: "image/webp",
+            blob: new Blob([bytes], { type: "image/webp" }),
+            width: 2,
+            height: 2,
+            byteLength: bytes.length,
+            sha256: sha,
+            createdAt: new Date().toISOString(),
+          });
+          const tour = tx.objectStore("tours").get(tourId);
+          tour.onsuccess = () =>
+            tx.objectStore("tours").put({ ...tour.result, faceAssetId: id });
+          const records = tx.objectStore("dresses").getAll();
+          records.onsuccess = () => {
+            for (const record of records.result) {
+              if (record.tourId !== tourId) continue;
+              tx.objectStore("dresses").put({
+                ...record,
+                faceTransform: { x: 0, y: 0, scale: 1, rotation: 0 },
+              });
+            }
+          };
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+          tx.onabort = () => reject(tx.error);
+        };
+      });
+    },
+    { tourId, data: [...tinyPng] },
+  );
+}
+
 async function createTour(
   page: Page,
   {
@@ -95,6 +154,7 @@ async function createTour(
     .getByPlaceholder("비워두면 자동으로 만들어요")
     .fill("E2E 드레스투어");
   await page.getByRole("button", { name: "투어 만들기", exact: true }).click();
+  await expect(page).not.toHaveURL(/\/tour\/new(?:[?#]|$)/);
   await expect(page).toHaveURL(/\/tour\/[^/]+$/);
   const tourMatch = page.url().match(/\/tour\/([^/?#]+)/);
   if (!tourMatch) throw new Error("tour id missing");
@@ -102,61 +162,47 @@ async function createTour(
   await page.getByRole("button", { name: /샵 추가/ }).click();
   await page.getByPlaceholder("드레스샵 이름").fill("E2E 브라이덜");
   await page.getByRole("button", { name: "추가하기", exact: true }).click();
-  await page
-    .getByRole("button", { name: "E2E 브라이덜 열기", exact: true })
-    .click();
+  await expect(page).toHaveURL(/\/shop\/[^/]+$/);
   await page.getByRole("button", { name: "드레스 추가", exact: true }).click();
   await recordCore(page, {
-    top: /오프숄더/,
-    neckline: /하트형/,
+    upper: /어깨 감쌈 · 하트 가슴선/,
+    fabric: /레이스/,
     silhouette: /A라인/,
-    candidate: "후보로 남기기",
+    candidate: true,
   });
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
   await page.getByRole("button", { name: /레이스/ }).click();
-  await page.getByRole("button", { name: /아이보리/ }).click();
-  await page.getByLabel("특이사항").fill("E2E 메모: 허리 라인이 가장 좋았음");
-  await page.getByLabel("특이사항").blur();
+  await page
+    .getByRole("textbox", { name: "추가 메모", exact: true })
+    .fill("E2E 메모: 허리 라인이 가장 좋았음");
+  await page.getByRole("textbox", { name: "추가 메모", exact: true }).blur();
   await page.getByRole("button", { name: "5점" }).click();
   await expect(page.getByRole("button", { name: "5점" })).toHaveClass(
     /text-amber-400/,
   );
-  if (face) {
-    await page
-      .locator('input[type="file"][accept*="image/heic"]')
-      .setInputFiles({
-        name: "face.png",
-        mimeType: "image/png",
-        buffer: tinyPng,
-      });
-    await expect(page.getByRole("status")).toContainText(
-      "얼굴 사진을 저장했어요.",
-    );
-  }
+  if (face) await seedLegacyFace(page, tourId);
   if (twoDresses) {
-    await page
-      .getByRole("button", { name: "핵심 기록으로", exact: true })
-      .click();
-    await page
-      .getByRole("button", { name: "핵심 기록 수정", exact: true })
-      .click();
-    await page.getByRole("button", { name: /^다음$/ }).click();
-    await page.getByRole("button", { name: /^다음$/ }).click();
-    await page.getByRole("button", { name: /^다음$/ }).click();
+    await page.getByRole("button", { name: "기록으로", exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "다음 드레스 기록", exact: true }),
+    ).toBeVisible();
     await page
       .getByRole("button", { name: "다음 드레스 기록", exact: true })
       .click();
     await recordCore(page, {
-      top: /스트랩리스|끈 없음/,
-      neckline: /스트레이트 네크라인|일자 네크라인/,
+      upper: /끈 없음 · 일자 가슴선/,
+      fabric: /실크/,
       silhouette: /머메이드|무릎 부근부터/,
-      candidate: "후보 아님",
+      candidate: false,
     });
-    await page.getByRole("button", { name: "상세 기록", exact: true }).click();
-    await page.getByRole("button", { name: /미카도 새틴|새틴/ }).click();
-    await page.getByRole("button", { name: /퓨어 화이트|새하얀/ }).click();
-    await page.getByLabel("특이사항").fill("E2E 두 번째 드레스");
-    await page.getByLabel("특이사항").blur();
+    await page
+      .getByRole("button", { name: "자세히 기록", exact: true })
+      .click();
+    await page.getByRole("button", { name: /^실크/ }).click();
+    await page
+      .getByRole("textbox", { name: "추가 메모", exact: true })
+      .fill("E2E 두 번째 드레스");
+    await page.getByRole("textbox", { name: "추가 메모", exact: true }).blur();
     await page.getByRole("button", { name: "4점" }).click();
     await expect(page.getByRole("button", { name: "4점" })).toHaveClass(
       /text-amber-400/,
@@ -180,19 +226,29 @@ async function advanceCore(page: Page) {
 async function recordCore(
   page: Page,
   choices: {
-    top: RegExp | string;
-    neckline: RegExp | string;
+    upper: RegExp | string;
+    fabric: RegExp | string;
     silhouette: RegExp | string;
-    candidate: "후보로 남기기" | "후보 아님";
+    candidate: boolean;
   },
 ) {
-  await selectPersistedOption(page, choices.top);
-  await advanceCore(page);
-  await selectPersistedOption(page, choices.neckline);
-  await advanceCore(page);
   await selectPersistedOption(page, choices.silhouette);
   await advanceCore(page);
-  await selectPersistedOption(page, choices.candidate);
+  await selectPersistedOption(page, choices.fabric);
+  await advanceCore(page);
+  await chooseUpper(page, choices.upper);
+  await page
+    .getByRole("button", { name: "기록 완료하고 보기", exact: true })
+    .click();
+  await expect(page).toHaveURL(/view=record/);
+  const feedback = page.getByText("느낌·평가 남기기 · 선택", { exact: true });
+  await feedback.click();
+  if (choices.candidate)
+    await page.getByRole("button", { name: "후보", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "후보", exact: true }),
+  ).toHaveAttribute("aria-pressed", String(choices.candidate));
+  await feedback.click();
 }
 
 async function editorToReview(page: Page) {
@@ -204,7 +260,9 @@ async function editorToReview(page: Page) {
 
 async function reviewToExport(page: Page) {
   await page.getByRole("link", { name: "PDF 만들기", exact: true }).click();
-  await expect(page.getByText("저장할 PDF를", { exact: false })).toBeVisible({
+  await expect(
+    page.getByRole("heading", { name: "PDF로 저장하기", exact: true }),
+  ).toBeVisible({
     timeout: 15_000,
   });
 }
@@ -269,7 +327,7 @@ async function legacyV1Pdf() {
         tourId: "legacy-tour",
         shopId: "legacy-shop",
         order: 0,
-        label: "Dress 01",
+        label: "드레스 01",
         topStyle: "offShoulder",
         neckline: "sweetheart",
         silhouette: "aLine",
@@ -324,56 +382,121 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("mobile core flow autosaves, reloads and compares two dresses", async ({
+test("mobile core flow autosaves, reloads and opens each record without comparison", async ({
   page,
 }) => {
   await createTour(page, { twoDresses: true });
   await page.reload();
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
-  await expect(page.getByLabel("특이사항")).toHaveValue("E2E 두 번째 드레스");
-  await editorToReview(page);
-  await page.getByRole("button", { name: "2벌 비교", exact: true }).click();
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "추가 메모", exact: true }),
+  ).toHaveValue("E2E 두 번째 드레스");
+  await page.getByLabel("뒤로").click();
+  await expect(page.getByRole("button", { name: /비교/ })).toHaveCount(0);
+  await page.getByLabel("투어로 돌아가기").click();
+  await page.getByLabel("결과 보기").click();
+  const reviewUrl = page.url();
+  await expect(page.getByRole("button", { name: /비교/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "PDF 만들기" })).toBeVisible();
   await page
-    .getByRole("button", { name: /Dress 01/ })
+    .getByRole("button", { name: /드레스 01/ })
     .first()
     .click();
-  await page.getByRole("button", { name: /Dress 02/ }).click();
-  await page.getByRole("button", { name: /선택한 2벌 비교하기/ }).click();
+  await expect(page).toHaveURL(/view=record/);
   await expect(
-    page.getByRole("heading", { name: "두 벌의 차이를 살펴봐요" }),
+    page.getByRole("heading", { level: 1, name: "드레스 01", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByText("오프숄더", { exact: true }).first(),
+    page
+      .getByRole("definition")
+      .filter({ hasText: "E2E 메모: 허리 라인이 가장 좋았음" }),
   ).toBeVisible();
   await expect(
-    page.getByText("스트랩리스", { exact: true }).first(),
+    page.getByText("E2E 두 번째 드레스", { exact: true }),
+  ).toHaveCount(0);
+  await page.goto(reviewUrl);
+  await page.getByRole("button", { name: /드레스 02/ }).click();
+  await expect(page).toHaveURL(/view=record/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "드레스 02", exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("definition").filter({ hasText: "E2E 두 번째 드레스" }),
+  ).toBeVisible();
+  await expect(
+    page.locator('svg[data-renderer="memory-sketch"][data-view="full"]'),
+  ).toHaveCount(1);
 });
 
-test("portable PDF downloads, imports as a copy, and restores face data", async ({
+test("first-use offline PDF restores mixed materials as v4 while excluding legacy face data", async ({
   page,
-}) => {
+  context,
+}, testInfo) => {
+  const pdfFontRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/pretendard-pdf-static[^/]*\.ttf(?:[?#]|$)/.test(request.url()))
+      pdfFontRequests.push(request.url());
+  });
   const tourId = await createTour(page, { face: true });
-  await editorToReview(page);
-  await reviewToExport(page);
   await page
-    .getByRole("button", { name: "복원 가능한 PDF 만들기", exact: true })
+    .getByRole("checkbox", { name: "상체와 치마 소재가 달라요" })
+    .click();
+  await expect(
+    page.getByRole("checkbox", { name: "상체와 치마 소재가 달라요" }),
+  ).toBeChecked();
+  await page
+    .getByRole("group", { name: "상체 소재", exact: true })
+    .getByRole("button", { name: /^레이스/ })
+    .click();
+  await page
+    .getByRole("group", { name: "치마 소재", exact: true })
+    .getByRole("button", { name: /^망사·쉬폰/ })
+    .click();
+  await editorToReview(page);
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(() => Boolean(navigator.serviceWorker.controller)),
+    )
+    .toBe(true);
+  expect(pdfFontRequests).toEqual([]);
+  await context.setOffline(true);
+  await reviewToExport(page);
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "백업용 PDF 만들기", exact: true })
     .click();
   await expect(page.getByText("PDF가 준비됐어요.")).toBeVisible({
-    timeout: 40_000,
+    timeout: 40000,
+  });
+  await page.screenshot({
+    path: testInfo.outputPath("offline-first-pdf-ready.png"),
   });
   const pdfBytes = await capturePdf(page);
-  await page.goto("/");
-  await page.getByRole("link", { name: /PDF.*가져오기/ }).click();
+  await context.setOffline(false);
+  const portable = await inspectPortableTrailer(new Uint8Array(pdfBytes));
+  expect(portable?.payload.schemaVersion).toBe(4);
+  expect(portable?.payload.includeFace).toBe(false);
+  expect(portable?.assetBytes.size).toBe(0);
+  expect(portable?.payload.tour.faceAssetId).toBeUndefined();
+  expect(portable?.payload.dresses[0]).toMatchObject({
+    upperFabric: "lace",
+    lowerFabric: "organzaChiffon",
+  });
+  await page.goto("/import");
   await page.locator('input[type="file"]').setInputFiles({
-    name: "gudress-copy.pdf",
+    name: "mixed-copy.pdf",
     mimeType: "application/pdf",
     buffer: pdfBytes,
   });
   await expectImportPreview(page, "E2E 드레스투어");
-  await expect(page.getByText("이 기기에 같은 투어가 있어요")).toBeVisible();
+  await expect(
+    page.getByText("이 브라우저에 같은 투어가 있어요"),
+  ).toBeVisible();
   await page
-    .getByRole("button", { name: "이 기록 불러오기", exact: true })
+    .getByRole("button", { name: "새 투어로 추가", exact: true })
     .click();
   await expect(page).toHaveURL(/\/tour\/[^/]+$/);
   expect(page.url()).not.toContain(tourId);
@@ -381,22 +504,32 @@ test("portable PDF downloads, imports as a copy, and restores face data", async 
     .getByRole("button", { name: "E2E 브라이덜 열기", exact: true })
     .click();
   await page
-    .getByRole("button", { name: /Dress 01/ })
+    .getByRole("button", { name: /드레스 01/ })
     .first()
     .click();
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
-  await page
-    .getByRole("button", { name: "얼굴 미리보기 켜기", exact: true })
-    .click();
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
   await expect(
-    page.locator('.dress-preview g[data-layer="figure"]'),
-  ).toHaveCount(1);
+    page.getByRole("checkbox", { name: "상체와 치마 소재가 달라요" }),
+  ).toBeChecked();
   await expect(
-    page.locator('.dress-preview g[data-layer="face"] image'),
-  ).toHaveAttribute("href", /^data:image\/webp;base64,/);
-  await expect(page.getByLabel("특이사항")).toHaveValue(
-    "E2E 메모: 허리 라인이 가장 좋았음",
+    page
+      .getByRole("group", { name: "상체 소재", exact: true })
+      .getByRole("button", { name: /^레이스/ }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page
+      .getByRole("group", { name: "치마 소재", exact: true })
+      .getByRole("button", { name: /^망사·쉬폰/ }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('input[type="file"][accept*="image"]')).toHaveCount(
+    0,
   );
+  await expect(page.locator('[data-option-category="backStyle"]')).toHaveCount(
+    0,
+  );
+  await expect(
+    page.getByRole("textbox", { name: "추가 메모", exact: true }),
+  ).toHaveValue("E2E 메모: 허리 라인이 가장 좋았음");
 });
 
 test("view-only PDF cannot be restored", async ({ page }) => {
@@ -422,7 +555,7 @@ test("view-only PDF cannot be restored", async ({ page }) => {
     buffer: pdfBytes,
   });
   await expect(page.getByRole("alert")).toContainText(
-    "복원 가능한 드레스노트 PDF가 아니에요.",
+    "기록을 가져올 수 있는 드레스노트 백업용 PDF가 아니에요.",
   );
 });
 
@@ -437,50 +570,119 @@ test("old v1 recoverable PDF imports without newer optional fields", async ({
   });
   await expectImportPreview(page, "예전 v1 투어");
   await page
-    .getByRole("button", { name: "이 기록 불러오기", exact: true })
+    .getByRole("button", { name: "이 기록 가져오기", exact: true })
     .click();
   await expect(page.getByText("예전 브라이덜", { exact: true })).toBeVisible();
 });
 
-test("face export explains full, upper, and back privacy then excludes face", async ({
+test("legacy v1 records open through read mode with saved details intact", async ({
+  page,
+}) => {
+  await page.goto("/import");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "legacy-v1-read-mode.pdf",
+    mimeType: "application/pdf",
+    buffer: await legacyV1Pdf(),
+  });
+  await expectImportPreview(page, "예전 v1 투어");
+  await page
+    .getByRole("button", { name: "이 기록 가져오기", exact: true })
+    .click();
+  await expect(page.getByText("예전 브라이덜", { exact: true })).toBeVisible();
+  await page
+    .getByRole("button", { name: "예전 브라이덜 열기", exact: true })
+    .click();
+
+  const read = page.getByRole("button", {
+    name: "드레스 01 기록 보기",
+    exact: true,
+  });
+  await expect(read).toBeVisible();
+  await read.click();
+  await expect(page).toHaveURL(/view=record/);
+  await expect(
+    page.getByRole("definition").filter({ hasText: "예전 메모" }),
+  ).toBeVisible();
+  await page.getByText("고른 특징의 예시 보기", { exact: true }).click();
+  await expect(page.getByText("레이스 예시", { exact: true })).toBeVisible();
+  await expect(
+    page.locator("dd").filter({ hasText: "후보" }).first(),
+  ).toBeVisible();
+
+  await page
+    .getByRole("button", { name: "기본 기록 수정", exact: true })
+    .click();
+  await expect(page).toHaveURL(/view=edit/);
+  await expect(
+    page.getByRole("heading", { name: /전체 모양은 어땠나요\?/ }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "뒤로", exact: true }).click();
+  await expect(page).toHaveURL(/\/shop\//);
+  await page
+    .getByRole("button", { name: "드레스 01 기록 보기", exact: true })
+    .click();
+  await expect(
+    page.getByRole("definition").filter({ hasText: "예전 메모" }),
+  ).toBeVisible();
+  await page.getByText("고른 특징의 예시 보기", { exact: true }).click();
+  await expect(page.getByText("레이스 예시", { exact: true })).toBeVisible();
+});
+
+test("retired face, rear, color and length controls stay absent and legacy faces never export", async ({
   page,
 }) => {
   await createTour(page, { face: true });
-  await editorToReview(page);
-  await reviewToExport(page);
-  await expect(page.getByText(/전체·상체 스케치/)).toBeVisible();
-  await expect(page.getByText(/뒤태에는/)).toBeVisible();
-  await page.getByRole("checkbox").uncheck();
-  await page
-    .getByRole("button", { name: "복원 가능한 PDF 만들기", exact: true })
-    .click();
-  await expect(page.getByText("PDF가 준비됐어요.")).toBeVisible({
-    timeout: 40_000,
-  });
-  const pdfBytes = await capturePdf(page);
-  await page.goto("/import");
-  await page.locator('input[type="file"]').setInputFiles({
-    name: "face-excluded.pdf",
-    mimeType: "application/pdf",
-    buffer: pdfBytes,
-  });
-  await expectImportPreview(page, "E2E 드레스투어");
-  await expect(page.getByText(/얼굴 사진도 현재 브라우저에 복원/)).toHaveCount(
+  for (const category of ["color", "train", "backStyle"])
+    await expect(
+      page.locator(`[data-option-category="${category}"]`),
+    ).toHaveCount(0);
+  await expect(page.locator('input[type="file"][accept*="image"]')).toHaveCount(
     0,
   );
+  await expect(
+    page.getByRole("button", { name: /^얼굴 (사진|미리보기)|^뒷모습|^등 뒤/ }),
+  ).toHaveCount(0);
+  await editorToReview(page);
+  await reviewToExport(page);
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await expect(page.getByText(/얼굴|뒷모습/)).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "백업용 PDF 만들기", exact: true })
+    .click();
+  await expect(page.getByText("PDF가 준비됐어요.")).toBeVisible({
+    timeout: 40000,
+  });
+  const bytes = await capturePdf(page);
+  const portable = await inspectPortableTrailer(new Uint8Array(bytes));
+  expect(portable?.payload.includeFace).toBe(false);
+  expect(portable?.payload.tour.faceAssetId).toBeUndefined();
+  expect(
+    portable?.payload.dresses.every(
+      (dress) => dress.faceTransform === undefined,
+    ),
+  ).toBe(true);
+  expect(portable?.assetBytes.size).toBe(0);
+  await page.goto("/import");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "legacy-face-excluded.pdf",
+    mimeType: "application/pdf",
+    buffer: bytes,
+  });
+  await expectImportPreview(page, "E2E 드레스투어");
+  await expect(page.getByText(/얼굴/)).toHaveCount(0);
 });
 
 test("direct editor URL survives a full reload", async ({ page }) => {
   await createTour(page);
   const url = page.url();
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
-  await expect(page.getByLabel("특이사항")).toHaveValue(
-    "E2E 메모: 허리 라인이 가장 좋았음",
-  );
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "추가 메모", exact: true }),
+  ).toHaveValue("E2E 메모: 허리 라인이 가장 좋았음");
   await page.reload({ waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: "상세 기록", exact: true }).click();
-  await expect(page.getByRole("button", { name: /오프숄더/ })).toHaveAttribute(
+  await page.getByRole("button", { name: "자세히 기록", exact: true }).click();
+  await expect(page.getByRole("button", { name: /어깨 감쌈/ })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
@@ -502,7 +704,9 @@ test("app shell, individual artwork, and service worker load without external re
       external.push(request.url());
   });
   await page.goto("/");
-  await expect(page.getByText("그림 대신")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /입어본 드레스/ }),
+  ).toBeVisible();
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });

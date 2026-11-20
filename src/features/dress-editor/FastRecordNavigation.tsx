@@ -1,36 +1,41 @@
-type Step = 1 | 2 | 3 | 4;
-
 export function FastRecordNavigation({
   step,
   canAdvance,
   saving,
   onPrevious,
   onNext,
+  onFinishAndView,
 }: {
-  step: Step;
+  step: 1 | 2 | 3;
   canAdvance: boolean;
   saving: boolean;
   onPrevious: () => void;
   onNext: () => void;
+  onFinishAndView?: () => void;
 }) {
   return (
-    <div className="mt-6 grid grid-cols-2 gap-2">
-      <button
-        type="button"
-        className="min-h-12 rounded-control border border-stone-200 bg-white font-bold disabled:opacity-40"
-        disabled={step === 1 || saving}
-        onClick={onPrevious}
+    <div className="h-[calc(5rem+env(safe-area-inset-bottom))]">
+      <nav
+        aria-label="기록 단계 이동"
+        className="bridal-action-bar fixed inset-x-0 bottom-0 z-30 mx-auto grid w-full max-w-[480px] grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2 border-t border-rule pb-[calc(12px+env(safe-area-inset-bottom))] pt-3"
       >
-        이전
-      </button>
-      <button
-        type="button"
-        className="min-h-12 rounded-control bg-stone-900 px-3 font-bold text-white disabled:opacity-40"
-        disabled={!canAdvance || saving}
-        onClick={onNext}
-      >
-        {step === 4 ? "다음 드레스 기록" : "다음"}
-      </button>
+        <button
+          type="button"
+          className="bridal-secondary min-h-12 disabled:opacity-40"
+          disabled={step === 1 || saving}
+          onClick={onPrevious}
+        >
+          이전
+        </button>
+        <button
+          type="button"
+          className="min-h-12 rounded-control bridal-primary px-3 font-semibold text-white disabled:opacity-40"
+          disabled={!canAdvance || saving}
+          onClick={step === 3 ? onFinishAndView : onNext}
+        >
+          {step === 3 ? "기록 완료하고 보기" : "다음"}
+        </button>
+      </nav>
     </div>
   );
 }

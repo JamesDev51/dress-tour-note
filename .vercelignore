@@ -1,0 +1,14 @@
+.git
+.omo
+.omd
+.reviews
+.agents
+.claude
+coverage
+test-results
+playwright-report
+node_modules
+dist
+.codegraph
+.omx
+.omc

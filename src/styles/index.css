@@ -6,6 +6,8 @@
 @theme inline {
   --color-canvas: var(--ds-color-canvas);
   --color-shell: var(--ds-color-shell);
+  --color-paper: var(--ds-color-paper);
+  --color-rule: var(--ds-color-rule);
   --color-accent-soft: var(--ds-color-accent-soft);
   --color-artwork-surface: var(--ds-color-artwork-surface);
   --color-preview-surface: var(--ds-color-preview-surface);
@@ -28,6 +30,8 @@
 :root {
   --ds-color-canvas: #eef0f2;
   --ds-color-shell: #fff;
+  --ds-color-paper: #faf8f4;
+  --ds-color-rule: #e4ded7;
   --ds-color-accent-soft: #fff2ee;
   --ds-color-artwork-surface: #faf7f5;
   --ds-color-preview-surface: #fbf8f6;
@@ -91,7 +95,7 @@ body {
 button,
 input,
 textarea {
-  font: inherit;
+  font-family: inherit;
   scroll-margin-block: 96px 128px;
 }
 .app-shell :where(p, h1, h2, h3, button, label) {
@@ -123,7 +127,7 @@ input[type="range"] {
   background: var(--ds-color-canvas);
 }
 .app-shell {
-  background: var(--ds-color-shell);
+  background: var(--ds-color-paper);
 }
 .app-root [role="status"] {
   pointer-events: none;
@@ -133,6 +137,12 @@ input[type="range"] {
     position: static !important;
     top: auto !important;
   }
+  .app-shell main div.core-details-nav {
+    position: sticky !important;
+  }
+}
+.app-shell main div.core-details-nav {
+  top: calc(68px + env(safe-area-inset-top)) !important;
 }
 @media (min-width: 768px) {
   body::before {
@@ -150,4 +160,505 @@ input[type="range"] {
 .app-shell .text-stone-300,
 .app-shell .text-stone-400 {
   color: var(--ds-color-ink-muted);
+}
+
+/* Short transitions explain actions; persistence never waits for motion. */
+:root {
+  --motion-quick: 150ms;
+  --motion-enter: 200ms;
+  --motion-ease: cubic-bezier(0, 0, 0.2, 1);
+}
+.app-shell button,
+.app-shell summary,
+.app-shell a {
+  -webkit-tap-highlight-color: transparent;
+}
+.app-shell button:not(:disabled),
+.app-shell summary {
+  cursor: pointer;
+}
+.app-shell button {
+  transition:
+    scale var(--motion-quick) var(--motion-ease),
+    filter var(--motion-quick) var(--motion-ease),
+    background-color var(--motion-quick),
+    border-color var(--motion-quick),
+    color var(--motion-quick);
+}
+.app-shell button:enabled:is(:active, [data-touch-pressed]) {
+  scale: 0.97;
+  filter: brightness(0.92);
+  /* Press immediately; only the release eases back. */
+  transition-duration: 0s;
+}
+.candidate-toggle[aria-pressed="true"] svg,
+.rating-choice[aria-pressed="true"],
+.motion-check {
+  animation: confirm-choice var(--motion-quick) var(--motion-ease);
+}
+.record-step-forward {
+  animation: step-forward var(--motion-enter) var(--motion-ease);
+}
+.record-step-backward {
+  animation: step-backward var(--motion-enter) var(--motion-ease);
+}
+.artwork-reveal {
+  animation: reveal-content var(--motion-enter) var(--motion-ease);
+}
+@keyframes confirm-choice {
+  from {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes step-forward {
+  from {
+    opacity: 0.5;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes step-backward {
+  from {
+    opacity: 0.5;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes reveal-content {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.record-journey li {
+  min-width: 0;
+}
+.record-journey p {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+}
+.journey-picture {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  border-radius: 16px;
+  background: var(--ds-color-shell);
+  overflow: hidden;
+  color: var(--ds-color-accent-copy);
+}
+.journey-picture img {
+  height: 100%;
+  min-width: 0;
+  object-fit: contain;
+}
+.journey-check {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: white;
+  background: var(--ds-color-accent-copy);
+}
+
+/* Shared bridal surfaces preserve each route's layout and interaction states. */
+.bridal-page {
+  min-height: 100dvh;
+  color: var(--ds-color-ink);
+  background: var(--ds-color-paper);
+}
+.bridal-content {
+  padding-inline: 24px;
+}
+.bridal-header {
+  padding: calc(16px + env(safe-area-inset-top)) 24px 16px;
+  border-color: var(--ds-color-rule);
+  background: var(--ds-color-paper);
+}
+.bridal-title {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 36px;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.bridal-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.bridal-primary {
+  min-height: 44px;
+  border-radius: var(--ds-radius-control);
+  color: var(--ds-color-shell);
+  background: var(--ds-color-accent-copy);
+  font-weight: 600;
+}
+.bridal-secondary {
+  min-height: 44px;
+  border: 1px solid var(--ds-color-rule);
+  border-radius: var(--ds-radius-control);
+  color: var(--ds-color-ink);
+  background: transparent;
+  font-weight: 500;
+}
+.bridal-icon-button {
+  display: inline-grid;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1px solid var(--ds-color-rule);
+  border-radius: 50%;
+  color: var(--ds-color-ink);
+  background: transparent;
+}
+.bridal-surface {
+  border: 1px solid var(--ds-color-rule);
+  border-radius: var(--ds-radius-card);
+  background: var(--ds-color-shell);
+  box-shadow: none;
+}
+.bridal-field {
+  border-color: var(--ds-color-rule);
+  color: var(--ds-color-ink);
+  background: var(--ds-color-shell);
+  font-weight: 400;
+}
+.bridal-action-bar {
+  padding-inline: 24px;
+  border-color: var(--ds-color-rule);
+  background: var(--ds-color-paper);
+}
+.bridal-empty {
+  border: 1px solid var(--ds-color-rule);
+  border-radius: var(--ds-radius-card);
+  color: var(--ds-color-ink-muted);
+  background: transparent;
+}
+.bridal-note {
+  border: 1px solid var(--ds-color-rule);
+  border-radius: var(--ds-radius-control);
+  background: var(--ds-color-preview-surface);
+}
+.bridal-divider {
+  border-color: var(--ds-color-rule);
+}
+.bridal-primary:disabled,
+.bridal-primary[aria-disabled="true"],
+.bridal-secondary:disabled {
+  color: var(--ds-color-ink-muted);
+  background: var(--ds-color-rule);
+}
+.bridal-primary:enabled:is(:active, [data-touch-pressed]) {
+  background: var(--ds-color-accent-dark);
+}
+.bridal-secondary:enabled:is(:active, [data-touch-pressed]),
+.bridal-icon-button:enabled:is(:active, [data-touch-pressed]) {
+  background: var(--ds-color-accent-soft);
+}
+@media (hover: hover) {
+  .bridal-primary:not(:disabled):hover {
+    background: var(--ds-color-accent-dark);
+  }
+  .bridal-secondary:not(:disabled):hover,
+  .bridal-icon-button:not(:disabled):hover {
+    background: var(--ds-color-accent-soft);
+  }
+}
+
+/* The home borrows an editorial rhythm while keeping the app's local assets. */
+.home-page {
+  --home-paper: var(--ds-color-paper);
+  --home-rule: var(--ds-color-rule);
+  min-height: 100dvh;
+  padding-bottom: 32px;
+  color: var(--ds-color-ink);
+  background: var(--home-paper);
+}
+.home-content {
+  padding-inline: 24px;
+}
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-bottom: 12px;
+}
+.home-wordmark,
+.home-privacy-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+}
+.home-wordmark {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  letter-spacing: -0.03em;
+}
+.home-privacy-link {
+  min-width: 44px;
+  justify-content: center;
+  color: var(--ds-color-ink-muted);
+  font-size: 12px;
+}
+.home-intro {
+  padding-top: 24px;
+  text-align: center;
+}
+.home-title {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 42px;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.home-description {
+  margin: 12px auto 0;
+  color: var(--ds-color-ink-muted);
+  font-size: 14px;
+  line-height: 24px;
+}
+.home-loading {
+  min-height: 320px;
+  padding-top: 32px;
+  color: var(--ds-color-ink-muted);
+  font-size: 14px;
+  line-height: 24px;
+}
+.home-intro:has(.home-dress) {
+  padding-top: 0;
+}
+.home-dress {
+  margin: 0 -24px 24px;
+}
+.home-dress img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+}
+.home-credit {
+  margin-top: 16px;
+  border-top: 1px solid var(--home-rule);
+  padding-top: 4px;
+  font-size: 12px;
+}
+.home-credit a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--ds-color-accent-copy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.home-start {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 12px 20px;
+  border-radius: var(--ds-radius-control);
+  color: var(--ds-color-shell);
+  background: var(--ds-color-accent-copy);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 24px;
+  transition:
+    background-color 150ms ease-out,
+    scale 150ms ease-out;
+}
+.home-import {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--ds-color-ink-muted);
+  font-size: 13px;
+}
+.home-intro--returning {
+  padding-top: 16px;
+  text-align: left;
+}
+.home-intro--returning .home-description {
+  max-width: none;
+  margin-left: 0;
+}
+.home-intro--returning .home-import {
+  display: flex;
+}
+.home-records {
+  margin-top: 32px;
+}
+.home-section-title {
+  padding-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.home-empty {
+  padding-block: 16px;
+  border-top: 1px solid var(--home-rule);
+  color: var(--ds-color-ink-muted);
+  font-size: 13px;
+  line-height: 24px;
+}
+.home-tour-list {
+  border-top: 1px solid var(--home-rule);
+}
+.home-tour {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--home-rule);
+}
+.home-tour-open {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  padding-block: 20px;
+}
+.home-tour-title {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+.home-tour-meta,
+.home-tour-updated {
+  display: block;
+  margin-top: 4px;
+  color: var(--ds-color-ink-muted);
+  font-size: 12px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.home-tour-delete {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ds-radius-control);
+  color: var(--ds-color-ink-muted);
+}
+.home-more {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  border-radius: var(--ds-radius-control);
+  color: var(--ds-color-accent-copy);
+  font-size: 13px;
+  font-weight: 500;
+}
+.home-footer {
+  margin-top: 32px;
+  color: var(--ds-color-ink-muted);
+}
+.home-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--home-rule);
+  font-size: 12px;
+  line-height: 22px;
+}
+.home-privacy > svg {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.home-page :where(a, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+.home-start:active {
+  scale: 0.98;
+  background: var(--ds-color-accent-dark);
+}
+.home-page
+  :where(.home-tour-delete, .home-more):is(:active, [data-touch-pressed]) {
+  background: var(--ds-color-accent-soft);
+}
+@media (hover: hover) {
+  .home-start:hover {
+    background: var(--ds-color-accent-dark);
+  }
+  .home-page :where(.home-import, .home-tour-open, .home-privacy-link):hover {
+    color: var(--ds-color-accent-copy);
+  }
+  .home-page :where(.home-tour-delete, .home-more):hover {
+    background: var(--ds-color-accent-soft);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .home-start:active {
+    scale: none;
+  }
+  .app-shell button:enabled:is(:active, [data-touch-pressed]) {
+    scale: none;
+  }
+}
+
+.app-shell details[open] > :not(summary) {
+  animation: reveal-content var(--motion-enter) var(--motion-ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell details[open] > :not(summary) {
+    animation: none;
+  }
+}
+
+.motion-enter,
+.option-guide[open] > div {
+  animation: settle-content var(--motion-enter) var(--motion-ease);
+}
+@keyframes settle-content {
+  from {
+    transform: translateY(4px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-enter,
+  .option-guide[open] > div {
+    animation: none;
+  }
 }

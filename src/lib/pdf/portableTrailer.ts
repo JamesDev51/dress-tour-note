@@ -1,6 +1,6 @@
 import type {
   PortableSerializedFiles,
-  PortableTourV1,
+  PortableTour,
 } from "../../types/portable";
 import {
   parsePortableManifest,
@@ -82,7 +82,7 @@ export function appendPortableTrailer(
 
 export async function inspectPortableTrailer(bytes: Uint8Array): Promise<
   | {
-      payload: PortableTourV1;
+      payload: PortableTour;
       assetBytes: Map<string, Uint8Array>;
       faceWarning?: string;
       integrityVerified: boolean;
@@ -96,7 +96,7 @@ export async function inspectPortableTrailer(bytes: Uint8Array): Promise<
     bytes.subarray(payloadStart),
     END_MARKER,
   );
-  if (endRelative < 0) throw new Error("PDF의 빠른 복원 데이터가 손상됐어요.");
+  if (endRelative < 0) throw new Error("PDF의 백업 기록이 손상됐어요.");
 
   let envelope: TrailerEnvelope;
   try {
@@ -106,7 +106,7 @@ export async function inspectPortableTrailer(bytes: Uint8Array): Promise<
       ),
     ) as TrailerEnvelope;
   } catch {
-    throw new Error("PDF의 빠른 복원 데이터를 읽을 수 없어요.");
+    throw new Error("PDF의 백업 기록을 읽을 수 없어요.");
   }
   if (envelope.version !== 1 || !envelope.tourBase64) {
     throw new Error("지원하지 않는 드레스노트 PDF 버전이에요.");
@@ -126,6 +126,8 @@ export async function inspectPortableTrailer(bytes: Uint8Array): Promise<
       try {
         await verifyPortableFaceBytes(manifest, faceBytes);
         const faceReference = payload.assets[0];
+        if (!faceReference || faceReference.byteLength !== faceBytes.byteLength)
+          throw new Error("face asset length mismatch");
         if (faceReference) assetBytes.set(faceReference.id, faceBytes);
       } catch {
         faceWarning = "얼굴 파일 검증에 실패해 드레스 기록만 복원할 수 있어요.";

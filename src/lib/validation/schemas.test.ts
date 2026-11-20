@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { portableTourV1Schema } from "./schemas";
+import {
+  dressSchema,
+  portableTourV1Schema,
+  shopSchema,
+  tourSchema,
+} from "./schemas";
 const now = "2026-08-31T00:00:00.000Z";
 function base() {
   return {
@@ -53,6 +58,40 @@ function base() {
   };
 }
 describe("portable schema compatibility", () => {
+  it.each([
+    [
+      "tour title",
+      tourSchema,
+      () => ({ ...base().tour, lastOpenedAt: now }),
+      "title",
+      50,
+    ],
+    [
+      "bride name",
+      tourSchema,
+      () => ({ ...base().tour, lastOpenedAt: now }),
+      "brideName",
+      30,
+    ],
+    ["shop name", shopSchema, () => base().shops[0], "name", 50],
+    ["consultant", shopSchema, () => base().shops[0], "consultant", 100],
+    ["dress label", dressSchema, () => base().dresses[0], "label", 50],
+    ["memo", dressSchema, () => base().dresses[0], "memo", 1000],
+    ["memory cue", dressSchema, () => base().dresses[0], "memoryCue", 80],
+    ["liked reason", dressSchema, () => base().dresses[0], "likedReason", 160],
+    ["concern", dressSchema, () => base().dresses[0], "concern", 160],
+  ] as const)(
+    "keeps the editor's UTF-16 limit for %s",
+    (_, schema, input, field, limit) => {
+      const boundary = "😀".repeat(limit / 2);
+      expect(schema.safeParse({ ...input(), [field]: boundary }).success).toBe(
+        true,
+      );
+      expect(
+        schema.safeParse({ ...input(), [field]: boundary + "가" }).success,
+      ).toBe(false);
+    },
+  );
   it("accepts an old v1 dress without a core acknowledgement", () => {
     expect(
       portableTourV1Schema.parse(base()).dresses[0].coreRecordedAt,
